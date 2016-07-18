@@ -1,0 +1,39 @@
+For each season, develop score using:
+SIX FACTORS:
+1) Offense
+2) Defense
+3) Endurance
+4) Size
+5) Speed
+6) Price
+
+
+OFFENSE:
+* FG percentage
+If player attempts less than x (?) FG per season, offense score set to 0
+If a player attempts x+ FG per game, offense score weight = 1
+
+* FT percentage
+If player attempts less than x (?) FT per season, offense score set to 0
+
+* FG3 percentage
+If a player attempts less than x (?) 3point FG per season, offense score set to 0
+
+
+ 
+ENDURANCE:
+* age/number of seasons in the league at that time: 
+3-10: optimal score
+1-2 and 15+: lowest score
+
+* Minutes/game:total number of games he played in the season:
+If a player played at least 60 games
+30+ min: optimal endurance
+10-20 min: medium endurance
+<20 min: low endurance
+
+If a player played between 21 and 59 games:
+???
+
+If a player played <=20 games:
+endurance in this factor is set to 0

@@ -1,0 +1,25 @@
+* Salary: CHANGE code to accommodate players that might have the same name
+-In Salary.py, check if the player's value has the same year twice (and two different salaries and teams)
+
+In Player_Info.py, for each key in player_salary_interm, find the year and run player_info_current on that year. Match up name and team to get Person_ID
+
+* Odd names: 
+Luc Richard Mbah a Moute - > Mbah a Moute, Luc
+Seung Jin Ha -> Seung-Jin, Ha
+Michael McAdoo, James -> McAdoo, James Michael
+E. Henderson, Cedric -> Henderson, Cendric
+Porter Jr., Otto -> Porter, Otto
+Jay Murphy, Erik -> Murphy, Erik
+Robinson III, Glenn -> Robinson, Glenn (BUT there already is another Glenn Robinson)
+John Ramos, Peter-> Ramos, Peter
+Herrmann Heinrich, Walter -> Herrmann, Walter
+
+
+
+* REDO PLAYER SALARY WITH THIS WEBSITE: www.spotrac.com/nba/ 
+Info under Developer Tools -> nba/team/cap... (under index)
+* Salary: LIST name (Last, First) to match up with player_info_all to get ID 
+* Player_info: Incorporate all years, not just career
+* Transaction_results: Incorporate all years, not just 2016
+* CREATE A FUNCTION that, given a season, outputs the age/number of years player has been in the league, including given season
+* Figure out if/where to use Games Started statistic

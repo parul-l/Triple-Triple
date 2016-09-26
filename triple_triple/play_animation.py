@@ -279,11 +279,6 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
 
 ######################
 if __name__ == '__main__':
-    player = 'Chris Bosh'
-    playerid = playerid_from_name(player)
-    start_index = 10
-    stop_index = 300
-    plot_colour = 'blue'
 
     hometeam_id = '1610612744'
     awayteam_id = '1610612748'
@@ -303,19 +298,19 @@ if __name__ == '__main__':
     #anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
     plt.show()
     plt.ioff()
-
-
-    # fig = plt.figure(figsize=(15, 9))
-    # ax = fig.gca()
-    # ax = draw_court(ax)
-    # ax.set_xlim([-20, 94])
-    # ax.set_ylim([0, 50])
-    # plt.show()
-    # 
-    # anim = play_animation(fig=fig, period=period, time_start=time_start,
-    #     time_end=time_end, hometeam_id=hometeam_id, awayteam_id=awayteam_id,
-    #     player=player)
-    # 
-    # #anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
-    # plt.show()
-    # plt.ioff()
+    
+    ####################
+    player = 'Chris Bosh'
+    playerid = playerid_from_name(player)
+    plot_colour = 'blue'
+    
+    fig = plt.figure(figsize=(15, 9))
+    ax = fig.gca()
+    ax = draw_court(ax)
+    anim = play_animation(fig=fig, period=period, time_start=time_start,
+        time_end=time_end, hometeam_id=hometeam_id, awayteam_id=awayteam_id,
+        player=player)
+    
+    #anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
+    plt.show()
+    plt.ioff()

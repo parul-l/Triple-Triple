@@ -300,6 +300,9 @@ if __name__ == '__main__':
     plt.ioff()
     
     ####################
+    
+    # game clock needs fixing
+    # it doesn't remove the previous frame
     player = 'Chris Bosh'
     playerid = playerid_from_name(player)
     plot_colour = 'blue'

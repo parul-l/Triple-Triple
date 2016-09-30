@@ -10,16 +10,13 @@ from triple_triple.startup_data import (
     get_df_positions,
     get_df_raw_position_data,
     get_df_play_by_play,
-    get_df_player_bio_info
 )
-
 
 player_ids = get_player_ids()
 game_id_dict = get_game_id_dict()
 df_positions = get_df_positions()
 df_raw_position_data = get_df_raw_position_data()
 df_play_by_play = get_df_play_by_play()
-df_player_bio_info = get_df_player_bio_info()
 
 ##############################################
 # Animation of one player using df_raw_position_data

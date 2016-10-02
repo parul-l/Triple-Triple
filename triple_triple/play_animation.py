@@ -18,6 +18,7 @@ df_positions = get_df_positions()
 df_raw_position_data = get_df_raw_position_data()
 df_play_by_play = get_df_play_by_play()
 
+
 ##############################################
 # Animation of one player using df_raw_position_data
 ##############################################
@@ -70,8 +71,7 @@ def animate_player_raw_position(start_index, stop_index, playerid, plot_colour,
     plt.show()
     return anim
 
-###################
-###################
+
 def playerid_from_name(player, player_info_dict=game_id_dict):
     for key, value in game_id_dict.items():
         if value[0] == player:
@@ -85,9 +85,9 @@ def playerid_from_name(player, player_info_dict=game_id_dict):
 
 def fixedtime_df(period, time_start, time_end, dataframe=df_positions):
 
-    return dataframe[(dataframe.game_clock.game_clock <= time_start) &
-                     (dataframe.game_clock.game_clock >= time_end) &
-                     (dataframe.period.period == period)]
+    return dataframe[(dataframe.game_clock.values <= time_start) &
+                     (dataframe.game_clock.values >= time_end) &
+                     (dataframe.period.values == period)]
 
 def player_coord(player, dataframe = df_positions):
     df_player = dataframe[player]
@@ -97,13 +97,13 @@ def player_coord(player, dataframe = df_positions):
 
 def team_coord(index_number, team_id, dataframe=df_positions,
         player_info_dict=game_id_dict):
-
+    
+    # this needs .sort_index(axis=1) in get_df_positions function (startup_data.py)    
     df_pos_x_loc = dataframe.loc[:, (slice(None), 'x_loc')]
     df_pos_y_loc = dataframe.loc[:, (slice(None), 'y_loc')]
 
     # player info: (name, jersey, team_id)
     # excluding the ball
-
     player_details = [
         [
             x[0],
@@ -115,7 +115,7 @@ def team_coord(index_number, team_id, dataframe=df_positions,
     x_coord = df_pos_x_loc.values[index_number]
     y_coord = df_pos_y_loc.values[index_number]
 
-    # Only keep coord for team_id
+    # only keep coord for team_id
     # find indices that we want to delete:
     other_team_indicies = [
         k for k, item in enumerate(player_details)
@@ -140,8 +140,11 @@ def annotate_points(ax, xx, yy, player):
 def update_annotations(annotations, xx, yy):
     for x, y, anno in zip(xx, yy, annotations):
         anno.set_position((x - 0.5, y - 0.4))
+        
+##############################################
+# Animation of all players using df_positions
+##############################################        
 
-# Animation function:
 # if player is None, plots all players
 # if player = [player_id, jersey, team_id, position]
 # it only plots that player's movement
@@ -150,22 +153,31 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
         hometeam_id=None, awayteam_id=None, player=None):
 
     fixedtime = fixedtime_df(period, time_start, time_end)
-    game_clock_array = fixedtime.game_clock.game_clock.values
+    game_clock_array = fixedtime.game_clock.values.flatten()
+    shot_clock_array = fixedtime.shot_clock.values.flatten()
+    ball_height_array = fixedtime.ball_height.values.flatten()
     
-    # Get coordintates
+    # get coordintates
     ax = fig.gca()
-    msg = 'game clock: ' + str(game_clock_array[0])
-    game_clock_annotations = ax.text(-15, 25, msg)
+    msg_game_clock = 'game clock: ' + str(game_clock_array[0])
+    msg_shot_clock = 'shot clock: ' + str(shot_clock_array[0])
+    msg_ball_height = 'ball height: ' + str(shot_clock_array[0])
+    
+    game_clock_annotations = ax.text(-15, 25, msg_game_clock)
+    shot_clock_annotations = ax.text(-15, 20, msg_shot_clock)
+    ball_height_annotations = ax.text(-15, 15, msg_ball_height)
 
     if player is None:
         # initialize the
         # each frame
         def init():
             game_clock_annotations.set_text('initial')
+            shot_clock_annotations.set_text('initial')
+            ball_height_annotations.set_text('initial')
             scat_home.set_offsets([])
             scat_away.set_offsets([])
             scat_ball.set_offsets([])
-            return scat_home, scat_away, scat_ball, game_clock_annotations
+            return scat_home, scat_away, scat_ball, game_clock_annotations, shot_clock_annotations, ball_height_annotations 
 
         # initial coordinates:
         # players
@@ -180,11 +192,11 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
         scat_away = plot_points(ax, x_away, y_away, color = 'red')
         scat_ball = plot_points(ax, x_ball, y_ball, color = 'black')
 
-        # Label the coordinates
+        # label the coordinates
         home_annotations = annotate_points(ax, x_home, y_home, player_home)
         away_annotations = annotate_points(ax, x_away, y_away, player_away)
 
-        # Add quarter and time
+        # add quarter and time
         quarter_annotations = ax.annotate('quarter: ' + str(period), (-15, 30))
 
         def update(frame_number):
@@ -202,10 +214,12 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
             update_annotations(home_annotations, x_home, y_home)
             update_annotations(away_annotations, x_away, y_away)
 
-            # update game_clock:
+            # update game_clock and shot_clock:
             game_clock_annotations.set_text('game clock: ' + str(game_clock_array[frame_number]))
+            shot_clock_annotations.set_text('shot clock: ' + str(shot_clock_array[frame_number]))
+            ball_height_annotations.set_text('ball height: ' + str(ball_height_array[frame_number]))
 
-        # Number of frames
+        # number of frames
         no_frame = len(fixedtime)
 
         anim = animation.FuncAnimation(fig, init_func=init, func=update,
@@ -217,17 +231,25 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
 
     elif player is not None:
         fixedtime = fixedtime_df(period, time_start, time_end)
-        game_clock_array = fixedtime.game_clock.game_clock.values
+        game_clock_array = fixedtime.game_clock.values.flatten()
+        shot_clock_array = fixedtime.shot_clock.values.flatten()
+        ball_height_array = fixedtime.ball_height.values.flatten()
 
         ax = fig.gca()
-        msg = 'game clock: ' + str(game_clock_array[0])
-        game_clock_annotations = ax.text(-15, 25, msg)
+        msg_game_clock = 'game clock: ' + str(game_clock_array[0])
+        msg_shot_clock = 'shot clock: ' + str(shot_clock_array[0])
+        msg_ball_height = 'ball height: ' + str(shot_clock_array[0])
+        game_clock_annotations = ax.text(-15, 25, msg_game_clock)
+        shot_clock_annotations = ax.text(-15, 20, msg_shot_clock)
+        ball_height_annotations = ax.text(-15, 15, msg_ball_height)
 
         def init():
             game_clock_annotations.set_text('initial')
+            shot_clock_annotations.set_text('initial')
+            ball_height_annotations.set_text('initial')
             scat_player.set_offsets([])
             scat_ball.set_offsets([])
-            return scat_player, scat_ball, game_clock_annotations
+            return scat_player, scat_ball, game_clock_annotations, shot_clock_annotations, ball_height_annotations
 
         # Get coordintates
         x_coord, y_coord = player_coord(player, fixedtime)
@@ -236,8 +258,7 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
         playerid = playerid_from_name(player)
         team = game_id_dict[playerid][2]
 
-        # Plot initial points
-
+        # plot initial points
         if team == hometeam_id:
             color = 'blue'
 
@@ -247,11 +268,11 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
         scat_player = plot_points(ax, x_coord[0], y_coord[0], color=color)
         scat_ball = plot_points(ax, x_ball_coord[0], y_ball_coord[0], color='black')
 
-        # Label coordinates:
+        # label coordinates:
         jersey_number = game_id_dict[playerid][1]
         annotation = ax.annotate(jersey_number,xy=(x_coord[0] - .5, y_coord[0] - .4))
         
-        # Add quarter and time
+        # add quarter and time
         quarter_annotations = ax.annotate('quarter: ' + str(period), (-15, 30))
 
         # animation function.  This is called sequentially
@@ -263,10 +284,12 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
 
             scat_ball.set_offsets((x_ball_coord[frame_number],
                         y_ball_coord[frame_number]))
-            # update game_clock:
+            # update shot_clock, game_clock, ball_height:
             game_clock_annotations.set_text('game clock: ' + str(game_clock_array[frame_number]))
+            shot_clock_annotations.set_text('shot clock: ' + str(shot_clock_array[frame_number]))
+            ball_height_annotations.set_text('ball height: ' + str(ball_height_array[frame_number]))
 
-        # Number of frames
+        # number of frames
         no_frame = len(x_coord)
 
         anim = animation.FuncAnimation(fig,func=update, init_func=init,
@@ -280,8 +303,8 @@ if __name__ == '__main__':
     hometeam_id = '1610612744'
     awayteam_id = '1610612748'
     period = 1
-    time_start = 687
-    time_end = 685
+    time_start = 300
+    time_end = 250
 
     # There is a glitch with these times, quarter 1
     # time_start = 394
@@ -292,17 +315,16 @@ if __name__ == '__main__':
     ax = draw_court(ax)
     anim = play_animation(fig=fig, period=period, time_start=time_start,
         time_end=time_end, hometeam_id=hometeam_id, awayteam_id=awayteam_id)
-    #anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
+    # anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
     plt.show()
     plt.ioff()
     
     ####################
     
-    # game clock needs fixing
+    # TODO game clock/shot clock/ball height need fixing
     # it doesn't remove the previous frame
     player = 'Chris Bosh'
     playerid = playerid_from_name(player)
-    plot_colour = 'blue'
     
     fig = plt.figure(figsize=(15, 9))
     ax = fig.gca()

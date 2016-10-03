@@ -16,7 +16,15 @@ def get_game_id_dict():
 
 def get_df_positions():
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
-    return pd.read_csv(filepath, header=[0, 1]).sort_index(axis=1)
+    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+    
+def get_df_pos_dist():
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
+    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+
+def get_df_pos_dist_trunc():
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
+    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)         
 
 def get_df_raw_position_data():
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
@@ -29,3 +37,13 @@ def get_df_play_by_play():
 def get_df_player_bio_info():
     filepath = os.path.join(DATASETS_DIR, 'player_bio_info.csv')
     return pd.read_csv(filepath)
+    
+    
+
+# def get_df_positions():
+#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
+#     df = pd.read_csv(filepath, header=[0, 1], tupleize_cols=True).sort_index(axis=1)
+#     columns = pd.MultiIndex.from_tuples(df.columns, names=['player', 'location'])
+#     df.columns = columns
+#     return df
+    

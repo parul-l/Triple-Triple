@@ -17,7 +17,7 @@ def region(x, y, shooting_side):
             return 'back court'
         else:
             return 'out of bounds'         
-    elif shooting_side =='right':
+    elif shooting_side == 'right':
         if (75 <= x <= 94 and 19 <= y <= 31):
             return 'paint'
         elif ((69 <= x <= 75 and (x-75)**2 + (y-25)**2 <= 6**2)):

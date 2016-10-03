@@ -7,7 +7,6 @@ import pandas as pd
 
 from triple_triple.config import DATASETS_DIR
 
-
 # Guided by:
 # http://savvastjortjoglou.com/nba-play-by-play-movements.html
 
@@ -196,6 +195,17 @@ def get_closest_to_ball_df(dataframe):
 
     return df_positions_dist
 
+def get_pos_dist_trunc(df_pos_dist, has_ball_dist=2):
+     return df_pos_dist[df_pos_dist.min_dist.values<2].reset_index()
+     
+     # this doesn't work when we use the created dataframe 
+     # but works if used on a saved and opened file
+     # df_pos_dist[(df_pos_dist.min_dist<has_ball_dist)\
+     # .any(axis=1)].reset_index()     
+
+#########################
+#########################
+
 if __name__=='__main__':
     # January 11, 2016: MIA @ GSW
     game_id = '0021500568'
@@ -206,6 +216,7 @@ if __name__=='__main__':
     df_raw_position_data = get_raw_position_data_df(data, game_id_dict)
     df_positions = get_player_positions_df(data, game_id_dict)
     df_pos_dist = get_closest_to_ball_df(df_positions)
+    df_pos_dist_trunc = get_pos_dist_trunc(df_pos_dist, has_ball_dist=2)
 
     # save files
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
@@ -217,6 +228,8 @@ if __name__=='__main__':
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
     df_pos_dist.to_csv(filepath, index=False, tupleize_cols=False, float_format='%.8f')
 
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
+    df_pos_dist_trunc.to_csv(filepath, index=False, tupleize_cols=False, float_format='%.8f')
 
     # save game_id_dict
     # save the files as jsons but they become strings?

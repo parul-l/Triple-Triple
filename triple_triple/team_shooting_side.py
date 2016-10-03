@@ -63,6 +63,8 @@ def team_shooting_side(player, period, initial_shooting_side, hometeam_id, awayt
         elif (period == 3 or period == 4):
             return initial_shooting_side[hometeam_id]
 
+initial_shooting_side = get_initial_shooting_sides(df_play_by_play, df_pos_dist, hometeam_id, awayteam_id, has_ball_dist=2)            
+
 ##############################
 ##############################
 

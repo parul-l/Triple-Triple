@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
 from triple_triple.startup_data import (
@@ -22,7 +20,8 @@ def playerid_from_name(player, player_info_dict=game_id_dict):
 def player_impact_df(player_name, hometeam_id, dataframe=df_play_by_play):
     playerid = int(playerid_from_name(player_name))
     df_pbp_player = dataframe[
-                    (dataframe['PLAYER1_ID']==playerid)|        (dataframe['PLAYER2_ID']==playerid)|       
+                    (dataframe['PLAYER1_ID']==playerid)|
+                    (dataframe['PLAYER2_ID']==playerid)|       
                     (dataframe['PLAYER3_ID']==playerid)
     ]
 
@@ -114,7 +113,7 @@ def player_game_stats_nba(player_name, df_player_impact):
             shoot.append([df_player_impact.iloc[i]['PERIOD'],
                             df_player_impact.iloc[i]['PCTIMESTRING'],
                             df_player_impact.ix[:,2].iloc[i]])
-    return assist, block, commit_foul, free_throw, rebound, shoot, steal, turnover
+    return [assist, block, commit_foul, free_throw, rebound, shoot, steal, turnover]
 
 ###########################
 ###########################
@@ -123,4 +122,4 @@ if __name__=='__main__':
     player = 'Chris Bosh'
 
     df_player_impact = player_impact_df(player, hometeam_id)
-    assist, block, commit_foul, free_throw, rebound, shoot, steal, turnover = player_game_stats_nba(player, df_player_impact)
+    player_game_stats = player_game_stats_nba(player, df_player_impact)

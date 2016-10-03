@@ -20,18 +20,19 @@ df_play_by_play = get_df_play_by_play()
 
 
 def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
-    assist, block, commit_foul, free_throw, rebound, shoot, steal, turnover = player_game_stats_nba(player_name, df_player_impact)
+
+    player_game_stats = player_game_stats_nba(player_name, df_player_impact)
 
     df_player = df_pos_dist[(df_pos_dist['closest_player'].values)==player]
     # number of total touches. Assuming each touch is about 3 seconds
     # data given 25 frames per second
     touches = len(df_player) /75.
-    shot_attempt = len(shoot)
-    rebound_count = len(rebound)
-    foul_count = len(commit_foul)
-    free_throw_attempt = len(free_throw)
-    blocks = len(block)
-    turnovers = len(turnover)
+    shot_attempt = len(player_game_stats[5])
+    rebound_count = len(player_game_stats[4])
+    foul_count = len(player_game_stats[2])
+    free_throw_attempt = len(player_game_stats[3])
+    blocks = len(player_game_stats[1])
+    turnovers = len(player_game_stats[7])
 
     passes = touches - shot_attempt - free_throw_attempt - rebound_count - foul_count - blocks - turnovers
 
@@ -82,6 +83,4 @@ if __name__=='__main__':
     player = 'Chris Bosh'
 
     df_player_impact = player_impact_df(player, hometeam_id)
-    assist, block, commit_foul, free_throw, rebound, shoot, steal, turnover = player_game_stats_nba(player, df_player_impact)
-
     plot_player_game_info(player, df_player_impact, df_pos_dist)

@@ -162,5 +162,5 @@ if __name__=='__main__':
     df_player_bio = add_ids_to_player_bio(df_player_bio, player_ids,
                                           current_year=2016)
 
-    # # Save file
+    # Save file
     # df_player_bio.to_csv('triple_triple/data/player_bio_info_scraping.csv')

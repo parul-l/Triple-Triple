@@ -110,14 +110,14 @@ if __name__=='__main__':
     # January 11, 2016, MIA @ GSW play by play data
     base_url_play = 'http://stats.nba.com/stats/playbyplayv2'
     params_play = {
-        'EndPeriod': '10',   # default by NBA stats (acceptable values: 1, 2, 3, 4)
-        'EndRange': '55800',      # not sure what this is
+        'EndPeriod': '10',      # default by NBA stats (acceptable values: 1, 2, 3, 4)
+        'EndRange': '55800',    # not sure what this is
         'GameID': '0021500568',      
-        'RangeType': '2',         # not sure what this is
+        'RangeType': '2',       # not sure what this is
         'Season': '2015-16',
         'SeasonType': 'Regular Season',
-        'StartPeriod': '1',       # acceptable values: 1, 2, 3, 4
-        'StartRange': '0',        # not sure what this is
+        'StartPeriod': '1',     # acceptable values: 1, 2, 3, 4
+        'StartRange': '0',      # not sure what this is
     }
     
     # defintions for formatting          

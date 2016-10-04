@@ -43,6 +43,7 @@ def all_player_ids(player_info_list):
 
 
 if __name__=='__main__':
+    
     # allowable entries for IsOnlyCurrentSeason is '0' or '1'.
     # 0 implies show all players up to and including chosen season
     # 1 imples show only players up to current season

@@ -23,8 +23,8 @@ HEADERS = {'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
            'referer':     'http://stats.nba.com/player/'
           }
                     
-def get_data(base_url):
-    response = requests.get(base_url, params = params, headers=HEADERS)
+def get_data(base_url, params):
+    response = requests.get(base_url, params=params, headers=HEADERS)
     if response.status_code == 200:
         data = response.json()
         return data
@@ -32,7 +32,7 @@ def get_data(base_url):
         print(response.text)
         print(response.status_code)
 
-def get_player_bio_df(base_url, params):
+def get_player_bio_df(base_url, params, player_ids):
     player_bio_info = []
     bad_keys = []
 
@@ -41,7 +41,7 @@ def get_player_bio_df(base_url, params):
             player_id = str(key)
             # add player_id to params    
             params['PlayerID'] = player_id
-            player_data = get_data(base_url)
+            player_data = get_data(base_url, params)
             
             player_bio_info.append(
                     [player_data['resultSets'][0]['rowSet'][0][0],  # id

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 
 from triple_triple.full_court import draw_court
+from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
 from triple_triple.startup_data import (
     get_player_ids,
     get_game_id_dict,
@@ -300,8 +301,6 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
 ######################
 if __name__ == '__main__':
 
-    hometeam_id = '1610612744'
-    awayteam_id = '1610612748'
     period = 1
     time_start = 300
     time_end = 250

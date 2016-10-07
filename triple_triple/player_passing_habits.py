@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
 from triple_triple.court_regions import region
 from triple_triple.data_generators.player_game_stats_data import (
     playerid_from_name,
@@ -50,7 +49,15 @@ def player_possession_idx(player, df_pos_dist_trunc):
     return [player_ball, next_player_ball, player_ball_idx, next_player_ball_idx]
     
 
-def characterize_player_possessions(player_name, df_pos_dist_trunc, player_poss_idx, hometeam_id, awayteam_id, initial_shooting_side, df_play_by_play):
+def characterize_player_possessions(\
+    player_name, 
+    df_pos_dist_trunc, 
+    player_poss_idx, 
+    hometeam_id, 
+    awayteam_id, 
+    initial_shooting_side, 
+    df_play_by_play
+):
     
     player_ball_idx = player_poss_idx[2]
     next_player_ball_idx = player_poss_idx[3]
@@ -173,7 +180,9 @@ def pass_not_assist(player_name, df_pos_dist_trunc, known_player_possessions, pl
         # find next time same team has ball
         # first start the list at the end index (now index =0)
         # find index of same team and add it back original index  
-        next_team_idx = next(closest_player_team[end_possession_idx:].index(i) for i in closest_player_team[end_possession_idx:] if i == player_team_id) + end_possession_idx
+        next_team_idx = next(closest_player_team[end_possession_idx:].index(i) \
+                            for i in closest_player_team[end_possession_idx:] \
+                            if i == player_team_id) + end_possession_idx
 
         # determine who the player is
         next_teammate = closest_player_to_ball[next_team_idx]
@@ -206,6 +215,25 @@ def pass_not_assist(player_name, df_pos_dist_trunc, known_player_possessions, pl
                 end_region,
                 'pass'])
     return play_pass
+    
+def player_possession_end_df(known_player_possessions, play_pass):
+    player_play_data_headers = [
+        'period',
+        'game_clock_end',
+        'start_region',
+        'end_region',
+        'type'
+    ]    
+    
+    return pd.DataFrame(
+                known_player_possessions[0]+
+                known_player_possessions[1]+
+                known_player_possessions[2]+
+                play_pass,
+                columns= player_play_data_headers           
+            )
+    
+        
 
 
 # plots a visual of length of ball possessions for each team given a start and stop index. I don't do much with this plot
@@ -245,11 +273,16 @@ if __name__ == '__main__':
     player = 'Chris Bosh'
     player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
     
+    # returns [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]
     known_player_possessions = characterize_player_possessions(player, 
     df_pos_dist_trunc, player_poss_idx, hometeam_id, awayteam_id, initial_shooting_side, df_play_by_play)
     
     play_pass = pass_not_assist(player, df_pos_dist_trunc, known_player_possessions, player_poss_idx, t=10)
     
+    df_player_possession_end = player_possession_end_df(known_player_possessions, play_pass)
+    
     plot_coord = plot_team_possession(10, 20, hometeam_id, awayteam_id)
+    
+
 
            

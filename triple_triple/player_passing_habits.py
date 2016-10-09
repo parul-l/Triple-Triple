@@ -1,3 +1,4 @@
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -38,15 +39,16 @@ def player_court_region_df(df_pos_dist):
     df_pos_y_loc = df_pos_dist.iloc[:,df_pos_dist.columns.get_level_values(1)=='y_loc'].values
     
     for j in range(len(player_list)):
-        player_court_region = []
+        player_court_region = [None]*len(df_pos_x_loc)
         for i in range(len(df_pos_x_loc)):
             shooting_side = team_shooting_side(player_list[j], period_list[i], initial_shooting_side, hometeam_id, awayteam_id)
-            player_court_region.append(region(df_pos_x_loc[i,j],\
+            if math.isnan(df_pos_x_loc[i,j]) != True:
+                player_court_region[i] = region(df_pos_x_loc[i,j],\
                                             df_pos_y_loc[i,j],\
-                                            shooting_side))
+                                            shooting_side)
         df_pos_dist[player_list[j], 'region'] = player_court_region
 
-    return df_pos_dist.sort_index(axis=1)  
+    return df_pos_dist.sort_index(axis=1)    
 
 def player_possession_idx(player, df_pos_dist_trunc):
     closest_player_to_ball = df_pos_dist_trunc['closest_player'].values.flatten()

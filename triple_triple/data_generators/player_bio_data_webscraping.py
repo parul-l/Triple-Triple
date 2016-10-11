@@ -7,12 +7,13 @@
 # See NBA stats file for comparison
 ############################################################
 
-from bs4 import BeautifulSoup
 from datetime import datetime, date, time
+import string
+
+from bs4 import BeautifulSoup
 import numpy as np
 import pandas as pd
 import requests
-import string
 
 from triple_triple.startup_data import get_player_ids
 
@@ -119,16 +120,30 @@ def add_ids_to_player_bio(df_player_bio, player_ids, current_year=2016):
                     # add it to no_match based on current year
                     # playerid, name, from, to, position, height, weight, bday
                     no_match_idx_current_yr.append(
-                        [playerid, name_year[1], name_year[2], name_year[3],'NaN', 'NaN', 0, 0]
-                        )
+                        [playerid, 
+                        name_year[1], 
+                        name_year[2], 
+                        name_year[3],'
+                        NaN', 
+                        'NaN', 
+                        0, 
+                        0]
+                    )
                 else:
                     # everything else if:
                     # 0 hits with name and year
                     # no unique hit or current year hit
                     # playerid, name, from, to, position, height, weight, bday
                     no_match_idx_player_year_else.append(
-                        [playerid, name_year[1], name_year[2], name_year[3], 'NaN', 'NaN', 0, 0]
-                        )
+                        [playerid, 
+                        name_year[1], 
+                        name_year[2], 
+                        name_year[3], 
+                        'NaN', 
+                        'NaN', 
+                        0, 
+                        0]
+                    )
             else:
                 # players with multiple hits for both name and year
                 multiple_matches.append((idx, playerid, name_year))

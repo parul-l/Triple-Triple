@@ -13,8 +13,8 @@ HEADERS = {
 }
 
 
-def get_data(base_url, params, headers=HEADERS):
-    response = requests.get(base_url, params=params, headers=headers)
+def get_data(base_url, params):
+    response = requests.get(base_url, params=params, headers=HEADERS)
     if response.status_code == 200:
         return response.json()
     else:
@@ -54,7 +54,7 @@ if __name__=='__main__':
         'Season': '2016-17'
     }
     
-    data = get_data(base_url, params, HEADERS)
+    data = get_data(base_url, params)
     player_ids = all_player_ids(data['resultSets'][0]['rowSet'])
 
     # reverse order to compare with player_bios

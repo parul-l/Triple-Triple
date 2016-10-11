@@ -68,8 +68,8 @@ def get_raw_position_data_df(data, game_id_dict):
     df_raw_position_data = pd.DataFrame(player_moments, columns=headers_raw_pos_data)
 
     # add player name and jersey number to dataframe
-    df_raw_position_data['player_name'] = df_raw_position_data.player_id.map(lambda x:  game_id_dict[str(x)][0])
-    df_raw_position_data['player_jersey'] = df_raw_position_data.player_id.map(lambda x:    game_id_dict[str(x)][1])
+    df_raw_position_data['player_name'] = df_raw_position_data.player_id.map(lambda x: game_id_dict[str(x)][0])
+    df_raw_position_data['player_jersey'] = df_raw_position_data.player_id.map(lambda x: game_id_dict[str(x)][1])
 
     return df_raw_position_data.drop_duplicates()
 

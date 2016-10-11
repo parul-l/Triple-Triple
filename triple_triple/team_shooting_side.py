@@ -47,11 +47,11 @@ def get_initial_shooting_sides(df_play_by_play, df_pos_dist,
     ]
 
     first_score_xcoord = first_score[first_score_player].x_loc.iloc[0]
-    if  (first_score_xcoord <= 47 and first_score_team == hometeam_id) or
-        (first_score_xcoord > 47 and first_score_team == awayteam_id):
+    if  ((first_score_xcoord <= 47 and first_score_team == hometeam_id) or
+        (first_score_xcoord > 47 and first_score_team == awayteam_id)):
         return {hometeam_id: 'left', awayteam_id: 'right'}
-    elif (first_score_xcoord <= 47 and first_score_team == awayteam_id) or
-        (first_score_xcoord > 47 and first_score_team == hometeam_id):
+    elif ((first_score_xcoord <= 47 and first_score_team == awayteam_id) or
+        (first_score_xcoord > 47 and first_score_team == hometeam_id)):
         return {awayteam_id: 'left', hometeam_id: 'right'}
 
 def team_shooting_side(player, period, initial_shooting_side, hometeam_id, awayteam_id):

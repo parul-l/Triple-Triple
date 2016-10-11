@@ -64,7 +64,7 @@ def player_possession_idx(player, df_pos_dist_trunc):
     closest_player_to_ball = df_pos_dist_trunc.closest_player.values.flatten()
 
     player_ball = [None]*len(closest_player_to_ball)
-    next_player_ball = [None]*len(closest_player_to_ball)
+    next_player_ball = [None] * len(closest_player_to_ball)
 
     player_ball_idx = []
     next_player_ball_idx = []
@@ -306,7 +306,7 @@ def player_possession_end_df(known_player_possessions, play_pass):
         known_player_possessions[1] +
         known_player_possessions[2] +
         play_pass,
-        columns = player_play_data_headers
+        columns=player_play_data_headers
     )
 
 

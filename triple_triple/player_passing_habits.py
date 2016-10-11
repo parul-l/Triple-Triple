@@ -67,18 +67,17 @@ def player_possession_idx(player, df_pos_dist_trunc):
             next_player_ball[i] = closest_player_to_ball[i]
             next_player_ball_idx.append(i)
     
-    return [player_ball, next_player_ball, player_ball_idx, next_player_ball_idx]
+    return [
+        player_ball, 
+        next_player_ball, 
+        player_ball_idx,
+        next_player_ball_idx
+    ]
     
 
-def characterize_player_possessions(\
-    player_name, 
-    df_pos_dist_trunc, 
-    player_poss_idx, 
-    hometeam_id, 
-    awayteam_id, 
-    initial_shooting_side, 
-    df_play_by_play
-):
+def characterize_player_possessions(player_name, 
+        df_pos_dist_trunc, player_poss_idx, hometeam_id, awayteam_id,
+        initial_shooting_side, df_play_by_play):
     
     player_ball_idx = player_poss_idx[2]
     next_player_ball_idx = player_poss_idx[3]
@@ -157,7 +156,13 @@ def characterize_player_possessions(\
                 start_idx_used.append(play_start_index)
                 end_idx_used.append(play_end_index+1)
 
-    return [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]  
+    return [
+        play_shot, 
+        play_assist, 
+        play_turnover, 
+        start_idx_used, 
+        end_idx_used
+    ]  
 
 # t= 25 corresponds to 1 sec
 # only consider a 'possession' to be when player has ball for more than t seconds
@@ -255,8 +260,6 @@ def player_possession_end_df(known_player_possessions, play_pass):
             )
     
         
-
-
 # plots a visual of length of ball possessions for each team given a start and stop index. I don't do much with this plot
 
 def plot_team_possession(start, stop, hometeam_id, awayteam_id):

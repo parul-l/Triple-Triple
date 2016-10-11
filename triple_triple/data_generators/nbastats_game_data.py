@@ -6,11 +6,12 @@ HEADERS = {
     'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
                     'AppleWebKit/537.36 (KHTML, like Gecko)'
                     'Chrome/51.0.2704.103 Safari/537.36'),
-    'referer':     'http://stats.nba.com/player/'
+    'referer': 'http://stats.nba.com/player/'
 }
 
-def get_data(base_url, params, headers):
+def get_data(base_url, params):
     response = requests.get(base_url, params=params, headers=HEADERS)
+    
     if response.status_code == 200:
         data = response.json()
         return data
@@ -36,8 +37,8 @@ def teams_playing(game_id, all_games_stats):
 
     return str(home_team), str(away_team)          
 
-def play_by_play_df(base_url_play, params_play, headers=HEADERS):
-    play_data = get_data(base_url_play, params_play, HEADERS)
+def play_by_play_df(base_url_play, params_play):
+    play_data = get_data(base_url_play, params_play)
 
     headers_play_by_play = ["Game_ID",
                             "PERIOD",
@@ -123,14 +124,13 @@ if __name__=='__main__':
     # defintions for formatting          
     def time_in_seconds(time):
         t = time.split(':')
-        return int(t[0])*60 + int(t[1])
+        return int(t[0]) * 60 + int(t[1])
 
     def score_in_int(score):
         try:
             return [int(score.split('-')[0]), int(score.split('-')[1])]
         except:
-            new_score = score
-            return new_score
+            return score
                          
     df_play_by_play = play_by_play_df(base_url_play, params_play, headers=HEADERS)
 

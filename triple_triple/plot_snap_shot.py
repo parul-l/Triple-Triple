@@ -23,7 +23,9 @@ df_raw_position_data = get_df_raw_position_data()
             
 
 # Plot ONE player during a fixed time range
-def plot_player_movement_gradient(player, period, time_start, time_end, color = 'winter', dataframe=df_raw_position_data):
+def plot_player_movement_gradient(player, period, time_start, time_end, 
+    color='winter', dataframe=df_raw_position_data):
+    
     player_fixed_time = dataframe[(dataframe.player_name == player) & 
                         (dataframe.period == period) &
                         (dataframe.game_clock <= time_start) &
@@ -42,12 +44,13 @@ def plot_player_movement_gradient(player, period, time_start, time_end, color = 
     x = player_fixed_time.iloc[n-1]['x_loc']
     y = player_fixed_time.iloc[n-1]['y_loc']
     text = player_fixed_time.iloc[0]['player_jersey']               
-    label = ax.annotate(text, xy = (x-.6, y-.4))
+    label = ax.annotate(text, xy = (x - .6, y - .4))
     
     plt.show()
     
 # Plot TEAM during time range
-def plot_play_snap_shot(period, time_start, time_end, hometeam_id, awayteam_id, title_text):
+def plot_play_snap_shot(period, time_start, time_end, 
+    hometeam_id, awayteam_id, title_text):
 
     fig = plt.figure(figsize=(15, 9))
     ax = fig.gca()
@@ -88,7 +91,8 @@ if __name__ == '__main__':
     time_start = 402
     time_end = 400
     
-    plot_player_movement_gradient(player, period, time_start, time_end,  dataframe=df_raw_position_data, color = 'Blues')
+    plot_player_movement_gradient(player, period, time_start, time_end, 
+        dataframe=df_raw_position_data, color='Blues')
 
     ######################
     period = 2
@@ -96,4 +100,5 @@ if __name__ == '__main__':
     time_end = 99
     title_text = 'Snap shot of MIA @ GSW \n January 11, 2016' 
     
-    plot_play_snap_shot(period, time_start, time_end, hometeam_id,  awayteam_id, title_text)
+    plot_play_snap_shot(period, time_start, time_end, 
+        hometeam_id,  awayteam_id, title_text)

@@ -36,9 +36,9 @@ df_play_by_play = get_df_play_by_play()
 def player_court_region_df(df_pos_dist):
     period_list = df_pos_dist.period.values.flatten()
     df_pos_x_loc = df_pos_dist.iloc[:,df_pos_dist.\
-        columns.get_level_values(1)=='x_loc'].values
+        columns.get_level_values(1) == 'x_loc'].values
     df_pos_y_loc = df_pos_dist.iloc[:,df_pos_dist.\
-        columns.get_level_values(1)=='y_loc'].values
+        columns.get_level_values(1) == 'y_loc'].values
 
     for j in range(len(player_list)):
         player_court_region = [None]*len(df_pos_x_loc)
@@ -209,7 +209,7 @@ def pass_not_assist(player_name,
 
     # collect possession indices
 
-    length_possession = np.array(next_player_ball_idx)-np.array(player_ball_idx)
+    length_possession = np.array(next_player_ball_idx) - np.array(player_ball_idx)
     possession = np.argwhere(length_possession < t).flatten()
 
     player_ball_idx = np.delete(np.array(player_ball_idx), possession)
@@ -231,7 +231,7 @@ def pass_not_assist(player_name,
 
     for i in range(len(start_idx_not_used)):
         play_start_index = start_idx_not_used[i]
-        play_end_index = end_idx_not_used[i]-1
+        play_end_index = end_idx_not_used[i] - 1
 
         # end of player possession
         end_possession_idx = end_idx_not_used[i]
@@ -318,7 +318,7 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
 
     closest_player_team = [team_id_from_name(item) for item in closest_player_to_ball]
 
-    closest_player_team =closest_player_team[start:stop]
+    closest_player_team = closest_player_team[start:stop]
     x_home = []
     x_away = []
     for i in range(len(closest_player_team)):
@@ -327,8 +327,8 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
         elif closest_player_team[i] == awayteam_id:
             x_away.append(i+start)
 
-    y_home = [0]*(len(x_home))
-    y_away = [1]*(len(x_away))
+    y_home = [0] * (len(x_home))
+    y_away = [1] * (len(x_away))
 
     fig = plt.figure()
     ax = fig.gca()

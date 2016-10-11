@@ -12,8 +12,8 @@ HEADERS = {
    'referer': 'http://stats.nba.com/player/'
 }
 
-def get_nbastats_team_data(base_url, params, headers=HEADERS):
-    response = requests.get(base_url, params=params, headers=headers)
+def get_nbastats_team_data(base_url, params):
+    response = requests.get(base_url, params=params, headers=HEADERS)
     if response.status_code == 200:
         return response.json()
     else:
@@ -85,7 +85,7 @@ def get_team_payroll_data(years_from_current_year=0):
     # second most recent year: idx+2, etc.
     team_payroll_dict = {}
     for i in range(9, len(team_payroll), 8):
-        value = money_integer(team_payroll[i+(years_from_current_year+1)])
+        value = money_integer(team_payroll[i + (years_from_current_year+1)])
         if team_payroll[i] == 'LA Lakers':
             team_payroll_dict['los angeles lakers'] = value
         elif team_payroll[i] == 'LA Clippers':
@@ -136,7 +136,7 @@ def team_city_only(string):
 def team_city_only_revenue(string):
     string = string.replace('-', ' ')
     space_index = string[::-1].index(' ')
-    parse = string[::-1][space_index+1:]
+    parse = string[::-1][space_index + 1:]
     return parse[::-1]
 
 def money_integer(amount):
@@ -146,7 +146,7 @@ def money_integer(amount):
 ###########################
 ###########################
 
-if __name__=='__main__':
+if __name__ == '__main__':
     base_url = "http://stats.nba.com/stats/leaguedashteamstats"
     params = {
         'Conference':'',
@@ -180,17 +180,18 @@ if __name__=='__main__':
         'VsDivision':''
     }
 
-    revenue_url = "http://www.forbes.com/ajax/list/data?year=2016&uri=nba-valuations&type=organization"
+    revenue_url = 'http://www.forbes.com/ajax/list/' + \
+        'data?year=2016&uri=nba-valuations&type=organization'
 
     team_stats = get_nbastats_team_data(base_url, params)
     win_percent = get_win_percentage(team_stats)
     team_payroll  = get_team_payroll_data(years_from_current_year=0)
     revenue_data = get_revenue_data(revenue_url)
     team_revenue = get_team_revenue(revenue_data)
-    
+
     payroll_and_wins = combine_dicts(team_payroll, win_percent)
     revenue_and_wins = combine_dicts(team_revenue, win_percent)
-    
+
     plot_details_payroll = [
         1000000.0,
         'ro',
@@ -199,8 +200,8 @@ if __name__=='__main__':
         'Team Payroll (in millions)',
         'Season Win Percentage',
         'Wins_vs_Team_Payroll.png'
-        ]
-        
+    ]
+
     plot_details_revenue = [
         1.0,
         'bo',
@@ -209,8 +210,7 @@ if __name__=='__main__':
         'Team Revenue (in millions)',
         'Season Win Percentage',
         'Wins_vs_Team_Revenue.png'
-        ]
-        
+    ]
+
     plot_data(payroll_and_wins, plot_details_payroll)
     plot_data(payroll_and_wins, plot_details_revenue)
-        

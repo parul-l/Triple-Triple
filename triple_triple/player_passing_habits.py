@@ -35,8 +35,10 @@ df_play_by_play = get_df_play_by_play()
 
 def player_court_region_df(df_pos_dist):
     period_list = df_pos_dist.period.values.flatten()
-    df_pos_x_loc = df_pos_dist.iloc[:,df_pos_dist.columns.get_level_values(1)=='x_loc'].values
-    df_pos_y_loc = df_pos_dist.iloc[:,df_pos_dist.columns.get_level_values(1)=='y_loc'].values
+    df_pos_x_loc = df_pos_dist.iloc[:,df_pos_dist.\
+        columns.get_level_values(1)=='x_loc'].values
+    df_pos_y_loc = df_pos_dist.iloc[:,df_pos_dist.\
+        columns.get_level_values(1)=='y_loc'].values
 
     for j in range(len(player_list)):
         player_court_region = [None]*len(df_pos_x_loc)
@@ -59,7 +61,7 @@ def player_court_region_df(df_pos_dist):
     return df_pos_dist.sort_index(axis=1)
 
 def player_possession_idx(player, df_pos_dist_trunc):
-    closest_player_to_ball = df_pos_dist_trunc['closest_player'].values.flatten()
+    closest_player_to_ball = df_pos_dist_trunc.closest_player.values.flatten()
 
     player_ball = [None]*len(closest_player_to_ball)
     next_player_ball = [None]*len(closest_player_to_ball)
@@ -68,10 +70,14 @@ def player_possession_idx(player, df_pos_dist_trunc):
     next_player_ball_idx = []
 
     for i in range(len(closest_player_to_ball)):
-        if (closest_player_to_ball[i] == player and closest_player_to_ball[i-1] != player):
+        if (closest_player_to_ball[i] == player and 
+            closest_player_to_ball[i-1] != player):
+            
             player_ball[i] = player
             player_ball_idx.append(i)
-        elif (closest_player_to_ball[i]!=player and closest_player_to_ball[i-1] == player):
+        elif (closest_player_to_ball[i]!=player and 
+            closest_player_to_ball[i-1] == player):
+            
             next_player_ball[i] = closest_player_to_ball[i]
             next_player_ball_idx.append(i)
 
@@ -106,8 +112,10 @@ def characterize_player_possessions(player_name,
     for j in range(len(player_ball_idx)):
         # start of play
         play_start_index = player_ball_idx[j]
-        period_play_start = df_pos_dist_trunc.period.values.flatten()[play_start_index]
-        game_clock_play_start = df_pos_dist_trunc.game_clock.values.flatten()[play_start_index]
+        period_play_start = df_pos_dist_trunc.\
+            period.values.flatten()[play_start_index]
+        game_clock_play_start = df_pos_dist_trunc.\
+            game_clock.values.flatten()[play_start_index]
 
         shooting_side = team_shooting_side(
             player_name, period_play_start,
@@ -124,7 +132,8 @@ def characterize_player_possessions(player_name,
 
         # End of play
         play_end_index = next_player_ball_idx[j]-1
-        game_clock_play_end = df_pos_dist_trunc.game_clock.values.flatten()[play_end_index]
+        game_clock_play_end = df_pos_dist_trunc.\
+            game_clock.values.flatten()[play_end_index]
 
         end_region = region(
             df_pos_dist_trunc[player_name].x_loc.iloc[play_end_index],
@@ -245,8 +254,10 @@ def pass_not_assist(player_name,
             # corresponding to a possession
             # if true, record it as a pass
             if len(set(closest_player_to_ball[next_team_idx:next_team_idx+t])) == 1:
-                period_play_start = df_pos_dist_trunc.period.values.flatten()[play_start_index]
-                game_clock_play_start = df_pos_dist_trunc.game_clock.values.flatten()[play_start_index]
+                period_play_start = df_pos_dist_trunc\
+                    .period.values.flatten()[play_start_index]
+                game_clock_play_start = df_pos_dist_trunc\
+                    .game_clock.values.flatten()[play_start_index]
 
                 shooting_side = team_shooting_side(
                     player_name,
@@ -263,7 +274,8 @@ def pass_not_assist(player_name,
 
                 # end of play
                 # index where ball ends up
-                game_clock_play_end = df_pos_dist_trunc.game_clock.values.flatten()[next_team_idx]
+                game_clock_play_end = df_pos_dist_trunc\
+                    .game_clock.values.flatten()[next_team_idx]
 
                 end_region = region(
                     df_pos_dist_trunc[next_teammate].x_loc.iloc[next_team_idx],

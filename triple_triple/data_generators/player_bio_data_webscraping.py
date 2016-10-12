@@ -123,8 +123,8 @@ def add_ids_to_player_bio(df_player_bio, player_ids, current_year=2016):
                         [playerid, 
                         name_year[1], 
                         name_year[2], 
-                        name_year[3],'
-                        NaN', 
+                        name_year[3],
+                        'NaN', 
                         'NaN', 
                         0, 
                         0]
@@ -168,8 +168,9 @@ def add_ids_to_player_bio(df_player_bio, player_ids, current_year=2016):
 
     df_current_year = pd.DataFrame(no_match_idx_current_yr,
                                    columns=headers_current_yr)
+    df_player_bio.append(df_current_year, ignore_index=True)                               
 
-    return df_player_bio.append(df_current_year, ignore_index=True)
+    return df_player_bio
 
 if __name__ == '__main__':
 

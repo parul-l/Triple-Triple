@@ -33,15 +33,20 @@ df_pos_dist = get_df_pos_dist()
 df_pos_dist_trunc = get_df_pos_dist_trunc()
 df_play_by_play = get_df_play_by_play()
 
-def player_court_region_df(df_pos_dist):
+def get_player_court_region_df(df_pos_dist):
     period_list = df_pos_dist.period.values.flatten()
     df_pos_x_loc = df_pos_dist.iloc[:,df_pos_dist.\
         columns.get_level_values(1) == 'x_loc'].values
     df_pos_y_loc = df_pos_dist.iloc[:,df_pos_dist.\
         columns.get_level_values(1) == 'y_loc'].values
+        
+    # get column headers = player list
+    # (Note: df_pos_dist.columns.levels[0] doesn't preserve the order of the columns)
+    player_list = list(df_pos_dist)[:78:3]
+    player_list = map(lambda x: x[0], player_list)        
 
     for j in range(len(player_list)):
-        player_court_region = [None]*len(df_pos_x_loc)
+        player_court_region = [None] * len(df_pos_x_loc)
         for i in range(len(df_pos_x_loc)):
             shooting_side = team_shooting_side(
                 player_list[j],
@@ -345,6 +350,7 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
 ##################################
 if __name__ == '__main__':
     player = 'Chris Bosh'
+    df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
     player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
 
     # returns [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]

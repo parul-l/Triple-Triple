@@ -328,9 +328,9 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
     x_away = []
     for i in range(len(closest_player_team)):
         if closest_player_team[i] == hometeam_id:
-            x_home.append(i+start)
+            x_home.append(i + start)
         elif closest_player_team[i] == awayteam_id:
-            x_away.append(i+start)
+            x_away.append(i + start)
 
     y_home = [0] * (len(x_home))
     y_away = [1] * (len(x_away))

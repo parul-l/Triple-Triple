@@ -64,7 +64,7 @@ def generate_mid_range(shooting_side):
 
     if component == 4:
         # approximate with triangle
-        # see below for formulahttp://math.stackexchange.com/questions/18686/uniform-randomoint-in-triangle
+        # see below for formula http://math.stackexchange.com/questions/18686/uniform-randomoint-in-triangle
         r1 = np.random.uniform(0, 1)
         r2 = np.random.uniform(0, 1)
 
@@ -86,7 +86,6 @@ def generate_mid_range(shooting_side):
 
     if component == 5:
         # approximate with triangle
-        # see below for triangle approximationhttp://math.stackexchange.com/questions/18686/uniform-randomoint-in-triangle
         r1 = np.random.uniform(0, 1)
         r2 = np.random.uniform(0, 1)
 

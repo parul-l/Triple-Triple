@@ -12,14 +12,13 @@ HEADERS = {
    'referer': 'http://stats.nba.com/player/'
 }
 
-
 def get_data(base_url, params):
     response = requests.get(base_url, params=params, headers=HEADERS)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(response.text)
-        print(response.status_code)
+
+    if response.status_code != 200:
+        response.raise_for_status()
+
+    return response.json()
 
 # To compare basketball-reference and nba.com,
 # we format the names in the 'same' way but

@@ -25,12 +25,11 @@ HEADERS = {'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
 
 def get_data(base_url, params):
     response = requests.get(base_url, params=params, headers=HEADERS)
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    else:
-        print(response.text)
-        print(response.status_code)
+
+    if response.status_code != 200:
+        response.raise_for_status()
+
+    return response.json()
 
 def get_player_bio_df(base_url, params, player_ids):
     player_bio_info = []

@@ -14,12 +14,11 @@ HEADERS = {
           
 def get_data(base_url, params):
     response = requests.get(base_url, params=params, headers=HEADERS)
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    else:
-        print(response.text)
-        print(response.status_code)
+
+    if response.status_code != 200:
+        response.raise_for_status()
+
+    return response.json()
 
 def get_team_ids(data):
     team_ids = {}

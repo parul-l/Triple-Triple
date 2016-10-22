@@ -1,4 +1,3 @@
-import json
 import pandas as pd
 import requests
 
@@ -8,6 +7,7 @@ HEADERS = {
                     'Chrome/51.0.2704.103 Safari/537.36'),
     'referer': 'http://stats.nba.com/player/'
 }
+
 
 def get_data(base_url, params):
     response = requests.get(base_url, params=params, headers=HEADERS)
@@ -21,9 +21,13 @@ def get_data(base_url, params):
 # specified season for each team;
 # ie. each game is listed twice
 # determine which teams are playing based on game_id
+
+
 def teams_playing(game_id, all_games_stats):
-    game_info = [item for item in all_games_stats['resultSets'][0]['rowSet'] if
-                item[4] == game_id]
+    game_info = [
+        item for item in all_games_stats['resultSets'][0]['rowSet'] if
+            item[4] == game_id
+    ]
 
     if game_info[0][6].split()[1] == 'vs.':
         home_team = game_info[0][1]
@@ -33,6 +37,7 @@ def teams_playing(game_id, all_games_stats):
         away_team = game_info[0][1]
 
     return str(home_team), str(away_team)
+
 
 def play_by_play_df(base_url_play, params_play):
     play_data = get_data(base_url_play, params_play)
@@ -45,7 +50,7 @@ def play_by_play_df(base_url_play, params_play):
         "HOMEDESCRIPTION",
         "NEUTRAL DESCRIPTION",
         "VISITORDESCRIPTION",
-        "SCORE",  #[Away, Home]
+        "SCORE",  # [Away, Home]
         "PLAYER1_ID",
         "PLAYER1_NAME",
         "PLAYER1_TEAM_ID",
@@ -83,24 +88,25 @@ def play_by_play_df(base_url_play, params_play):
         )
 
     # create a data frame from the list
-    return pd.DataFrame(play_by_play, columns = headers_play_by_play)
+    return pd.DataFrame(play_by_play, columns=headers_play_by_play)
 
 
 base_url_game = "http://stats.nba.com/stats/leaguegamelog"
 params_game = {
-    'Counter':'1000',
-    'DateFrom':'',
-    'DateTo':'',
-    'Direction':'DESC',
-    'LeagueID':'00',
-    'PlayerOrTeam':'T',
-    'Season':'2015-16',
-    'SeasonType':'Regular Season',
-    'Sorter':'PTS'
+    'Counter': '1000',
+    'DateFrom': '',
+    'DateTo': '',
+    'Direction': 'DESC',
+    'LeagueID': '00',
+    'PlayerOrTeam': 'T',
+    'Season': '2015-16',
+    'SeasonType': 'Regular Season',
+    'Sorter': 'PTS'
 }
 
 # game data statistics for every game in the specified season(s).
 # run outside of if __name__ since the variables are called in plot_player_impact
+
 all_games_stats = get_data(base_url_game, params_game)
 hometeam_id, awayteam_id = teams_playing('0021500568', all_games_stats)
 

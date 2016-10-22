@@ -10,9 +10,11 @@ from triple_triple.config import DATASETS_DIR
 # Guided by:
 # http://savvastjortjoglou.com/nba-play-by-play-movements.html
 
+
 def open_json(file_name):
     json_data = open(file_name).read()
     return json.loads(json_data)
+
 
 def get_game_id_dict(data):
     game_id_dict = {}
@@ -39,6 +41,7 @@ def get_game_id_dict(data):
 
     return game_id_dict
 
+
 def get_raw_position_data_df(data, game_id_dict):
     len_events = len(data['events'])
     player_moments = []
@@ -52,7 +55,7 @@ def get_raw_position_data_df(data, game_id_dict):
                 item.append(data['events'][m]['moments'][i][2])
                 item.append(data['events'][m]['moments'][i][3])
                 player_moments.append(item)
-                #player_moments.append(item[:8])
+                # player_moments.append(item[:8])
 
     headers_raw_pos_data = [
         'team_id',
@@ -65,11 +68,17 @@ def get_raw_position_data_df(data, game_id_dict):
         'shot_clock'
     ]
 
-    df_raw_position_data = pd.DataFrame(player_moments, columns=headers_raw_pos_data)
+    df_raw_position_data = pd.DataFrame(
+        player_moments, columns=headers_raw_pos_data
+    )
 
     # add player name and jersey number to dataframe
-    df_raw_position_data['player_name'] = df_raw_position_data.player_id.map(lambda x: game_id_dict[str(x)][0])
-    df_raw_position_data['player_jersey'] = df_raw_position_data.player_id.map(lambda x: game_id_dict[str(x)][1])
+    df_raw_position_data['player_name'] = df_raw_position_data.player_id.map(
+        lambda x: game_id_dict[str(x)][0]
+    )
+    df_raw_position_data['player_jersey'] = df_raw_position_data.player_id.map(
+        lambda x: game_id_dict[str(x)][1]
+    )
 
     return df_raw_position_data.drop_duplicates()
 
@@ -77,6 +86,7 @@ def get_raw_position_data_df(data, game_id_dict):
 # create a new dataframe with every player's position at all times
 # use this for the animations
 ###################################################################
+
 
 def get_player_positions_df(data, game_id_dict):
 
@@ -89,7 +99,7 @@ def get_player_positions_df(data, game_id_dict):
         player_ids.append(key)
 
     player_positions_all_times = []
-    period =[]
+    period = []
     game_clock = []
     shot_clock = []
     ball_height = []
@@ -114,7 +124,9 @@ def get_player_positions_df(data, game_id_dict):
             ball_height.append(moment[5][0][4])
 
     df_positions = pd.DataFrame(player_positions_all_times)
-    df_positions.columns = pd.MultiIndex.from_product([headers_name, coord_labels])
+    df_positions.columns = pd.MultiIndex.from_product(
+        [headers_name, coord_labels]
+    )
 
     # insert period, game_clock, shot_clock, ball height/radius
     # don't like that it's at the end and its doubled.
@@ -127,17 +139,22 @@ def get_player_positions_df(data, game_id_dict):
     return df_positions.drop_duplicates()
 
 ###################################################################
-# create a new dataframe with every player's position and distance from the ball at all times
+# create a new dataframe with every player's position and distance
+# from the ball at all times
 # use this for the player_passing_habits
 ###################################################################
 
-def dist_two_points(p1,p2):
+
+def dist_two_points(p1, p2):
     return math.sqrt((p2[0] - p1[0]) ** 2 +
                      (p2[1] - p1[1]) ** 2)
 
+
 def get_closest_to_ball_df(dataframe):
-    df_pos_x_loc = dataframe.iloc[:,dataframe.columns.get_level_values(1)=='x_loc']
-    df_pos_y_loc = dataframe.iloc[:,dataframe.columns.get_level_values(1)=='y_loc']
+    df_pos_x_loc = dataframe.iloc[:, dataframe\
+        .columns.get_level_values(1) == 'x_loc']
+    df_pos_y_loc = dataframe.iloc[:, dataframe\
+        .columns.get_level_values(1) == 'y_loc']
 
     dist_x = (df_pos_x_loc.values.T - dataframe['ball']['x_loc'].values)**2
     dist_y = (df_pos_y_loc.values.T - dataframe['ball']['y_loc'].values)**2
@@ -145,7 +162,8 @@ def get_closest_to_ball_df(dataframe):
     dist_to_ball_matrix = np.sqrt(dist_x + dist_y)
 
     # get column headers = player list
-    # (Note: df_positions.columns.levels[0] doesn't preserve the order of the columns)
+    # (Note: df_positions.columns.levels[0] doesn't preserve the order of the
+    # columns)
     player_list = list(df_pos_x_loc)
     player_list = map(lambda x: x[0], player_list)
 
@@ -162,7 +180,8 @@ def get_closest_to_ball_df(dataframe):
     # find and remove ball column to get player relative distances
     # transpose so players are columns
     ball_idx = player_list.index('ball')
-    dist_to_ball_matrix_no_ball = np.delete(dist_to_ball_matrix, (ball_idx), axis=0).T
+    dist_to_ball_matrix_no_ball = np.delete(
+        dist_to_ball_matrix, (ball_idx), axis=0).T
 
     # sort to get lowest two distances
     # np.argpartition(matrix, 2 lowest, rows) gives an array of order
@@ -186,27 +205,39 @@ def get_closest_to_ball_df(dataframe):
         closest_player.append(player_list[idx_min[i]])
         second_closest_player.append(player_list[idx_second_min[i]])
 
-    # add this info to pos_dist df
+    # add back ball info
+    df_positions_dist[('ball', 'x_loc')] = df_positions['ball']['x_loc']
+    df_positions_dist[('ball', 'y_loc')] = df_positions['ball']['y_loc']
+
+    # add closest player info to dataframe
     df_positions_dist['min_dist'] = min_values
     df_positions_dist['closest_player'] = closest_player
 
     df_positions_dist['second_min_dist'] = second_min_values
     df_positions_dist['second_closest_player'] = second_closest_player
 
+    # reorder columns so ball is with players
+    cols = df_positions_dist.columns.tolist()
+    cols_reorder = cols[:78] + [('ball', 'x_loc')] + [('ball', 'y_loc')] \
+        + cols[78:-2]
+
+    df_positions_dist = df_positions_dist[cols_reorder]
+
     return df_positions_dist
 
+
 def get_pos_dist_trunc(df_pos_dist, has_ball_dist=2):
-     return df_pos_dist[df_pos_dist.min_dist.values<2].reset_index()
-     
-     # this doesn't work when we use the created dataframe 
-     # but works if used on a saved and opened file
-     # df_pos_dist[(df_pos_dist.min_dist<has_ball_dist)\
-     # .any(axis=1)].reset_index()     
+    return df_pos_dist[df_pos_dist.min_dist.values < 2].reset_index()
+
+    # this doesn't work when we use the created dataframe
+    # but works if used on a saved and opened file
+    # df_pos_dist[(df_pos_dist.min_dist<has_ball_dist)\
+    # .any(axis=1)].reset_index()
 
 #########################
 #########################
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # January 11, 2016: MIA @ GSW
     game_id = '0021500568'
     tracking_file = '/Users/pl/Downloads/' + game_id + '.json'

@@ -7,9 +7,7 @@
 # See Web Scraping file for comparison
 #######################################################
 
-import json
 import requests
-import numpy as np
 import pandas as pd
 
 from triple_triple.startup_data import get_player_ids
@@ -17,11 +15,13 @@ from triple_triple.startup_data import get_player_ids
 
 player_ids = get_player_ids()
 
-HEADERS = {'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
-                          'AppleWebKit/537.36 (KHTML, like Gecko)'
-                          'Chrome/51.0.2704.103 Safari/537.36'),
-           'referer': 'http://stats.nba.com/player/'
+HEADERS = {
+    'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
+                   'AppleWebKit/537.36 (KHTML, like Gecko)'
+                   'Chrome/51.0.2704.103 Safari/537.36'),
+    'referer': 'http://stats.nba.com/player/'
 }
+
 
 def get_data(base_url, params):
     response = requests.get(base_url, params=params, headers=HEADERS)
@@ -30,6 +30,7 @@ def get_data(base_url, params):
         response.raise_for_status()
 
     return response.json()
+
 
 def get_player_bio_df(base_url, params, player_ids):
     player_bio_info = []

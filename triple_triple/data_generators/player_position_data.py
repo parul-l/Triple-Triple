@@ -109,13 +109,13 @@ def get_player_positions_df(data, game_id_dict):
         for i in range(len_moments):
             moment = data['events'][k]['moments'][i]
             # create empty list (*2 for x and y coordinates)
-            loc = np.empty(len(player_ids)*2)*np.nan
+            loc = np.empty(len(player_ids) * 2) * np.nan
             for item in moment[5]:
                 # 2* index to account for each player
                 # corresponding to two slots
-                idx = 2*player_ids.index(str(item[1]))
+                idx = 2 * player_ids.index(str(item[1]))
                 loc[idx] = item[2]
-                loc[idx+1] = item[3]
+                loc[idx + 1] = item[3]
 
             player_positions_all_times.append(loc)
             period.append(moment[0])
@@ -151,10 +151,10 @@ def dist_two_points(p1, p2):
 
 
 def get_closest_to_ball_df(dataframe):
-    df_pos_x_loc = dataframe.iloc[:, dataframe\
-        .columns.get_level_values(1) == 'x_loc']
-    df_pos_y_loc = dataframe.iloc[:, dataframe\
-        .columns.get_level_values(1) == 'y_loc']
+    df_pos_x_loc = dataframe.iloc[:, dataframe
+                                  .columns.get_level_values(1) == 'x_loc']
+    df_pos_y_loc = dataframe.iloc[:, dataframe
+                                  .columns.get_level_values(1) == 'y_loc']
 
     dist_x = (df_pos_x_loc.values.T - dataframe['ball']['x_loc'].values)**2
     dist_y = (df_pos_y_loc.values.T - dataframe['ball']['y_loc'].values)**2
@@ -219,7 +219,7 @@ def get_closest_to_ball_df(dataframe):
     # reorder columns so ball is with players
     cols = df_positions_dist.columns.tolist()
     cols_reorder = cols[:78] + [('ball', 'x_loc')] + [('ball', 'y_loc')] \
-        + cols[78:-2]
+        + cols[78:82] + cols[84:]
 
     df_positions_dist = df_positions_dist[cols_reorder]
 
@@ -227,7 +227,7 @@ def get_closest_to_ball_df(dataframe):
 
 
 def get_pos_dist_trunc(df_pos_dist, has_ball_dist=2):
-    return df_pos_dist[df_pos_dist.min_dist.values < 2].reset_index()
+    return df_pos_dist[df_pos_dist.min_dist.values < has_ball_dist].reset_index()
 
     # this doesn't work when we use the created dataframe
     # but works if used on a saved and opened file

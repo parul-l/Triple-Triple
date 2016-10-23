@@ -1,6 +1,6 @@
 import pandas as pd
 
-from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
+from triple_triple.nbastats_game_data import hometeam_id
 from triple_triple.startup_data import (
     get_game_id_dict,
     get_df_pos_dist,
@@ -11,6 +11,7 @@ game_id_dict = get_game_id_dict()
 df_pos_dist = get_df_pos_dist()
 df_play_by_play = get_df_play_by_play()
 
+
 def playerid_from_name(player_name, player_info_dict=game_id_dict):
     for playerid, player_info in game_id_dict.items():
         if player_info[0] == player_name:
@@ -20,9 +21,9 @@ def playerid_from_name(player_name, player_info_dict=game_id_dict):
 def player_impact_df(player_name, hometeam_id, dataframe=df_play_by_play):
     playerid = int(playerid_from_name(player_name))
     df_pbp_player = dataframe[
-                    (dataframe['PLAYER1_ID'] == playerid)|
-                    (dataframe['PLAYER2_ID'] == playerid)|
-                    (dataframe['PLAYER3_ID'] == playerid)
+        (dataframe['PLAYER1_ID'] == playerid) |
+        (dataframe['PLAYER2_ID'] == playerid) |
+        (dataframe['PLAYER3_ID'] == playerid)
     ]
 
     if df_pbp_player.iloc[0]['PLAYER1_ID'] == playerid:
@@ -64,62 +65,73 @@ def player_game_stats_nba(player_name, df_player_impact):
     turnover = []
 
     for i in range(len(df_player_impact)):
-        descrip_split = df_player_impact.ix[:,2].iloc[i].split()
-        if (descrip_split[-3] == '('+ player_lastname and
-            descrip_split[-1] == 'AST)'):
-            assist.append([df_player_impact.iloc[i]['PERIOD'],
-                           df_player_impact.iloc[i]['PCTIMESTRING'],
-                           df_player_impact.ix[:,2].iloc[i]]
-            )
+        descrip_split = df_player_impact.ix[:, 2].iloc[i].split()
+        if (descrip_split[-3] == '(' + player_lastname and
+                descrip_split[-1] == 'AST)'):
+            assist.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
 
-        elif 'Turnover' in df_player_impact.ix[:,2].iloc[i]:
-            turnover.append([df_player_impact.iloc[i]['PERIOD'],
-                           df_player_impact.iloc[i]['PCTIMESTRING'],
-                           df_player_impact.ix[:,2].iloc[i]]
-            )
+        elif 'Turnover' in df_player_impact.ix[:, 2].iloc[i]:
+            turnover.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
 
         elif (descrip_split[0] == player_lastname and
               descrip_split[1] == 'Free' and
               descrip_split[2] == 'Throw'):
-            free_throw.append([df_player_impact.iloc[i]['PERIOD'],
-                             df_player_impact.iloc[i]['PCTIMESTRING'],
-                             df_player_impact.ix[:,2].iloc[i]]
-            )
+            free_throw.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
 
         elif (descrip_split[0] == player_lastname and
               descrip_split[1] == 'REBOUND'):
-            rebound.append([df_player_impact.iloc[i]['PERIOD'],
-                            df_player_impact.iloc[i]['PCTIMESTRING'],
-                            df_player_impact.ix[:,2].iloc[i]]
-            )
+            rebound.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
+
         elif (descrip_split[0] == player_lastname and
               descrip_split[1] == 'STEAL'):
-            steal.append([df_player_impact.iloc[i]['PERIOD'],
-                            df_player_impact.iloc[i]['PCTIMESTRING'],
-                            df_player_impact.ix[:,2].iloc[i]]
-            )
+            steal.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
+
         elif (descrip_split[0] == player_lastname and
               descrip_split[1] == 'BLOCK'):
-            block.append([df_player_impact.iloc[i]['PERIOD'],
-                            df_player_impact.iloc[i]['PCTIMESTRING'],
-                            df_player_impact.ix[:,2].iloc[i]]
-            )
+            block.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
+
         elif (descrip_split[0] == player_lastname and
               'FOUL' in descrip_split[1]):
-            commit_foul.append([df_player_impact.iloc[i]['PERIOD'],
-                            df_player_impact.iloc[i]['PCTIMESTRING'],
-                            df_player_impact.ix[:,2].iloc[i]]
-            )
-        elif ((descrip_split[0]=='MISS' and 'Free Throw' not in
-              df_player_impact.ix[:,2].iloc[i])
-              or
-             (descrip_split[0] == player_lastname and
-              'PTS' in df_player_impact.ix[:,2].iloc[i] and
-              'Free Throw' not in df_player_impact.ix[:,2].iloc[i])):
-            shoot.append([df_player_impact.iloc[i]['PERIOD'],
-                            df_player_impact.iloc[i]['PCTIMESTRING'],
-                            df_player_impact.ix[:,2].iloc[i]]
-            )
+            commit_foul.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
+
+        elif ((descrip_split[0] == 'MISS' and 'Free Throw' not in
+              df_player_impact.ix[:, 2].iloc[i]) or
+              (descrip_split[0] == player_lastname and
+               'PTS' in df_player_impact.ix[:, 2].iloc[i] and
+               'Free Throw' not in df_player_impact.ix[:, 2].iloc[i])):
+            shoot.append([
+                df_player_impact.iloc[i]['PERIOD'],
+                df_player_impact.iloc[i]['PCTIMESTRING'],
+                df_player_impact.ix[:, 2].iloc[i]
+            ])
     return [
         assist,
         block,

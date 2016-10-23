@@ -1,11 +1,9 @@
-import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from triple_triple.court_regions import region
 from triple_triple.data_generators.player_game_stats_data import (
-    playerid_from_name,
     player_impact_df,
     player_game_stats_nba
 )
@@ -33,17 +31,18 @@ df_pos_dist = get_df_pos_dist()
 df_pos_dist_trunc = get_df_pos_dist_trunc()
 df_play_by_play = get_df_play_by_play()
 
+
 def get_player_court_region_df(df_pos_dist):
     period_list = df_pos_dist.period.values.flatten()
-    df_pos_x_loc = df_pos_dist.iloc[:,df_pos_dist.\
-        columns.get_level_values(1) == 'x_loc'].values
-    df_pos_y_loc = df_pos_dist.iloc[:,df_pos_dist.\
-        columns.get_level_values(1) == 'y_loc'].values
-        
+    df_pos_x_loc = df_pos_dist.iloc[:, df_pos_dist.columns.
+                                    get_level_values(1) == 'x_loc'].values
+    df_pos_y_loc = df_pos_dist.iloc[:, df_pos_dist.columns.
+                                    get_level_values(1) == 'y_loc'].values
+
     # get column headers = player list
     # (Note: df_pos_dist.columns.levels[0] doesn't preserve the order of the columns)
     player_list = list(df_pos_dist)[:78:3]
-    player_list = map(lambda x: x[0], player_list)        
+    player_list = map(lambda x: x[0], player_list)
 
     for j in range(len(player_list)):
         player_court_region = [None] * len(df_pos_x_loc)
@@ -55,34 +54,35 @@ def get_player_court_region_df(df_pos_dist):
                 hometeam_id,
                 awayteam_id
             )
-            if np.isnan(df_pos_x_loc[i,j]) != True:
+            if not np.isnan(df_pos_x_loc[i, j]):
                 player_court_region[i] = region(
-                    df_pos_x_loc[i,j],
-                    df_pos_y_loc[i,j],
+                    df_pos_x_loc[i, j],
+                    df_pos_y_loc[i, j],
                     shooting_side
                 )
         df_pos_dist[player_list[j], 'region'] = player_court_region
 
     return df_pos_dist.sort_index(axis=1)
 
+
 def player_possession_idx(player, df_pos_dist_trunc):
     closest_player_to_ball = df_pos_dist_trunc.closest_player.values.flatten()
 
-    player_ball = [None]*len(closest_player_to_ball)
+    player_ball = [None] * len(closest_player_to_ball)
     next_player_ball = [None] * len(closest_player_to_ball)
 
     player_ball_idx = []
     next_player_ball_idx = []
 
     for i in range(len(closest_player_to_ball)):
-        if (closest_player_to_ball[i] == player and 
-            closest_player_to_ball[i-1] != player):
-            
+        if (closest_player_to_ball[i] == player and
+                closest_player_to_ball[i - 1] != player):
+
             player_ball[i] = player
             player_ball_idx.append(i)
-        elif (closest_player_to_ball[i]!=player and 
-            closest_player_to_ball[i-1] == player):
-            
+        elif (closest_player_to_ball[i] != player and
+                closest_player_to_ball[i - 1] == player):
+
             next_player_ball[i] = closest_player_to_ball[i]
             next_player_ball_idx.append(i)
 
@@ -94,9 +94,9 @@ def player_possession_idx(player, df_pos_dist_trunc):
     ]
 
 
-def characterize_player_possessions(player_name,
-        df_pos_dist_trunc, player_poss_idx, hometeam_id, awayteam_id,
-        initial_shooting_side, df_play_by_play):
+def characterize_player_possessions(player_name, df_pos_dist_trunc,
+                                    player_poss_idx, hometeam_id, awayteam_id,
+                                    initial_shooting_side, df_play_by_play):
 
     player_ball_idx = player_poss_idx[2]
     next_player_ball_idx = player_poss_idx[3]
@@ -119,8 +119,8 @@ def characterize_player_possessions(player_name,
         play_start_index = player_ball_idx[j]
         period_play_start = df_pos_dist_trunc.\
             period.values.flatten()[play_start_index]
-        game_clock_play_start = df_pos_dist_trunc.\
-            game_clock.values.flatten()[play_start_index]
+        # game_clock_play_start = df_pos_dist_trunc.\
+        #     game_clock.values.flatten()[play_start_index]
 
         shooting_side = team_shooting_side(
             player_name, period_play_start,
@@ -136,7 +136,7 @@ def characterize_player_possessions(player_name,
         )
 
         # End of play
-        play_end_index = next_player_ball_idx[j]-1
+        play_end_index = next_player_ball_idx[j] - 1
         game_clock_play_end = df_pos_dist_trunc.\
             game_clock.values.flatten()[play_end_index]
 
@@ -151,45 +151,48 @@ def characterize_player_possessions(player_name,
         # shot (assuming about 4 seconds to get to rim?)
         for i in range(len(shoot)):
             if (shoot[i][0] == period_play_start and
-                0 <= game_clock_play_end-shoot[i][1] < 4):
+                    0 <= game_clock_play_end - shoot[i][1] < 4):
                 play_shot.append([
-                period_play_start,
-                game_clock_play_end,
-                start_region,
-                end_region,
-                'shot'])
+                    period_play_start,
+                    game_clock_play_end,
+                    start_region,
+                    end_region,
+                    'shot']
+                )
 
                 start_idx_used.append(play_start_index)
                 # add +1 to account for play_end_index
-                end_idx_used.append(play_end_index+1)
+                end_idx_used.append(play_end_index + 1)
 
         # assist (assuming 6 seconds in between pass and shot)
         for i in range(len(assist)):
             if (assist[i][0] == period_play_start and
-                0 <= game_clock_play_end-assist[i][1] < 6):
+                    0 <= game_clock_play_end - assist[i][1] < 6):
                 play_assist.append([
-                period_play_start,
-                game_clock_play_end,
-                start_region,
-                end_region,
-                'assist'])
+                    period_play_start,
+                    game_clock_play_end,
+                    start_region,
+                    end_region,
+                    'assist']
+                )
 
                 start_idx_used.append(play_start_index)
-                end_idx_used.append(play_end_index+1)
+                end_idx_used.append(play_end_index + 1)
 
-        #turnover (assuming 2 seconds between touch and turnover)
+        # turnover (assuming 2 seconds between touch and turnover)
         for i in range(len(turnover)):
             if (turnover[i][0] == period_play_start and
-                0 <= game_clock_play_end-turnover[i][1] < 2):
+                    0 <= game_clock_play_end - turnover[i][1] < 2):
                 play_turnover.append([
-                period_play_start,
-                game_clock_play_end,
-                start_region,
-                end_region,
-                'turnover'])
+                    period_play_start,
+                    game_clock_play_end,
+                    start_region,
+                    end_region,
+                    'turnover']
+                )
 
                 start_idx_used.append(play_start_index)
-                end_idx_used.append(play_end_index+1)
+                end_idx_used.append(play_end_index + 1)
 
     return [
         play_shot,
@@ -201,6 +204,7 @@ def characterize_player_possessions(player_name,
 
 # t= 25 corresponds to 1 sec
 # only consider a 'possession' to be when player has ball for more than t seconds
+
 
 def pass_not_assist(player_name,
                     df_pos_dist_trunc,
@@ -225,8 +229,8 @@ def pass_not_assist(player_name,
 
     # collect the discrepancies between the nba sets and my sets, and order them
 
-    start_idx_not_used = sorted(list(set(player_ball_idx)-set(start_idx_used)))
-    end_idx_not_used = sorted(list(set(next_player_ball_idx)-set(end_idx_used)))
+    start_idx_not_used = sorted(list(set(player_ball_idx) - set(start_idx_used)))
+    end_idx_not_used = sorted(list(set(next_player_ball_idx) - set(end_idx_used)))
     play_pass = []
     player_team_id = team_id_from_name(player_name)
 
@@ -236,7 +240,7 @@ def pass_not_assist(player_name,
 
     for i in range(len(start_idx_not_used)):
         play_start_index = start_idx_not_used[i]
-        play_end_index = end_idx_not_used[i] - 1
+        # play_end_index = end_idx_not_used[i] - 1
 
         # end of player possession
         end_possession_idx = end_idx_not_used[i]
@@ -245,8 +249,8 @@ def pass_not_assist(player_name,
         # first start the list at the end index (now index =0)
         # find index of same team and add it back original index
         next_team_idx = next(closest_player_team[end_possession_idx:].index(i)
-                            for i in closest_player_team[end_possession_idx:]
-                            if i == player_team_id) + end_possession_idx
+                             for i in closest_player_team[end_possession_idx:]
+                             if i == player_team_id) + end_possession_idx
 
         # determine who the player is
         next_teammate = closest_player_to_ball[next_team_idx]
@@ -258,11 +262,11 @@ def pass_not_assist(player_name,
             # check the next t indices are the same player
             # corresponding to a possession
             # if true, record it as a pass
-            if len(set(closest_player_to_ball[next_team_idx:next_team_idx+t])) == 1:
+            if len(set(closest_player_to_ball[next_team_idx:next_team_idx + t])) == 1:
                 period_play_start = df_pos_dist_trunc\
                     .period.values.flatten()[play_start_index]
-                game_clock_play_start = df_pos_dist_trunc\
-                    .game_clock.values.flatten()[play_start_index]
+                # game_clock_play_start = df_pos_dist_trunc\
+                #     .game_clock.values.flatten()[play_start_index]
 
                 shooting_side = team_shooting_side(
                     player_name,
@@ -273,7 +277,8 @@ def pass_not_assist(player_name,
                 )
 
                 start_region = region(
-                    df_pos_dist_trunc[player_name].x_loc.iloc[play_start_index], df_pos_dist_trunc[player].y_loc.iloc[play_start_index],
+                    df_pos_dist_trunc[player_name].x_loc.iloc[play_start_index],
+                    df_pos_dist_trunc[player].y_loc.iloc[play_start_index],
                     shooting_side
                 )
 
@@ -297,6 +302,7 @@ def pass_not_assist(player_name,
                 )
     return play_pass
 
+
 def player_possession_end_df(known_player_possessions, play_pass):
     player_play_data_headers = [
         'period',
@@ -315,7 +321,9 @@ def player_possession_end_df(known_player_possessions, play_pass):
     )
 
 
-# plots a visual of length of ball possessions for each team given a start and stop index. I don't do much with this plot
+# plots a visual of length of ball possessions for each team given a start
+# and stop index. I don't do much with this plot
+
 
 def plot_team_possession(start, stop, hometeam_id, awayteam_id):
 
@@ -337,7 +345,7 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
 
     fig = plt.figure()
     ax = fig.gca()
-    plt.xlim(start,stop)
+    plt.xlim(start, stop)
     plt.ylim(0, 2)
     ax.scatter(x_home, y_home, color='blue', s=30)
     ax.scatter(x_away, y_away, color='red', s=30)
@@ -354,12 +362,23 @@ if __name__ == '__main__':
     player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
 
     # returns [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]
-    known_player_possessions = characterize_player_possessions(player,
-                                    df_pos_dist_trunc, player_poss_idx, hometeam_id, awayteam_id, initial_shooting_side, df_play_by_play
-                                )
+    known_player_possessions = characterize_player_possessions(
+        player,
+        df_pos_dist_trunc,
+        player_poss_idx,
+        hometeam_id,
+        awayteam_id,
+        initial_shooting_side,
+        df_play_by_play
+    )
 
-    play_pass = pass_not_assist(player, df_pos_dist_trunc, known_player_possessions, 
-                    player_poss_idx, t=10)
+    play_pass = pass_not_assist(
+        player,
+        df_pos_dist_trunc,
+        known_player_possessions,
+        player_poss_idx,
+        t=10
+    )
 
     df_player_possession_end = player_possession_end_df(known_player_possessions, play_pass)
 

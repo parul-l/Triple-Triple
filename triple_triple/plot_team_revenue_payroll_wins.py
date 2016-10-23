@@ -9,8 +9,9 @@ HEADERS = {
     'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) '
                    'AppleWebKit/537.36 (KHTML, like Gecko) '
                    'Chrome/45.0.2454.101 Safari/537.36'),
-   'referer': 'http://stats.nba.com/player/'
+    'referer': 'http://stats.nba.com/player/'
 }
+
 
 def get_nbastats_team_data(base_url, params):
     response = requests.get(base_url, params=params, headers=HEADERS)
@@ -20,12 +21,13 @@ def get_nbastats_team_data(base_url, params):
         print(response.text)
         print(response.status_code)
 
+
 def get_win_percentage(data):
     win_percent = {}
     team_stats = data['resultSets'][0]['rowSet']
 
     for i in range(len(team_stats)):
-        if team_stats[i][1] == 'Los Angeles Clippers':
+        if team_stats[i][1] == 'LA Clippers':
             win_percent['los angeles clippers'] = team_stats[i][5]
         elif team_stats[i][1] == 'Los Angeles Lakers':
             win_percent['los angeles lakers'] = team_stats[i][5]
@@ -37,6 +39,7 @@ def get_win_percentage(data):
 
     return win_percent
 
+
 def get_revenue_data(url):
     response = requests.get(url)
     if response.status_code == 200:
@@ -44,6 +47,7 @@ def get_revenue_data(url):
     else:
         print(response.text)
         print(response.status_code)
+
 
 def get_team_revenue(revenue_data):
     team_revenue = {}
@@ -61,6 +65,7 @@ def get_team_revenue(revenue_data):
 
     return team_revenue
 
+
 def get_team_payroll_data(years_from_current_year=0):
     url = "http://hoopshype.com/salaries/"
     response = requests.get(url)
@@ -68,24 +73,24 @@ def get_team_payroll_data(years_from_current_year=0):
     data = response.text
     soup = BeautifulSoup(data, 'html.parser')
 
-    table = soup.find('table', \
-                    {'class': 'hh-salaries-ranking-table hh-salaries-table-sortable responsive'})
+    table = soup.find('table',
+                      {'class': 'hh-salaries-ranking-table hh-salaries-table-sortable responsive'})
 
-     # search text for revenue data
-    team_payroll=[]
+    # search text for revenue data
+    team_payroll = []
     for row in table.findAll('td'):
         team_payroll.append(row.text)
 
     # get rid of white spaces
     for i in range(len(team_payroll)):
-        team_payroll[i]=team_payroll[i].strip()
+        team_payroll[i] = team_payroll[i].strip()
 
     # info starts at idx = 9
     # most recent year: idx+1
     # second most recent year: idx+2, etc.
     team_payroll_dict = {}
     for i in range(9, len(team_payroll), 8):
-        value = money_integer(team_payroll[i + (years_from_current_year+1)])
+        value = money_integer(team_payroll[i + (years_from_current_year + 1)])
         if team_payroll[i] == 'LA Lakers':
             team_payroll_dict['los angeles lakers'] = value
         elif team_payroll[i] == 'LA Clippers':
@@ -94,6 +99,7 @@ def get_team_payroll_data(years_from_current_year=0):
             team_payroll_dict[team_payroll[i].lower()] = value
 
     return team_payroll_dict
+
 
 def plot_data(combined_dict, plot_details_list):
     # plot_details_list = [scale, plot_color, title, source, xlabel,
@@ -108,9 +114,9 @@ def plot_data(combined_dict, plot_details_list):
 
     x_values_array = np.array(x_values)
     scale = plot_details_list[0]
-    x_values_scaled = x_values_array/scale
+    x_values_scaled = x_values_array / scale
 
-    fig, ax = plt.subplots(1,1, figsize=(6, 6))
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
     ax.plot(x_values_scaled, y_values, plot_details_list[1])
 
     fig.suptitle(plot_details_list[2], fontsize=12, fontweight='bold')
@@ -121,6 +127,7 @@ def plot_data(combined_dict, plot_details_list):
     fig.savefig(plot_details_list[6])
     plt.show()
 
+
 def combine_dicts(d1, d2):
     dicts = [d1, d2]
     d = {}
@@ -128,16 +135,19 @@ def combine_dicts(d1, d2):
         d[k] = tuple(d[k] for d in dicts)
     return d
 
+
 def team_city_only(string):
     space_index = string[::-1].index(' ')
     parse = string[::-1][space_index:]
     return parse[::-1]
+
 
 def team_city_only_revenue(string):
     string = string.replace('-', ' ')
     space_index = string[::-1].index(' ')
     parse = string[::-1][space_index + 1:]
     return parse[::-1]
+
 
 def money_integer(amount):
     amount = amount[1:]
@@ -149,35 +159,35 @@ def money_integer(amount):
 if __name__ == '__main__':
     base_url = "http://stats.nba.com/stats/leaguedashteamstats"
     params = {
-        'Conference':'',
-        'DateFrom':'',
-        'DateTo':'',
-        'Division':'',
-        'GameScope':'',
-        'GameSegment':'',
-        'LastNGames':'0',
-        'LeagueID':'00',
-        'Location':'',
+        'Conference': '',
+        'DateFrom': '',
+        'DateTo': '',
+        'Division': '',
+        'GameScope': '',
+        'GameSegment': '',
+        'LastNGames': '0',
+        'LeagueID': '00',
+        'Location': '',
         'MeasureType': 'Base',
-        'Month':'0',
-        'OpponentTeamID':'0',
-        'Outcome':'',
-        'PORound':'0',
-        'PaceAdjust':'N',
-        'PerMode':'PerGame',
-        'Period':'0',
-        'PlayerExperience':'',
-        'PlayerPosition':'',
-        'PlusMinus':'N',
-        'Rank':'N',
-        'Season':'2015-16',
-        'SeasonSegment':'',
-        'SeasonType':'Regular Season',
-        'ShotClockRange':'',
-        'StarterBench':'',
-        'TeamID':'0',
-        'VsConference':'',
-        'VsDivision':''
+        'Month': '0',
+        'OpponentTeamID': '0',
+        'Outcome': '',
+        'PORound': '0',
+        'PaceAdjust': 'N',
+        'PerMode': 'PerGame',
+        'Period': '0',
+        'PlayerExperience': '',
+        'PlayerPosition': '',
+        'PlusMinus': 'N',
+        'Rank': 'N',
+        'Season': '2015-16',
+        'SeasonSegment': '',
+        'SeasonType': 'Regular Season',
+        'ShotClockRange': '',
+        'StarterBench': '',
+        'TeamID': '0',
+        'VsConference': '',
+        'VsDivision': ''
     }
 
     revenue_url = 'http://www.forbes.com/ajax/list/' + \
@@ -185,7 +195,7 @@ if __name__ == '__main__':
 
     team_stats = get_nbastats_team_data(base_url, params)
     win_percent = get_win_percentage(team_stats)
-    team_payroll  = get_team_payroll_data(years_from_current_year=0)
+    team_payroll = get_team_payroll_data(years_from_current_year=0)
     revenue_data = get_revenue_data(revenue_url)
     team_revenue = get_team_revenue(revenue_data)
 

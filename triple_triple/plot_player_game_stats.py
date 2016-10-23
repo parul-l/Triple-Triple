@@ -1,13 +1,11 @@
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 
 from triple_triple.data_generators.player_game_stats_data import (
-    playerid_from_name,
     player_impact_df,
     player_game_stats_nba
 )
-from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
+from triple_triple.nbastats_game_data import hometeam_id
 from triple_triple.startup_data import (
     get_game_id_dict,
     get_df_pos_dist,
@@ -26,7 +24,7 @@ def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
     df_player = df_pos_dist[(df_pos_dist['closest_player'].values) == player]
     # number of total touches. Assuming each touch is about 3 seconds
     # data given 25 frames per second
-    touches = len(df_player) /75.
+    touches = len(df_player) / 75.
     shot_attempt = len(player_game_stats[5])
     rebound_count = len(player_game_stats[4])
     foul_count = len(player_game_stats[2])
@@ -40,25 +38,25 @@ def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
     ##################################
     # Histogram plot of percentages
     ##################################
-    shot_perc = shot_attempt/touches
-    reb_perc = rebound_count/touches
-    foul_perc = foul_count/touches
-    free_throw_perc = free_throw_attempt/touches
-    blocks_perc = blocks/touches
-    turnovers_perc = turnovers/touches
-    passes_perc = passes/touches
+    shot_perc = shot_attempt / touches
+    reb_perc = rebound_count / touches
+    foul_perc = foul_count / touches
+    free_throw_perc = free_throw_attempt / touches
+    blocks_perc = blocks / touches
+    turnovers_perc = turnovers / touches
+    passes_perc = passes / touches
 
     data_plot = [
-            shot_perc, 
-            reb_perc, 
-            foul_perc, 
-            free_throw_perc, 
-            blocks_perc, 
-            turnovers_perc, 
-            passes_perc
+        shot_perc,
+        reb_perc,
+        foul_perc,
+        free_throw_perc,
+        blocks_perc,
+        turnovers_perc,
+        passes_perc
     ]
 
-    fig = plt.figure(figsize=(10,10))
+    fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
 
     N = len(data_plot)
@@ -66,19 +64,19 @@ def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
     # x location of bars, and their width
     ind = np.arange(N)
     width = 0.35
-    d = ax.bar(ind, data_plot, width, color='red')
+    # d = ax.bar(ind, data_plot, width, color='red')
 
     ax.set_xlim(-width, len(ind) + width)
     ax.set_ylim(0, 0.5)
     ax.set_ylabel('Fraction of Touches')
     ax.set_title(player + ' Ball Touch Distribution (@ GSW) \n January 11,2016')
     xTickMarks = [
-        'Shot Attempts', 
-        'Rebounds', 
-        'Fouls', 
+        'Shot Attempts',
+        'Rebounds',
+        'Fouls',
         'Free Throws',
-        'Blocks', 
-        'Turnovers', 
+        'Blocks',
+        'Turnovers',
         'Passes'
     ]
     ax.set_xticks(ind)

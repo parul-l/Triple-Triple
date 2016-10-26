@@ -206,7 +206,7 @@ def characterize_player_possessions(player_name, df_pos_dist_trunc,
 # only consider a 'possession' to be when player has ball for more than t seconds
 
 
-def pass_not_assist(player_name,
+def get_pass_not_assist(player_name,
                     df_pos_dist_trunc,
                     known_player_possessions,
                     player_poss_idx, t=10):
@@ -303,7 +303,7 @@ def pass_not_assist(player_name,
     return play_pass
 
 
-def player_possession_end_df(known_player_possessions, play_pass):
+def result_player_possession_df(known_player_possessions, play_pass):
     player_play_data_headers = [
         'period',
         'game_clock_end',
@@ -320,6 +320,106 @@ def player_possession_end_df(known_player_possessions, play_pass):
         columns=player_play_data_headers
     )
 
+
+def court_region_from_number(num):
+    if num == 0:
+        return 'bench'
+    if num == 1:
+        return 'back court'
+    if num == 2:
+        return 'mid-range'
+    if num == 3:
+        return 'key'
+    if num == 4:
+        return 'out of bounds'
+    if num == 5:
+        return 'paint'
+    if num == 6:
+        return 'perimeter'
+
+
+def count_pass_per_region(starting_region_int, play_pass):
+    start_region = court_region_from_number(starting_region_int)
+    num_start_region = 0
+    pass_bc = 0
+    pass_mr = 0
+    pass_k = 0
+    pass_ob = 0
+    pass_pa = 0
+    pass_pe = 0
+    for item in play_pass:
+        if item[2] == start_region:
+            num_start_region += 1
+            if item[3] == 'back court':
+                pass_bc += 1
+            if item[3] == 'mid-range':
+                pass_mr += 1
+            if item[3] == 'key':
+                pass_k += 1
+            if item[3] == 'out of bounds':
+                pass_ob += 1
+            if item[3] == 'paint':
+                pass_pa += 1
+            if item[3] == 'perimeter':
+                pass_pe += 1
+    count_pass_dict = {
+        1: pass_bc,
+        2: pass_mr,
+        3: pass_k,
+        4: pass_ob,
+        5: pass_pa,
+        6: pass_pe
+    }
+    return num_start_region, count_pass_dict
+
+
+def prob_pass_region(start_region, num_start_region, count_pass_per_region_dict):
+    if num_start_region == 0:
+        return 'Player never in region ' + str(start_region)
+    else:
+        prob_dict = {
+            1: count_pass_per_region_dict[1] / float(num_start_region),
+            2: count_pass_per_region_dict[2] / float(num_start_region),
+            3: count_pass_per_region_dict[3] / float(num_start_region),
+            4: count_pass_per_region_dict[4] / float(num_start_region),
+            5: count_pass_per_region_dict[5] / float(num_start_region),
+            6: count_pass_per_region_dict[6] / float(num_start_region)
+        }
+
+    return prob_dict
+
+
+def cond_pass_prob(player, df_pos_dist_trunc):
+
+    player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
+
+    # returns [play_shot, play_assist, play_turnover,start_idx_used, end_idx_used]
+    known_player_possessions = characterize_player_possessions(
+        player,
+        df_pos_dist_trunc,
+        player_poss_idx,
+        hometeam_id,
+        awayteam_id,
+        initial_shooting_side,
+        df_play_by_play
+    )
+
+    play_pass = get_pass_not_assist(
+        player,
+        df_pos_dist_trunc,
+        known_player_possessions,
+        player_poss_idx,
+        t=10
+    )
+    cond_prob_list = []
+
+    for i in range(1, 7):
+        num_start_region, count_pass_dict = count_pass_per_region(i, play_pass)
+
+        # cond_prob_list (start_reg, prob_passes to other region_dict)
+        cond_prob_list.append((i, prob_pass_region(i, num_start_region, count_pass_dict)))
+
+    return cond_prob_list
 
 # plots a visual of length of ball possessions for each team given a start
 # and stop index. I don't do much with this plot
@@ -357,6 +457,17 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
 ##################################
 ##################################
 if __name__ == '__main__':
+
+    reg_to_num = {
+        'bench': 0,
+        'back court': 1,
+        'mid-range': 2,
+        'key': 3,
+        'out of bounds': 4,
+        'paint': 5,
+        'perimeter': 6
+    }
+
     player = 'Chris Bosh'
     df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
     player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
@@ -372,7 +483,7 @@ if __name__ == '__main__':
         df_play_by_play
     )
 
-    play_pass = pass_not_assist(
+    play_pass = get_pass_not_assist(
         player,
         df_pos_dist_trunc,
         known_player_possessions,
@@ -380,6 +491,8 @@ if __name__ == '__main__':
         t=10
     )
 
-    df_player_possession_end = player_possession_end_df(known_player_possessions, play_pass)
+    df_player_possession_end = result_player_possession_df(known_player_possessions, play_pass)
+
+    cond_prob_list = cond_pass_prob(player, df_pos_dist_trunc)
 
     plot_coord = plot_team_possession(10, 20, hometeam_id, awayteam_id)

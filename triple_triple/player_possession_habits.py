@@ -32,6 +32,11 @@ df_pos_dist_trunc = get_df_pos_dist_trunc()
 df_play_by_play = get_df_play_by_play()
 
 
+# has_ball_dist dist set to same dist used in get_df_pos_dist_trunc
+def get_pos_trunc_df(df_pos, has_ball_dist=2):
+    return df_pos[df_pos['min_dist'].values < has_ball_dist].reset_index()
+
+
 def get_player_court_region_df(df_pos_dist):
     period_list = df_pos_dist.period.values.flatten()
     df_pos_x_loc = df_pos_dist.iloc[:, df_pos_dist.columns.
@@ -323,66 +328,6 @@ def result_player_possession_df(known_player_possessions, play_pass):
         columns=player_play_data_headers
     )
 
-
-def court_region_from_number(num):
-    if num == 0:
-        return 'back court'
-    if num == 1:
-        return 'mid-range'
-    if num == 2:
-        return 'key'
-    if num == 3:
-        return 'out of bounds'
-    if num == 4:
-        return 'paint'
-    if num == 5:
-        return 'perimeter'
-
-
-def count_outcome_per_region(play_list, reg_to_num):
-    outcome_matrix = np.zeros((6, 6))
-    # create a matrix with pass count
-    # row = start region
-    # column = end region
-    for item in play_list:
-        outcome_matrix[reg_to_num[item[2]], reg_to_num[item[3]]] += 1
-    return outcome_matrix
-
-
-def get_cond_prob_poss(known_player_possessions, reg_to_num):
-    # passes
-    play_pass = get_pass_not_assist(
-        player,
-        df_pos_dist_trunc,
-        known_player_possessions,
-        player_poss_idx,
-        t=10
-    )
-    pass_matrix = count_outcome_per_region(play_pass, reg_to_num)
-
-    # shots = known_player_possessions[0]
-    shots_matrix = count_outcome_per_region(known_player_possessions[0], reg_to_num)
-
-    # assists = known_player_possessions[1]
-    assist_matrix = count_outcome_per_region(known_player_possessions[1], reg_to_num)
-
-    # turnovers = known_player_possessions[2]
-    turnover_matrix = count_outcome_per_region(known_player_possessions[2], reg_to_num)
-
-
-    # cond probabilities
-    pass_prob = pass_matrix / pass_matrix.sum(axis=1)[:, None]
-    shot_prob = shots_matrix / shots_matrix.sum(axis=1)[:, None]
-    assist_prob = assist_matrix / assist_matrix.sum(axis=1)[:, None]
-    turnover_prob = turnover_matrix / turnover_matrix.sum(axis=1)[:, None]
-
-    print reg_to_num
-    print 'Row = start region, '
-    print 'Column = end region'
-
-    return pass_prob, shot_prob, assist_prob, turnover_prob
-
-
 # plots a visual of length of ball possessions for each team given a start
 # and stop index. I don't do much with this plot
 
@@ -431,6 +376,7 @@ if __name__ == '__main__':
 
     player = 'Chris Bosh'
     df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
+    df_pos_dist_reg_trunc = get_pos_trunc_df(df_pos_dist_reg)
     player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
 
     # returns [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]
@@ -454,6 +400,4 @@ if __name__ == '__main__':
 
     df_player_possession = result_player_possession_df(known_player_possessions, play_pass)
 
-    pass_prob, shot_prob, assist_prob, turnover_prob = get_cond_prob_poss(known_player_possessions, reg_to_num)
-    
     # plot_coord = plot_team_possession(10, 20, hometeam_id, awayteam_id)

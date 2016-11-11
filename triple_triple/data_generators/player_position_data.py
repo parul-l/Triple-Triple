@@ -226,7 +226,7 @@ def get_closest_to_ball_df(dataframe):
     return df_positions_dist
 
 
-def get_pos_dist_trunc(df_pos_dist, has_ball_dist=2):
+def get_df_pos_trunc(df_pos_dist, has_ball_dist=2):
     return df_pos_dist[df_pos_dist.min_dist.values < has_ball_dist].reset_index()
 
     # this doesn't work when we use the created dataframe
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     df_raw_position_data = get_raw_position_data_df(data, game_id_dict)
     df_positions = get_player_positions_df(data, game_id_dict)
     df_pos_dist = get_closest_to_ball_df(df_positions)
-    df_pos_dist_trunc = get_pos_dist_trunc(df_pos_dist, has_ball_dist=2)
+    df_pos_dist_trunc = get_df_pos_trunc(df_pos_dist, has_ball_dist=2)
 
     # save files
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')

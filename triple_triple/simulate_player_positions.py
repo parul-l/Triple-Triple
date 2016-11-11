@@ -1,26 +1,36 @@
 from collections import Counter
 import numpy as np
 
-from triple_triple.startup_data import get_df_pos_dist
-from triple_triple.player_passing_habits import get_player_court_region_df
+from triple_triple.startup_data import (
+    get_df_pos_dist,
+)
+
+from triple_triple.player_passing_habits import (
+    get_player_court_region_df,
+)
 
 
 # TODO: create court image labeling the regions
 
 
-def get_player_region_prob(player_name, df_pos_dist_reg):
+def get_player_region_prob(player_name, df_pos_dist_reg, reg_to_num_dict):
     df_player_region = list(df_pos_dist_reg[player_name].region)
+    # remove None values
+    df_player_region = [x for x in df_player_region if x is not None]
     total_moments = len(df_player_region)
-    reg_prob = {}
+    reg_prob_list = np.zeros(6)
+    reg_prob_dict = {}
     for region, count in Counter(df_player_region).items():
-        reg_prob[region] = count / float(total_moments)
-    return reg_prob
+        reg_prob_dict[region] = count / float(total_moments)
+        reg_prob_list[reg_to_num_dict[region]] = count
+
+    return reg_prob_dict, reg_prob_list / float(total_moments)
 
 
-def get_player_simulated_regions(player_reg_prob, num_sim=100):
+def get_player_simulated_regions(player_reg_prob_list, num_sim=100):
     return np.random.choice(
         a=np.arange(7),
-        p=player_reg_prob.values(),
+        p=player_reg_prob_list,
         size=num_sim
     )
 
@@ -153,7 +163,8 @@ def generate_mid_range(shooting_side):
 
 
 def generate_key(shooting_side):
-    # see below for formula http://stats.stackexchange.com/questions/120527/how-to-generate-random-points-uniformly-distributed-in-a-circle
+    # see below for formula
+    # http://stats.stackexchange.com/questions/120527/how-to-generate-random-points-uniformly-distributed-in-a-circle
 
     # (x - 19)**2 + (y - 25)**2 <= 6**2
     r = np.sqrt(np.random.uniform(0, 6**2))
@@ -327,34 +338,28 @@ def generate_perimeter(shooting_side):
 
 
 def generate_rand_positions(pos_num, shooting_side):
-    if pos_num == 0:
-        # bench values are empty
-        xy = np.empty(2)
-        xy[:] = np.nan
-        return [xy[0], xy[1]]
-
     # back court
-    elif pos_num == 1:
+    if pos_num == 0:
         return generate_back_court(shooting_side)
 
     # mid-range
-    elif pos_num == 2:
+    elif pos_num == 1:
         return generate_mid_range(shooting_side)
 
     # key
-    elif pos_num == 3:
+    elif pos_num == 2:
         return generate_key(shooting_side)
 
     # out of bounds
-    elif pos_num == 4:
+    elif pos_num == 3:
         return generate_out_of_bounds(shooting_side)
 
     # paint
-    elif pos_num == 5:
+    elif pos_num == 4:
         return generate_paint(shooting_side)
 
     # perimeter
-    elif pos_num == 6:
+    elif pos_num == 5:
         return generate_perimeter(shooting_side)
 
 
@@ -363,25 +368,27 @@ def get_simulated_coord(player_sim_reg, shooting_side):
     for i in range(len(player_sim_reg)):
         coord.append(generate_rand_positions(player_sim_reg[i], shooting_side))
     return coord
+
 ######################
 ######################
+
 if __name__ == '__main__':
+    reg_to_num_dict = {
+        'back court': 0,
+        'mid-range': 1,
+        'key': 2,
+        'out of bounds': 3,
+        'paint': 4,
+        'perimeter': 5,
+    }
     df_pos_dist = get_df_pos_dist()
     df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
 
     player_name = 'Chris Bosh'
     df_player_region = list(df_pos_dist_reg[player_name].region)
-    player_reg_prob = get_player_region_prob(player_name, df_pos_dist_reg)
+    reg_prob_dict, reg_prob_list = get_player_region_prob(player_name, df_pos_dist_reg, reg_to_num_dict)
 
-    reg_to_num = {
-        'bench': 0,
-        'back court': 1,
-        'mid-range': 2,
-        'key': 3,
-        'out of bounds': 4,
-        'paint': 5,
-        'perimeter': 6
-    }
-
-    player_sim_reg = get_player_simulated_regions(player_reg_prob, num_sim=100)
+    player_sim_reg = get_player_simulated_regions(
+        reg_prob_list,
+        num_sim=100)
     player_sim_coord = get_simulated_coord(player_sim_reg, 'left')

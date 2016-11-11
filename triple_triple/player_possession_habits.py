@@ -360,44 +360,43 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
 
     return [(x_home, y_home), (x_away, y_away)]
 
+#########################
+# run functions and import them to prob_player_possession
+# to determine probabilities of movements and possessions
+#########################
+reg_to_num = {
+    'back court': 0,
+    'mid-range': 1,
+    'key': 2,
+    'out of bounds': 3,
+    'paint': 4,
+    'perimeter': 5
+}
 
-##################################
-##################################
-if __name__ == '__main__':
+player = 'Chris Bosh'
+df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
+df_pos_dist_reg_trunc = get_pos_trunc_df(df_pos_dist_reg)
+player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
 
-    reg_to_num = {
-        'back court': 0,
-        'mid-range': 1,
-        'key': 2,
-        'out of bounds': 3,
-        'paint': 4,
-        'perimeter': 5
-    }
+# returns [play_shot, play_assist, play_turnover, start_idx_used,end_idx_used]
+known_player_possessions = characterize_player_possessions(
+    player,
+    df_pos_dist_trunc,
+    player_poss_idx,
+    hometeam_id,
+    awayteam_id,
+    initial_shooting_side,
+    df_play_by_play
+)
 
-    player = 'Chris Bosh'
-    df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
-    df_pos_dist_reg_trunc = get_pos_trunc_df(df_pos_dist_reg)
-    player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
+play_pass = get_pass_not_assist(
+    player,
+    df_pos_dist_trunc,
+    known_player_possessions,
+    player_poss_idx,
+    t=10
+)
 
-    # returns [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]
-    known_player_possessions = characterize_player_possessions(
-        player,
-        df_pos_dist_trunc,
-        player_poss_idx,
-        hometeam_id,
-        awayteam_id,
-        initial_shooting_side,
-        df_play_by_play
-    )
+df_player_possession = result_player_possession_df(known_player_possessions, play_pass)
 
-    play_pass = get_pass_not_assist(
-        player,
-        df_pos_dist_trunc,
-        known_player_possessions,
-        player_poss_idx,
-        t=10
-    )
-
-    df_player_possession = result_player_possession_df(known_player_possessions, play_pass)
-
-    # plot_coord = plot_team_possession(10, 20, hometeam_id, awayteam_id)
+# plot_coord = plot_team_possession(10, 20, hometeam_id, awayteam_id)

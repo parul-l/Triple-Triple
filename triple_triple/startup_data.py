@@ -42,8 +42,9 @@ def get_df_play_by_play():
 
 
 def get_df_box_score():
+    parse_date = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score.csv')
-    return pd.read_csv(filepath)
+    return pd.read_csv(filepath, parse_dates=['MIN'], date_parser=parse_date)
 
 
 def get_df_player_bio_info():

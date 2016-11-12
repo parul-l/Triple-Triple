@@ -102,8 +102,8 @@ def box_score_df(base_url_box_score, params_box_score):
         box_score_data['resultSets'][0]['rowSet'] +
         box_score_data['resultSets'][0]['rowSet'],
         columns=box_score_data['resultSets'][0]['headers']
-    )
-    # df_box_score['MIN'] = pd.to_datetime(df_box_score['MIN'], format='%m:%s')
+    ).drop_duplicates()
+    df_box_score['MIN'] = pd.to_datetime(df_box_score['MIN'], format='%M:%S')
     return df_box_score
 
 base_url_game = "http://stats.nba.com/stats/leaguegamelog"

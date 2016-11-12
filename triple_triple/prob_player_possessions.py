@@ -1,9 +1,16 @@
+from collections import Counter
 import numpy as np
-import pandas as pd
+
 import triple_triple.player_possession_habits as pph
 
-from triple_triple.startup_data import get_df_box_score
+from triple_triple.startup_data import (
+    get_df_pos_dist,
+    get_df_box_score
+)
 # From pph, we import known_player_possessions, play_pass, df_player_possession
+df_pos_dist = get_df_pos_dist()
+df_pos_dist_reg = pph.get_player_court_region_df(df_pos_dist)
+df_box_score = get_df_box_score()
 
 
 def number_from_court_region(reg):
@@ -34,6 +41,35 @@ def court_region_from_number(num):
         return 'paint'
     if num == 5:
         return 'perimeter'
+
+
+def get_player_region_prob(player_name, df_pos_dist_reg, num_regions=6):
+    df_player_region = list(df_pos_dist_reg[player_name].region)
+    # remove None values
+    df_player_region = [x for x in df_player_region if x is not None]
+    total_moments = len(df_player_region)
+    reg_prob_list = np.zeros(num_regions)
+    reg_prob_dict = {}
+    for region, count in Counter(df_player_region).items():
+        reg_prob_dict[region] = count / float(total_moments)
+        reg_prob_list[number_from_court_region(region)] = count
+
+    return reg_prob_dict, reg_prob_list / float(total_moments)
+
+
+def get_prob_possession_type(df_player_possession, num_outcomes=4):
+    poss_type_to_num = {
+        'pass': 0,
+        'shot': 1,
+        'assist': 2,
+        'turnover': 3
+    }
+    poss_type_prob = np.zeros(num_outcomes)
+    for outcome, count in Counter(df_player_possession.type).items():
+        poss_type_prob[poss_type_to_num[outcome]] = count
+
+    print poss_type_to_num
+    return poss_type_prob / float(len(df_player_possession))
 
 
 def count_player_court_movement(df_pos):
@@ -101,16 +137,32 @@ def get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num):
 
 ##################################
 ##################################
-if __name__ == '__main__':
 
-    player_name = 'Chris Bosh'
+player_name = 'Chris Bosh'
+poss_type_to_num = {
+    'pass': 0,
+    'shot': 1,
+    'assist': 2,
+    'turnover': 3
+}
+reg_to_num = {
+    'back court': 0,
+    'mid-range': 1,
+    'key': 2,
+    'out of bounds': 3,
+    'paint': 4,
+    'perimeter': 5
+}
 
-    df_box_score = get_df_box_score()
+df_player_region = list(df_pos_dist_reg[player_name].region)
+reg_prob_dict, reg_prob_list = get_player_region_prob(player_name, df_pos_dist_reg)
 
-    get_possession_per_second(df_box_score, player_name)
+prob_poss_type = get_prob_possession_type(pph.df_player_possession, num_outcomes=4)
 
-    movement_matrix = count_player_court_movement(pph.df_player_possession)
+poss_per_sec = get_possession_per_second(df_box_score, player_name)
 
-    cond_prob_movement = cond_prob_player_court_movement(movement_matrix)
+movement_matrix = count_player_court_movement(pph.df_player_possession)
 
-    pass_prob, shot_prob, assist_prob, turnover_prob = get_cond_prob_poss(pph.known_player_possessions, pph.play_pass, pph.reg_to_num)
+cond_prob_movement = cond_prob_player_court_movement(movement_matrix)
+
+pass_prob, shot_prob, assist_prob, turnover_prob = get_cond_prob_poss(pph.known_player_possessions, pph.play_pass, pph.reg_to_num)

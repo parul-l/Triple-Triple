@@ -263,7 +263,7 @@ def get_pass_not_assist(
         # determine who the player is
         next_teammate = closest_player_to_ball[next_team_idx]
 
-        # if next_teammate ==player, just ignore it
+        # if next_teammate == player, just ignore it
         # either stoppage of play or something is funny
 
         if next_teammate != player_name:

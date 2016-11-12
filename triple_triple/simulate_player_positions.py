@@ -1,38 +1,9 @@
-from collections import Counter
 import numpy as np
 
-from triple_triple.startup_data import (
-    get_df_pos_dist,
-)
-
-from triple_triple.player_passing_habits import (
-    get_player_court_region_df,
-)
+import triple_triple.prob_player_possessions as ppp
 
 
 # TODO: create court image labeling the regions
-
-
-def get_player_region_prob(player_name, df_pos_dist_reg, reg_to_num_dict):
-    df_player_region = list(df_pos_dist_reg[player_name].region)
-    # remove None values
-    df_player_region = [x for x in df_player_region if x is not None]
-    total_moments = len(df_player_region)
-    reg_prob_list = np.zeros(6)
-    reg_prob_dict = {}
-    for region, count in Counter(df_player_region).items():
-        reg_prob_dict[region] = count / float(total_moments)
-        reg_prob_list[reg_to_num_dict[region]] = count
-
-    return reg_prob_dict, reg_prob_list / float(total_moments)
-
-
-def get_player_simulated_regions(player_reg_prob_list, num_sim=100):
-    return np.random.choice(
-        a=np.arange(7),
-        p=player_reg_prob_list,
-        size=num_sim
-    )
 
 
 def generate_back_court(shooting_side):
@@ -369,26 +340,101 @@ def get_simulated_coord(player_sim_reg, shooting_side):
         coord.append(generate_rand_positions(player_sim_reg[i], shooting_side))
     return coord
 
-######################
-######################
 
+def get_player_sim_reg(player_reg_prob_list, num_regions=6, num_sim=1000):
+    return np.random.choice(
+        a=np.arange(num_regions),
+        p=player_reg_prob_list,
+        size=num_sim
+    )
+
+
+def get_player_sim_poss(poss_per_sec, num_sim=1000):
+    p = [1 - poss_per_sec, poss_per_sec]
+    return np.random.choice(
+        a=np.arange(2),
+        p=p,
+        size=num_sim
+    )
+
+
+def choose_next_region(start_region, prob_matrix, num_outcomes=6):
+
+    return np.random.choice(
+        a=np.arange(num_outcomes),
+        p=prob_matrix[start_region, :],
+        size=1
+    ).flatten()
+
+
+def get_simulated_play(
+    player_sim_poss,
+    player_sim_reg,
+    pass_prob,
+    shot_prob,
+    assist_prob,
+    turnover_prob,
+    num_outcomes=4
+):
+    # determine indices where player has possession (list)
+    idx_poss = np.argwhere(player_sim_poss == 1).flatten()
+    # determine the region he is in at each index
+    reg_poss = [player_sim_reg[item] for item in idx_poss]
+    # determine array of possession outcomes
+    poss_type = np.random.choice(
+        a=np.arange(4),
+        p=ppp.prob_poss_type,
+        size=len(idx_poss)
+    ).flatten()
+
+    # determine result and next move at each possession
+    # change the simulated region at i+1 to reflect possession probabilities
+    # outcome array keeps track of possessions: pass, shot, assist, turnover
+    outcome_array = np.zeros(num_outcomes)
+
+    for i in range(len(idx_poss)):
+        # get region at i
+        reg_at_idx = reg_poss[i]
+        # get possession type at i (pass, shot, assist, turnover)
+        poss = poss_type[i]
+        # determine region of next move
+        # pass
+        if poss == 0:
+            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, pass_prob)[0]
+            outcome_array[0] += 1
+        # shot
+        if poss == 1:
+            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, shot_prob)[0]
+            outcome_array[1] += 1
+        # assist
+        if poss == 2:
+            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, assist_prob)[0]
+
+            # assists and shot increases
+            outcome_array[1] += 1
+            outcome_array[2] += 1
+        # turnover
+        if poss == 3:
+            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, turnover_prob)[0]
+            outcome_array[3] += 1
+
+    return player_sim_reg, outcome_array
+
+######################
+######################
 if __name__ == '__main__':
-    reg_to_num_dict = {
-        'back court': 0,
-        'mid-range': 1,
-        'key': 2,
-        'out of bounds': 3,
-        'paint': 4,
-        'perimeter': 5,
-    }
-    df_pos_dist = get_df_pos_dist()
-    df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
 
-    player_name = 'Chris Bosh'
-    df_player_region = list(df_pos_dist_reg[player_name].region)
-    reg_prob_dict, reg_prob_list = get_player_region_prob(player_name, df_pos_dist_reg, reg_to_num_dict)
+    player_sim_reg_temp = get_player_sim_reg(ppp.reg_prob_list)
+    player_sim_poss = get_player_sim_poss(ppp.poss_per_sec)
 
-    player_sim_reg = get_player_simulated_regions(
-        reg_prob_list,
-        num_sim=100)
+    player_sim_reg, outcome_array = get_simulated_play(
+        player_sim_poss,
+        player_sim_reg_temp,
+        ppp.pass_prob,
+        ppp.shot_prob,
+        ppp.assist_prob,
+        ppp.turnover_prob,
+        num_outcomes=4
+    )
+
     player_sim_coord = get_simulated_coord(player_sim_reg, 'left')

@@ -1,11 +1,8 @@
 import json
 import math
 import numpy as np
-import os
 import pandas as pd
 
-
-from triple_triple.config import DATASETS_DIR
 
 # Guided by:
 # http://savvastjortjoglou.com/nba-play-by-play-movements.html
@@ -164,8 +161,7 @@ def get_closest_to_ball_df(dataframe):
     # get column headers = player list
     # (Note: df_positions.columns.levels[0] doesn't preserve the order of the
     # columns)
-    player_list = list(df_pos_x_loc)
-    player_list = map(lambda x: x[0], player_list)
+    player_list = map(lambda x: x[0], df_pos_x_loc)
 
     # append distances to df_positions
     # there must be a better way to do this
@@ -206,8 +202,8 @@ def get_closest_to_ball_df(dataframe):
         second_closest_player.append(player_list[idx_second_min[i]])
 
     # add back ball info
-    df_positions_dist[('ball', 'x_loc')] = df_positions['ball']['x_loc']
-    df_positions_dist[('ball', 'y_loc')] = df_positions['ball']['y_loc']
+    df_positions_dist[('ball', 'x_loc')] = dataframe['ball']['x_loc']
+    df_positions_dist[('ball', 'y_loc')] = dataframe['ball']['y_loc']
 
     # add closest player info to dataframe
     df_positions_dist['min_dist'] = min_values
@@ -228,41 +224,3 @@ def get_closest_to_ball_df(dataframe):
 
 def get_df_pos_trunc(df_pos_dist, has_ball_dist=2):
     return df_pos_dist[df_pos_dist.min_dist.values < has_ball_dist].reset_index()
-
-    # this doesn't work when we use the created dataframe
-    # but works if used on a saved and opened file
-    # df_pos_dist[(df_pos_dist.min_dist<has_ball_dist)\
-    # .any(axis=1)].reset_index()
-
-#########################
-#########################
-
-if __name__ == '__main__':
-    # January 11, 2016: MIA @ GSW
-    game_id = '0021500568'
-    tracking_file = '/Users/pl/Downloads/' + game_id + '.json'
-
-    data = open_json(tracking_file)
-    game_id_dict = get_game_id_dict(data)
-    df_raw_position_data = get_raw_position_data_df(data, game_id_dict)
-    df_positions = get_player_positions_df(data, game_id_dict)
-    df_pos_dist = get_closest_to_ball_df(df_positions)
-    df_pos_dist_trunc = get_df_pos_trunc(df_pos_dist, has_ball_dist=2)
-
-    # save files
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
-    df_raw_position_data.to_csv(filepath)
-
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
-    df_positions.to_csv(filepath, index=False, tupleize_cols=False, float_format='%.8f')
-
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
-    df_pos_dist.to_csv(filepath, index=False, tupleize_cols=False, float_format='%.8f')
-
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
-    df_pos_dist_trunc.to_csv(filepath, index=False, tupleize_cols=False, float_format='%.8f')
-
-    # save game_id_dict
-    # save the files as jsons but they become strings?
-    filepath = os.path.join(DATASETS_DIR, 'game_id_dict.json')
-    json.dump(game_id_dict, open(filepath, 'wb'))

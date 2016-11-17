@@ -1,21 +1,9 @@
-import os
 import pandas as pd
 import requests
 
-from triple_triple.config import DATASETS_DIR
 
-HEADERS = {
-    'user-agent': (
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
-        'AppleWebKit/537.36 (KHTML, like Gecko)'
-        'Chrome/51.0.2704.103 Safari/537.36'
-    ),
-    'referer': 'http://stats.nba.com/player/'
-}
-
-
-def get_data(base_url, params):
-    response = requests.get(base_url, params=params, headers=HEADERS)
+def get_data(base_url, params, headers):
+    response = requests.get(base_url, params=params, headers=headers)
 
     if response.status_code != 200:
         response.raise_for_status()
@@ -26,6 +14,18 @@ def get_data(base_url, params):
 # specified season for each team;
 # ie. each game is listed twice
 # determine which teams are playing based on game_id
+
+
+def time_in_seconds(time):
+    t = time.split(':')
+    return int(t[0]) * 60 + int(t[1])
+
+
+def score_in_int(score):
+    try:
+        return [int(score.split('-')[0]), int(score.split('-')[1])]
+    except:
+        return score
 
 
 def teams_playing(game_id, all_games_stats):
@@ -44,8 +44,8 @@ def teams_playing(game_id, all_games_stats):
     return str(home_team), str(away_team)
 
 
-def play_by_play_df(base_url_play, params_play):
-    play_data = get_data(base_url_play, params_play)
+def play_by_play_df(base_url_play, params_play, headers):
+    play_data = get_data(base_url_play, params_play, headers)
 
     headers_play_by_play = [
         "Game_ID",
@@ -96,8 +96,8 @@ def play_by_play_df(base_url_play, params_play):
     return pd.DataFrame(play_by_play, columns=headers_play_by_play)
 
 
-def box_score_df(base_url_box_score, params_box_score):
-    box_score_data = get_data(base_url_box_score, params_box_score)
+def box_score_df(base_url_box_score, params_box_score, headers):
+    box_score_data = get_data(base_url_box_score, params_box_score, headers)
     df_box_score = pd.DataFrame(
         box_score_data['resultSets'][0]['rowSet'] +
         box_score_data['resultSets'][0]['rowSet'],
@@ -105,72 +105,3 @@ def box_score_df(base_url_box_score, params_box_score):
     ).drop_duplicates()
     df_box_score['MIN'] = pd.to_datetime(df_box_score['MIN'], format='%M:%S')
     return df_box_score
-
-base_url_game = "http://stats.nba.com/stats/leaguegamelog"
-params_game = {
-    'Counter': '1000',
-    'DateFrom': '',
-    'DateTo': '',
-    'Direction': 'DESC',
-    'LeagueID': '00',
-    'PlayerOrTeam': 'T',
-    'Season': '2015-16',
-    'SeasonType': 'Regular Season',
-    'Sorter': 'PTS'
-}
-
-# game data statistics for every game in the specified season(s).
-# run outside of if __name__ since the variables are called in plot_player_impact
-
-all_games_stats = get_data(base_url_game, params_game)
-hometeam_id, awayteam_id = teams_playing('0021500568', all_games_stats)
-
-#######################
-#######################
-
-if __name__ == '__main__':
-    # January 11, 2016, MIA @ GSW play by play data
-    base_url_play = 'http://stats.nba.com/stats/playbyplayv2'
-    params_play = {
-        'EndPeriod': '10',      # default by NBA stats (acceptable values: 1, 2, 3, 4)
-        'EndRange': '55800',    # not sure what this is
-        'GameID': '0021500568',
-        'RangeType': '2',       # not sure what this is
-        'Season': '2015-16',
-        'SeasonType': 'Regular Season',
-        'StartPeriod': '1',     # acceptable values: 1, 2, 3, 4
-        'StartRange': '0',      # not sure what this is
-    }
-
-    # defintions for formatting
-    def time_in_seconds(time):
-        t = time.split(':')
-        return int(t[0]) * 60 + int(t[1])
-
-    def score_in_int(score):
-        try:
-            return [int(score.split('-')[0]), int(score.split('-')[1])]
-        except:
-            return score
-
-    df_play_by_play = play_by_play_df(base_url_play, params_play)
-
-    base_url_box_score = 'http://stats.nba.com/stats/boxscoreplayertrackv2'
-    params_box_score = {
-        'EndPeriod': '10',
-        'EndRange': '55800',
-        'GameID': '0021500568',
-        'RangeType': '2',
-        'Season': '2015-16',
-        'SeasonType': 'Regular Season',
-        'StartPeriod': '1',
-        'StartRange': '0'
-    }
-
-    df_box_score = box_score_df(base_url_box_score, params_box_score)
-    # save files for future ease
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_nbaplaybyplay.csv')
-    df_play_by_play.to_csv(filepath)
-
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score.csv')
-    df_box_score.to_csv(filepath)

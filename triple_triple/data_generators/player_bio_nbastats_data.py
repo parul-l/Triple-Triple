@@ -1,35 +1,14 @@
-# This player bio info is obtained from two sources
-# 1. NBA stats (very slow - approx 35min)
-# 2. basketball-reference.com
-
 #######################################################
 # From NBA STATS (total player list length: 4186)
 # See Web Scraping file for comparison
 #######################################################
-
-import requests
 import pandas as pd
 
+import triple_triple.data_generators.get_data as gd
 from triple_triple.startup_data import get_player_ids
 
 
 player_ids = get_player_ids()
-
-HEADERS = {
-    'user-agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
-                   'AppleWebKit/537.36 (KHTML, like Gecko)'
-                   'Chrome/51.0.2704.103 Safari/537.36'),
-    'referer': 'http://stats.nba.com/player/'
-}
-
-
-def get_data(base_url, params):
-    response = requests.get(base_url, params=params, headers=HEADERS)
-
-    if response.status_code != 200:
-        response.raise_for_status()
-
-    return response.json()
 
 
 def get_player_bio_df(base_url, params, player_ids):
@@ -41,7 +20,7 @@ def get_player_bio_df(base_url, params, player_ids):
             playerid = str(key)
             # add playerid to params
             params['PlayerID'] = playerid
-            player_data = get_data(base_url, params)
+            player_data = gd.get_data(base_url, params)
 
             player_bio_info.append([
                 player_data['resultSets'][0]['rowSet'][0][0],  # id

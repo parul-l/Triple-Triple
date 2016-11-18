@@ -1,20 +1,13 @@
 import os
 
 from triple_triple.config import DATASETS_DIR
+import triple_triple.data_generators.get_data as gd
 from triple_triple.data_generators import nbastats_game_data as ngd
 
 
 # January 11, 2016, MIA @ GSW play by play data
 game_id = '0021500568'
 
-HEADERS = {
-    'user-agent': (
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)'
-        'AppleWebKit/537.36 (KHTML, like Gecko)'
-        'Chrome/51.0.2704.103 Safari/537.36'
-    ),
-    'referer': 'http://stats.nba.com/player/'
-}
 base_url_game = "http://stats.nba.com/stats/leaguegamelog"
 params_game = {
     'Counter': '1000',
@@ -53,21 +46,19 @@ params_box_score = {
 }
 
 # game data statistics for every game in the specified season(s)
-all_games_stats = ngd.get_data(base_url_game, params_game, headers=HEADERS)
+all_games_stats = gd.get_data(base_url_game, params_game)
 hometeam_id, awayteam_id = ngd.teams_playing(game_id, all_games_stats)
 
 if __name__ == '__main__':
 
     df_play_by_play = ngd.play_by_play_df(
         base_url_play,
-        params_play,
-        headers=HEADERS
+        params_play
     )
 
     df_box_score = ngd.box_score_df(
         base_url_box_score,
-        params_box_score,
-        headers=HEADERS
+        params_box_score
     )
 
     # save files for future ease

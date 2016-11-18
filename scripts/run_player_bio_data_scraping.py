@@ -1,3 +1,8 @@
+# This player bio info is obtained from two sources
+# 1. NBA stats (very slow)
+# 2. basketball-reference.com (possibly has errors)
+# This script is by scraping
+
 import triple_triple.data_generators.player_bio_data_webscraping as pbd_web
 from triple_triple.startup_data import get_player_ids
 

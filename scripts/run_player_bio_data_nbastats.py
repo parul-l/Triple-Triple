@@ -1,3 +1,8 @@
+# This player bio info is obtained from two sources
+# 1. NBA stats (very slow - approx 35min)
+# 2. basketball-reference.com
+# This script is from NBA stats
+
 import triple_triple.data_generators.player_bio_nbastats_data as pbd_nba
 
 from triple_triple.startup_data import get_player_ids

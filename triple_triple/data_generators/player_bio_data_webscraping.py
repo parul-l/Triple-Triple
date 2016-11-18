@@ -1,7 +1,3 @@
-# This player bio info is obtained from two sources
-# 1. NBA stats (very slow)
-# 2. basketball-reference.com (possibly has errors)
-
 ############################################################
 # From basketball-reference (total player list length: 4446)
 # See NBA stats file for comparison
@@ -176,12 +172,3 @@ def add_ids_to_player_bio(df_player_bio, player_ids, current_year=2016):
     df_player_bio.append(df_current_year, ignore_index=True)
 
     return df_player_bio
-
-if __name__ == '__main__':
-
-    df_player_bio = player_bio_scraped_df()
-    df_player_bio = add_ids_to_player_bio(df_player_bio, player_ids,
-                                          current_year=2016)
-
-    # Save file
-    # df_player_bio.to_csv('triple_triple/data/player_bio_info_scraping.csv')

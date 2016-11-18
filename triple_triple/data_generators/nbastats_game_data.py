@@ -1,19 +1,6 @@
 import pandas as pd
-import requests
 
-
-def get_data(base_url, params, headers):
-    response = requests.get(base_url, params=params, headers=headers)
-
-    if response.status_code != 200:
-        response.raise_for_status()
-
-    return response.json()
-
-# all_games_stats has stats for every game played in
-# specified season for each team;
-# ie. each game is listed twice
-# determine which teams are playing based on game_id
+import triple_triple.data_generators.get_data as gd
 
 
 def time_in_seconds(time):
@@ -44,8 +31,8 @@ def teams_playing(game_id, all_games_stats):
     return str(home_team), str(away_team)
 
 
-def play_by_play_df(base_url_play, params_play, headers):
-    play_data = get_data(base_url_play, params_play, headers)
+def play_by_play_df(base_url_play, params_play):
+    play_data = gd.get_data(base_url_play, params_play)
 
     headers_play_by_play = [
         "Game_ID",
@@ -96,8 +83,8 @@ def play_by_play_df(base_url_play, params_play, headers):
     return pd.DataFrame(play_by_play, columns=headers_play_by_play)
 
 
-def box_score_df(base_url_box_score, params_box_score, headers):
-    box_score_data = get_data(base_url_box_score, params_box_score, headers)
+def box_score_df(base_url_box_score, params_box_score):
+    box_score_data = gd.get_data(base_url_box_score, params_box_score)
     df_box_score = pd.DataFrame(
         box_score_data['resultSets'][0]['rowSet'] +
         box_score_data['resultSets'][0]['rowSet'],

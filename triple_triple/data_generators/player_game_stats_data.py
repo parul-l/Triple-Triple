@@ -1,6 +1,6 @@
 import pandas as pd
 
-from triple_triple.nbastats_game_data import hometeam_id
+# from scripts.save_playbyplay import hometeam_id
 from triple_triple.startup_data import (
     get_game_id_dict,
     get_df_pos_dist,
@@ -142,12 +142,3 @@ def player_game_stats_nba(player_name, df_player_impact):
         steal,
         turnover
     ]
-
-###########################
-###########################
-
-if __name__ == '__main__':
-    player = 'Chris Bosh'
-
-    df_player_impact = player_impact_df(player, hometeam_id)
-    player_game_stats = player_game_stats_nba(player, df_player_impact)

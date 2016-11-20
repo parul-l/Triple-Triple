@@ -50,3 +50,13 @@ def get_df_box_score():
 def get_df_player_bio_info():
     filepath = os.path.join(DATASETS_DIR, 'player_bio_info.csv')
     return pd.read_csv(filepath)
+
+
+def get_df_all_game_info():
+    filepath = os.path.join(DATASETS_DIR, 'df_all_game_info.csv')
+    dtype_dict = {
+        'game_id': str,
+        'hometeam_id': str,
+        'awayteam_id': str
+    }
+    return pd.read_csv(filepath, dtype=dtype_dict)

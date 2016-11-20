@@ -1,22 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
-
 from triple_triple.full_court import draw_court
-from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
 from triple_triple.startup_data import (
     get_player_ids,
     get_game_id_dict,
     get_df_positions,
     get_df_raw_position_data,
-    get_df_play_by_play,
 )
 
 player_ids = get_player_ids()
 game_id_dict = get_game_id_dict()
 df_positions = get_df_positions()
 df_raw_position_data = get_df_raw_position_data()
-df_play_by_play = get_df_play_by_play()
 
 
 ##############################################
@@ -314,42 +310,3 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
                                        frames=no_frame, interval=10, blit=False)
 
         return anim
-
-######################
-if __name__ == '__main__':
-
-    period = 1
-    time_start = 300
-    time_end = 250
-
-    # There is a glitch with these times, quarter 1
-    # time_start = 394
-    # time_end = 393
-
-    fig = plt.figure(figsize=(15, 9))
-    ax = fig.gca()
-    ax = draw_court(ax)
-    anim = play_animation(fig=fig, period=period, time_start=time_start,
-                          time_end=time_end, hometeam_id=hometeam_id,
-                          awayteam_id=awayteam_id)
-    # anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
-    plt.show()
-    plt.ioff()
-
-    ####################
-
-    # TODO game clock/shot clock/ball height need fixing
-    # it doesn't remove the previous frame
-    player = 'Chris Bosh'
-    playerid = playerid_from_name(player)
-
-    fig = plt.figure(figsize=(15, 9))
-    ax = fig.gca()
-    ax = draw_court(ax)
-    anim = play_animation(fig=fig, period=period, time_start=time_start,
-                          time_end=time_end, hometeam_id=hometeam_id,
-                          awayteam_id=awayteam_id, player=player)
-
-    # anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
-    plt.show()
-    plt.ioff()

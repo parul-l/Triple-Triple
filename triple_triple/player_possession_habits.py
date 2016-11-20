@@ -1,24 +1,17 @@
 import matplotlib.pyplot as plt
+# not sure what this import does
+# suggestion from running run_player_possession from terminal
+from matplotlib.backends import _macosx
 import numpy as np
 import pandas as pd
 
-from triple_triple.court_regions import region
-from triple_triple.data_generators.player_game_stats_data import (
-    player_impact_df,
-    player_game_stats_nba
-)
-from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
-from triple_triple.startup_data import (
-    get_game_id_dict,
-    get_df_pos_dist,
-    get_df_pos_dist_trunc,
-    get_df_play_by_play,
-)
 from triple_triple.team_shooting_side import (
     team_id_from_name,
-    initial_shooting_side,
     team_shooting_side
 )
+from triple_triple.court_regions import region
+from triple_triple.data_generators.player_game_stats_data import (player_impact_df, player_game_stats_nba)
+
 
 # player_court_region determines player's region every moment he is on the court
 # and hence uses df_pos_dist
@@ -26,18 +19,17 @@ from triple_triple.team_shooting_side import (
 # player possession functions use df_pos_dist_trunc, which considers
 # players closest to ball when dist < 2
 
-game_id_dict = get_game_id_dict()
-df_pos_dist = get_df_pos_dist()
-df_pos_dist_trunc = get_df_pos_dist_trunc()
-df_play_by_play = get_df_play_by_play()
-
-
 # has_ball_dist dist set to same dist used in get_df_pos_dist_trunc
+
+
 def get_pos_trunc_df(df_pos, has_ball_dist=2):
     return df_pos[df_pos['min_dist'].values < has_ball_dist].reset_index()
 
 
-def get_player_court_region_df(df_pos_dist):
+def get_player_court_region_df(
+    df_pos_dist, initial_shooting_side,
+    hometeam_id, awayteam_id
+):
     period_list = df_pos_dist.period.values.flatten()
     df_pos_x_loc = df_pos_dist.iloc[:, df_pos_dist.columns.
                                     get_level_values(1) == 'x_loc'].values
@@ -79,6 +71,7 @@ def player_possession_idx(player, df_pos_dist_trunc):
     player_ball_idx = []
     next_player_ball_idx = []
 
+    # track the start and end of possessions
     for i in range(len(closest_player_to_ball)):
         if (closest_player_to_ball[i] == player and
                 closest_player_to_ball[i - 1] != player):
@@ -99,9 +92,11 @@ def player_possession_idx(player, df_pos_dist_trunc):
     ]
 
 
-def characterize_player_possessions(player_name, df_pos_dist_trunc,
-                                    player_poss_idx, hometeam_id, awayteam_id,
-                                    initial_shooting_side, df_play_by_play):
+def characterize_player_possessions(
+    player_name, df_pos_dist_trunc,
+    player_poss_idx, hometeam_id, awayteam_id,
+    initial_shooting_side, df_play_by_play
+):
 
     player_ball_idx = player_poss_idx[2]
     next_player_ball_idx = player_poss_idx[3]
@@ -216,6 +211,9 @@ def get_pass_not_assist(
     df_pos_dist_trunc,
     known_player_possessions,
     player_poss_idx,
+    initial_shooting_side,
+    hometeam_id,
+    awayteam_id,
     t=10
 ):
 
@@ -286,7 +284,7 @@ def get_pass_not_assist(
 
                 start_region = region(
                     df_pos_dist_trunc[player_name].x_loc.iloc[play_start_index],
-                    df_pos_dist_trunc[player].y_loc.iloc[play_start_index],
+                    df_pos_dist_trunc[player_name].y_loc.iloc[play_start_index],
                     shooting_side
                 )
 
@@ -332,7 +330,7 @@ def result_player_possession_df(known_player_possessions, play_pass):
 # and stop index. I don't do much with this plot
 
 
-def plot_team_possession(start, stop, hometeam_id, awayteam_id):
+def plot_team_possession(df_pos_dist_trunc, start, stop, hometeam_id, awayteam_id):
 
     closest_player_to_ball = df_pos_dist_trunc['closest_player'].values.flatten()
 
@@ -359,44 +357,3 @@ def plot_team_possession(start, stop, hometeam_id, awayteam_id):
     plt.show()
 
     return [(x_home, y_home), (x_away, y_away)]
-
-#########################
-# run functions and import them to prob_player_possession
-# to determine probabilities of movements and possessions
-#########################
-reg_to_num = {
-    'back court': 0,
-    'mid-range': 1,
-    'key': 2,
-    'out of bounds': 3,
-    'paint': 4,
-    'perimeter': 5
-}
-
-player = 'Chris Bosh'
-df_pos_dist_reg = get_player_court_region_df(df_pos_dist)
-df_pos_dist_reg_trunc = get_pos_trunc_df(df_pos_dist_reg)
-player_poss_idx = player_possession_idx(player, df_pos_dist_trunc)
-
-# returns [play_shot, play_assist, play_turnover, start_idx_used,end_idx_used]
-known_player_possessions = characterize_player_possessions(
-    player,
-    df_pos_dist_trunc,
-    player_poss_idx,
-    hometeam_id,
-    awayteam_id,
-    initial_shooting_side,
-    df_play_by_play
-)
-
-play_pass = get_pass_not_assist(
-    player,
-    df_pos_dist_trunc,
-    known_player_possessions,
-    player_poss_idx,
-    t=10
-)
-
-df_player_possession = result_player_possession_df(known_player_possessions, play_pass)
-
-# plot_coord = plot_team_possession(10, 20, hometeam_id, awayteam_id)

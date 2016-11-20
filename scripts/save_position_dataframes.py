@@ -3,11 +3,11 @@ import os
 from triple_triple.config import DATASETS_DIR
 from triple_triple.data_generators import player_position_data as ppd
 
+# January 11, 2016: MIA @ GSW
+game_id = '0021500568'
 
 if __name__ == '__main__':
 
-    # January 11, 2016: MIA @ GSW
-    game_id = '0021500568'
     tracking_file = '/Users/pl/Downloads/' + game_id + '.json'
 
     data = ppd.open_json(tracking_file)

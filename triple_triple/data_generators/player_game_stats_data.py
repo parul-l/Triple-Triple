@@ -1,47 +1,34 @@
 import pandas as pd
 
-# from scripts.save_playbyplay import hometeam_id
-from triple_triple.startup_data import (
-    get_game_id_dict,
-    get_df_pos_dist,
-    get_df_play_by_play,
-)
 
-game_id_dict = get_game_id_dict()
-df_pos_dist = get_df_pos_dist()
-df_play_by_play = get_df_play_by_play()
-
-
-def playerid_from_name(player_name, player_info_dict=game_id_dict):
+def playerid_from_name(player_name, game_id_dict):
     for playerid, player_info in game_id_dict.items():
         if player_info[0] == player_name:
             return playerid
 
 
-def player_impact_df(player_name, hometeam_id, dataframe=df_play_by_play):
-    playerid = int(playerid_from_name(player_name))
-    df_pbp_player = dataframe[
-        (dataframe['PLAYER1_ID'] == playerid) |
-        (dataframe['PLAYER2_ID'] == playerid) |
-        (dataframe['PLAYER3_ID'] == playerid)
+def player_team_loc_from_name(player_name, game_id_dict, hometeam_id):
+    player_id = playerid_from_name(player_name, game_id_dict)
+    team_id = game_id_dict[player_id][2]
+    if team_id == hometeam_id:
+        return team_id, 'home'
+    else:
+        return team_id, 'away'
+
+
+def player_impact_df(player_name, team_info_list, game_id_dict, df_play_by_play):
+    if team_info_list[1] == 'home':
+        descrip = 'HOMEDESCRIPTION'
+    elif team_info_list[1] == 'away':
+        descrip = 'VISITORDESCRIPTION'
+
+    playerid = int(playerid_from_name(player_name, game_id_dict))
+
+    df_pbp_player = df_play_by_play[
+        (df_play_by_play['PLAYER1_ID'] == playerid) |
+        (df_play_by_play['PLAYER2_ID'] == playerid) |
+        (df_play_by_play['PLAYER3_ID'] == playerid)
     ]
-
-    if df_pbp_player.iloc[0]['PLAYER1_ID'] == playerid:
-        if df_pbp_player.iloc[0]['PLAYER1_TEAM_ID'] == hometeam_id:
-            descrip = 'HOMEDESCRIPTION'
-        else:
-            descrip = 'VISITORDESCRIPTION'
-
-    elif df_pbp_player.iloc[0]['PLAYER2_ID'] == playerid:
-        if df_pbp_player.iloc[0]['PLAYER2_TEAM_ID'] == hometeam_id:
-            descrip = 'HOMEDESCRIPTION'
-        else:
-            descrip = 'VISITORDESCRIPTION'
-    elif df_pbp_player.iloc[0]['PLAYER3_ID'] == playerid:
-        if df_pbp_player.iloc[0]['PLAYER3_TEAM_ID'] == hometeam_id:
-            descrip = 'HOMEDESCRIPTION'
-        else:
-            descrip = 'VISITORDESCRIPTION'
 
     # drop NaN descriptions (= player is fouled)
     df_pbp_player = df_pbp_player[pd.notnull(df_pbp_player[descrip])]
@@ -51,8 +38,8 @@ def player_impact_df(player_name, hometeam_id, dataframe=df_play_by_play):
     return df_player_impact
 
 
-def player_game_stats_nba(player_name, df_player_impact):
-    playerid = playerid_from_name(player_name)
+def player_game_stats_nba(player_name, game_id_dict, df_player_impact):
+    playerid = playerid_from_name(player_name, game_id_dict)
     player_lastname = game_id_dict[playerid][0].split()[1]
 
     assist = []

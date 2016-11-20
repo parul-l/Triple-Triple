@@ -1,12 +1,14 @@
 import os
 
 from triple_triple.config import DATASETS_DIR
-import triple_triple.data_generators.get_data as gd
 from triple_triple.data_generators import nbastats_game_data as ngd
+from triple_triple.startup_data import get_df_all_game_info
 
+df_game_info = get_df_all_game_info()
 
 # January 11, 2016, MIA @ GSW play by play data
 game_id = '0021500568'
+hometeam_id, awayteam_id = ngd.teams_playing(game_id, df_game_info)
 
 base_url_game = "http://stats.nba.com/stats/leaguegamelog"
 params_game = {
@@ -44,10 +46,6 @@ params_box_score = {
     'StartPeriod': '1',
     'StartRange': '0'
 }
-
-# game data statistics for every game in the specified season(s)
-all_games_stats = gd.get_data(base_url_game, params_game)
-hometeam_id, awayteam_id = ngd.teams_playing(game_id, all_games_stats)
 
 if __name__ == '__main__':
 

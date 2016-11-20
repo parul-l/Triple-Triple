@@ -1,5 +1,4 @@
 import pandas as pd
-
 import triple_triple.data_generators.get_data as gd
 
 
@@ -15,20 +14,10 @@ def score_in_int(score):
         return score
 
 
-def teams_playing(game_id, all_games_stats):
-    game_info = [
-        item for item in all_games_stats['resultSets'][0]['rowSet'] if
-        item[4] == game_id
-    ]
-
-    if game_info[0][6].split()[1] == 'vs.':
-        home_team = game_info[0][1]
-        away_team = game_info[1][1]
-    elif game_info[0][6].split()[1] == '@':
-        home_team = game_info[1][1]
-        away_team = game_info[0][1]
-
-    return str(home_team), str(away_team)
+def teams_playing(game_id, df_game_info):
+    hometeam = df_game_info.query('game_id == @game_id')['hometeam_id'].iloc[0]
+    awayteam = df_game_info.query('game_id == @game_id')['awayteam_id'].iloc[0]
+    return hometeam, awayteam
 
 
 def play_by_play_df(base_url_play, params_play):

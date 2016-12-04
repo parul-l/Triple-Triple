@@ -2,10 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from triple_triple.data_generators.player_game_stats_data import (
-    player_impact_df,
     player_game_stats_nba
 )
-from triple_triple.nbastats_game_data import hometeam_id
 from triple_triple.startup_data import (
     get_game_id_dict,
     get_df_pos_dist,

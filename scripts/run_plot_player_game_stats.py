@@ -6,11 +6,13 @@ from triple_triple.data_generators.nbastats_game_data import (
     play_by_play_df
 )
 
-from triple_triple.startup_data import get_player_ids
+from triple_triple.startup_data import (
+    get_player_ids,
+    get_df_all_game_info
+)
 
 
-from scripts.save_playbyplay import df_game_info
-
+df_game_info = get_df_all_game_info()
 
 player_ids = get_player_ids()
 

@@ -1,5 +1,5 @@
 import triple_triple.data_generators.player_position_data as ppd
-from triple_triple.data_generators.player_game_stats_data import player_impact_df
+from triple_triple.data_generators.player_game_stats_data import (player_impact_df, player_team_loc_from_name)
 from triple_triple.plot_player_game_stats import plot_player_game_info
 from triple_triple.data_generators.nbastats_game_data import (
     teams_playing,
@@ -46,6 +46,16 @@ if __name__ == '__main__':
 
     df_play_by_play = play_by_play_df(base_url_play, params_play)
 
-    df_player_impact = player_impact_df(player, hometeam_id, df_play_by_play)
+    player_team_loc = player_team_loc_from_name(
+        player,
+        game_id_dict,
+        hometeam_id
+    )
+    df_player_impact = player_impact_df(
+        player,
+        player_team_loc,
+        game_id_dict,
+        df_play_by_play
+    )
 
     plot_player_game_info(player, df_player_impact, df_pos_dist)

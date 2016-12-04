@@ -1,7 +1,7 @@
 import triple_triple.data_generators.player_position_data as ppd
 from triple_triple.data_generators.player_game_stats_data import player_impact_df
 from triple_triple.plot_player_game_stats import plot_player_game_info
-from triple_triple.nbastats_game_data import (
+from triple_triple.data_generators.nbastats_game_data import (
     teams_playing,
     play_by_play_df
 )
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     game_id_dict = ppd.get_game_id_dict(data)
 
     hometeam_id, awayteam_id = teams_playing(game_id, df_game_info)
-    import pdb; pdb.set_trace()
+
     df_positions = ppd.get_player_positions_df(data, game_id_dict)
 
     df_pos_dist = ppd.get_closest_to_ball_df(df_positions)

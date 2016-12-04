@@ -4,13 +4,6 @@ import matplotlib.pyplot as plt
 from triple_triple.data_generators.player_game_stats_data import (
     player_game_stats_nba
 )
-from triple_triple.startup_data import (
-    get_game_id_dict,
-    get_df_pos_dist,
-)
-
-game_id_dict = get_game_id_dict()
-df_pos_dist = get_df_pos_dist()
 
 
 def plot_player_game_info(player_name, df_player_impact, df_pos_dist):

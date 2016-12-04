@@ -9,19 +9,17 @@ from triple_triple.nbastats_game_data import hometeam_id
 from triple_triple.startup_data import (
     get_game_id_dict,
     get_df_pos_dist,
-    get_df_play_by_play,
 )
 
 game_id_dict = get_game_id_dict()
 df_pos_dist = get_df_pos_dist()
-df_play_by_play = get_df_play_by_play()
 
 
 def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
 
     player_game_stats = player_game_stats_nba(player_name, df_player_impact)
 
-    df_player = df_pos_dist[(df_pos_dist['closest_player'].values) == player]
+    df_player = df_pos_dist[(df_pos_dist['closest_player'].values) == player_name]
     # number of total touches. Assuming each touch is about 3 seconds
     # data given 25 frames per second
     touches = len(df_player) / 75.
@@ -69,7 +67,7 @@ def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
     ax.set_xlim(-width, len(ind) + width)
     ax.set_ylim(0, 0.5)
     ax.set_ylabel('Fraction of Touches')
-    ax.set_title(player + ' Ball Touch Distribution (@ GSW) \n January 11,2016')
+    ax.set_title(player_name + ' Ball Touch Distribution (@ GSW) \n January 11,2016')
     xTickMarks = [
         'Shot Attempts',
         'Rebounds',
@@ -94,12 +92,3 @@ def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
            " Blocks=" + str(blocks) + \
            " Turnovers=" + str(turnovers) + \
            " Passes=" + str(passes)
-
-###########################
-###########################
-
-if __name__ == '__main__':
-    player = 'Chris Bosh'
-
-    df_player_impact = player_impact_df(player, hometeam_id)
-    plot_player_game_info(player, df_player_impact, df_pos_dist)

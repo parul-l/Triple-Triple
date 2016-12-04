@@ -7,7 +7,7 @@ import triple_triple.data_generators.player_position_data as ppd
 from triple_triple.nbastats_game_data import teams_playing
 from triple_triple.startup_data import get_player_ids
 
-from save_playbyplay import all_games_stats
+from scripts.save_playbyplay import df_game_info
 
 
 player_ids = get_player_ids()
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     data = ppd.open_json(tracking_file)
     game_id_dict = ppd.get_game_id_dict(data)
-    hometeam_id, awayteam_id = teams_playing(game_id, all_games_stats)
+    hometeam_id, awayteam_id = teams_playing(game_id, df_game_info)
 
     df_positions = ppd.get_player_positions_df(data, game_id_dict)
 

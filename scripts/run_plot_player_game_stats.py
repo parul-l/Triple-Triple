@@ -58,4 +58,4 @@ if __name__ == '__main__':
         df_play_by_play
     )
 
-    plot_player_game_info(player, df_player_impact, df_pos_dist)
+    plot_player_game_info(player, game_id_dict, df_player_impact, df_pos_dist)

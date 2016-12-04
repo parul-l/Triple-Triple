@@ -6,9 +6,9 @@ from triple_triple.data_generators.player_game_stats_data import (
 )
 
 
-def plot_player_game_info(player_name, df_player_impact, df_pos_dist):
+def plot_player_game_info(player_name, game_id_dict, df_player_impact, df_pos_dist):
 
-    player_game_stats = player_game_stats_nba(player_name, df_player_impact)
+    player_game_stats = player_game_stats_nba(player_name, game_id_dict, df_player_impact)
 
     df_player = df_pos_dist[(df_pos_dist['closest_player'].values) == player_name]
     # number of total touches. Assuming each touch is about 3 seconds

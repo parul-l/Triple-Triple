@@ -1,21 +1,18 @@
 import triple_triple.data_generators.player_position_data as ppd
-from triple_triple.data_generators.player_game_stats_data import (player_impact_df, player_team_loc_from_name)
+
+from triple_triple.data_generators.player_game_stats_data import (
+    player_impact_df,
+    player_team_loc_from_name
+)
 from triple_triple.plot_player_game_stats import plot_player_game_info
 from triple_triple.data_generators.nbastats_game_data import (
     teams_playing,
     play_by_play_df
 )
-
-from triple_triple.startup_data import (
-    get_player_ids,
-    get_df_all_game_info
-)
+from triple_triple.startup_data import get_df_all_game_info
 
 
 df_game_info = get_df_all_game_info()
-
-player_ids = get_player_ids()
-
 
 base_url_play = 'http://stats.nba.com/stats/playbyplayv2'
 
@@ -33,6 +30,7 @@ if __name__ == '__main__':
         'StartPeriod': '1',     # acceptable values: 1, 2, 3, 4
         'StartRange': '0',      # not sure what this is
     }
+
     tracking_file = '/Users/pl/Downloads/' + game_id + '.json'
 
     data = ppd.open_json(tracking_file)

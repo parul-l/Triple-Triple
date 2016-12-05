@@ -23,7 +23,7 @@ def plot_player_game_info(player_name, game_id_dict, df_player_impact, df_pos_di
 
     passes = touches - shot_attempt - free_throw_attempt - rebound_count - \
         foul_count - blocks - turnovers
-
+    
     ##################################
     # Histogram plot of percentages
     ##################################
@@ -53,7 +53,7 @@ def plot_player_game_info(player_name, game_id_dict, df_player_impact, df_pos_di
     # x location of bars, and their width
     ind = np.arange(N)
     width = 0.35
-    # d = ax.bar(ind, data_plot, width, color='red')
+    ax.bar(ind, data_plot, width, color='red')
 
     ax.set_xlim(-width, len(ind) + width)
     ax.set_ylim(0, 0.5)

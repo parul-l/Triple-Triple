@@ -51,18 +51,18 @@ if __name__ == '__main__':
 
     # TODO game clock/shot clock/ball height need fixing
     # it doesn't remove the previous frame
-    # player = 'Chris Bosh'
-    # playerid = pa.playerid_from_name(player)
-    # 
-    # fig = plt.figure(figsize=(15, 9))
-    # ax = fig.gca()
-    # ax = draw_court(ax)
-    # anim = pa.play_animation(
-    #     fig=fig, period=period, time_start=time_start,
-    #     time_end=time_end, hometeam_id=hometeam_id,
-    #     awayteam_id=awayteam_id, player=player
-    # )
-    # 
-    # # anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
-    # plt.show()
-    # plt.ioff()
+    player = 'Chris Bosh'
+    playerid = pa.playerid_from_name(player)
+    
+    fig = plt.figure(figsize=(15, 9))
+    ax = fig.gca()
+    ax = draw_court(ax)
+    anim = pa.play_animation(
+        fig=fig, period=period, time_start=time_start,
+        time_end=time_end, hometeam_id=hometeam_id,
+        awayteam_id=awayteam_id, player=player
+    )
+    
+    # anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
+    plt.show()
+    plt.ioff()

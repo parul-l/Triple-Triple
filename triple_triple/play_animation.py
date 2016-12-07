@@ -166,9 +166,9 @@ def play_animation(period, time_start, time_end, fig, dataframe=df_positions,
     msg_shot_clock = 'shot clock: ' + str(shot_clock_array[0])
     msg_ball_height = 'ball height: ' + str(shot_clock_array[0])
 
-    game_clock_annotations = ax.text(-15, 25, msg_game_clock)
-    shot_clock_annotations = ax.text(-15, 20, msg_shot_clock)
-    ball_height_annotations = ax.text(-15, 15, msg_ball_height)
+    game_clock_annotations = ax.text(-18, 25, msg_game_clock)
+    shot_clock_annotations = ax.text(-18, 20, msg_shot_clock)
+    ball_height_annotations = ax.text(-18, 15, msg_ball_height)
 
     if player is None:
         # initialize the

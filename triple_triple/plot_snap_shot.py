@@ -5,32 +5,18 @@ from triple_triple.play_animation import (
     fixedtime_df,
     team_coord
 )
+
 from triple_triple.full_court import draw_court
-from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
-from triple_triple.startup_data import (
-    get_df_raw_position_data,
-    get_df_positions
-)
-
-# TODO: Fix legend in plot_play_snap_shot
-
-df_positions = get_df_positions()
-df_raw_position_data = get_df_raw_position_data()
-
-# display x amount of rows in dataframe:
-# with pd.option_context('display.max_rows', 200):
-#     print df_raw_position_data
 
 
 # Plot ONE player during a fixed time range
-def plot_player_movement_gradient(player, period, time_start, time_end,
-                                  color='winter', dataframe=df_raw_position_data):
+def plot_player_movement_gradient(df_raw_position_data, player, period, time_start, time_end, color='winter'):
 
-    player_fixed_time = dataframe[
-        (dataframe.player_name == player) &
-        (dataframe.period == period) &
-        (dataframe.game_clock <= time_start) &
-        (dataframe.game_clock >= time_end)
+    player_fixed_time = df_raw_position_data[
+        (df_raw_position_data.player_name == player) &
+        (df_raw_position_data.period == period) &
+        (df_raw_position_data.game_clock <= time_start) &
+        (df_raw_position_data.game_clock >= time_end)
     ]
 
     n = len(player_fixed_time)
@@ -51,11 +37,9 @@ def plot_player_movement_gradient(player, period, time_start, time_end,
 
     plt.show()
 
+
 # Plot TEAM during time range
-
-
-def plot_play_snap_shot(period, time_start, time_end,
-                        hometeam_id, awayteam_id, title_text):
+def plot_play_snap_shot(df_positions, period, time_start, time_end, hometeam_id, awayteam_id, title_text):
 
     fig = plt.figure(figsize=(15, 9))
     ax = fig.gca()
@@ -87,23 +71,3 @@ def plot_play_snap_shot(period, time_start, time_end,
     # fig.savefig('play_snap_shot.png')
 
     plt.show()
-######################
-######################
-if __name__ == '__main__':
-
-    player = 'Dwyane Wade'
-    period = 1
-    time_start = 402
-    time_end = 400
-
-    plot_player_movement_gradient(player, period, time_start, time_end,
-                                  dataframe=df_raw_position_data, color='Blues')
-
-    ######################
-    period = 2
-    time_start = 100
-    time_end = 99
-    title_text = 'Snap shot of MIA @ GSW \n January 11, 2016'
-
-    plot_play_snap_shot(period, time_start, time_end,
-                        hometeam_id, awayteam_id, title_text)

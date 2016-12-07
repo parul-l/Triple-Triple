@@ -22,11 +22,9 @@ def team_id_from_name(player_name):
         if player_info[0] == player_name:
             return player_info[2]
 
+
 # find index of first score
-
-
-def get_initial_shooting_sides(df_play_by_play, df_pos_dist,
-                               hometeam_id, awayteam_id, has_ball_dist=2):
+def get_initial_shooting_sides(df_play_by_play, df_pos_dist, hometeam_id, awayteam_id, has_ball_dist=2):
 
     df_pos_dist_trunc = df_pos_dist[(df_pos_dist.min_dist < has_ball_dist)
                                     .any(axis=1)].reset_index()
@@ -71,19 +69,4 @@ def team_shooting_side(player, period, initial_shooting_side, hometeam_id, awayt
         elif (period == 3 or period == 4):
             return initial_shooting_side[hometeam_id]
 
-initial_shooting_side = get_initial_shooting_sides(df_play_by_play, df_pos_dist,
-                                                   hometeam_id, awayteam_id,
-                                                   has_ball_dist=2)
-
-##############################
-##############################
-
-if __name__ == '__main__':
-    player = 'Chris Bosh'
-    period = 1
-    initial_shooting_side = get_initial_shooting_sides(df_play_by_play, df_pos_dist,
-                                                       hometeam_id, awayteam_id,
-                                                       has_ball_dist=2)
-
-    shooting_side = team_shooting_side(player, period, initial_shooting_side,
-                                       hometeam_id, awayteam_id)
+initial_shooting_side = get_initial_shooting_sides(df_play_by_play, df_pos_dist, hometeam_id, awayteam_id, has_ball_dist=2)

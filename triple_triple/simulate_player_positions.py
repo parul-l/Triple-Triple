@@ -1,7 +1,5 @@
 import numpy as np
-
 import triple_triple.prob_player_possessions as ppp
-
 
 # TODO: create court image labeling the regions
 
@@ -370,6 +368,7 @@ def choose_next_region(start_region, prob_matrix, num_outcomes=6):
 def get_simulated_play(
     player_sim_poss,
     player_sim_reg,
+    prob_poss_type,
     pass_prob,
     shot_prob,
     assist_prob,
@@ -383,7 +382,7 @@ def get_simulated_play(
     # determine array of possession outcomes
     poss_type = np.random.choice(
         a=np.arange(4),
-        p=ppp.prob_poss_type,
+        p=prob_poss_type,
         size=len(idx_poss)
     ).flatten()
 
@@ -419,22 +418,3 @@ def get_simulated_play(
             outcome_array[3] += 1
 
     return player_sim_reg, outcome_array
-
-######################
-######################
-if __name__ == '__main__':
-
-    player_sim_reg_temp = get_player_sim_reg(ppp.reg_prob_list)
-    player_sim_poss = get_player_sim_poss(ppp.poss_per_sec)
-
-    player_sim_reg, outcome_array = get_simulated_play(
-        player_sim_poss,
-        player_sim_reg_temp,
-        ppp.pass_prob,
-        ppp.shot_prob,
-        ppp.assist_prob,
-        ppp.turnover_prob,
-        num_outcomes=4
-    )
-
-    player_sim_coord = get_simulated_coord(player_sim_reg, 'left')

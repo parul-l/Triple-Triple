@@ -1,3 +1,4 @@
+import cPickle as pickle
 import json
 import os
 
@@ -60,3 +61,8 @@ def get_df_all_game_info():
         'awayteam_id': str
     }
     return pd.read_csv(filepath, dtype=dtype_dict)
+
+
+def get_player_possession_dataframes(json_file_name):
+    with open(os.path.join(DATASETS_DIR, json_file_name), 'rb') as json_file:
+        return pickle.load(json_file)

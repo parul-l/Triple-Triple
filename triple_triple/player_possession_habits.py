@@ -1,7 +1,4 @@
 import matplotlib.pyplot as plt
-# not sure what this import does
-# suggestion from running run_player_possession from terminal
-from matplotlib.backends import _macosx
 import numpy as np
 import pandas as pd
 
@@ -10,7 +7,11 @@ from triple_triple.team_shooting_side import (
     team_shooting_side
 )
 from triple_triple.court_regions import region
-from triple_triple.data_generators.player_game_stats_data import (player_impact_df, player_game_stats_nba)
+from triple_triple.data_generators.player_game_stats_data import (
+    player_team_loc_from_name,
+    player_impact_df,
+    player_game_stats_nba
+)
 
 
 # player_court_region determines player's region every moment he is on the court
@@ -93,7 +94,7 @@ def player_possession_idx(player, df_pos_dist_trunc):
 
 
 def characterize_player_possessions(
-    player_name, df_pos_dist_trunc,
+    player_name, game_id_dict, df_pos_dist_trunc,
     player_poss_idx, hometeam_id, awayteam_id,
     initial_shooting_side, df_play_by_play
 ):
@@ -101,8 +102,10 @@ def characterize_player_possessions(
     player_ball_idx = player_poss_idx[2]
     next_player_ball_idx = player_poss_idx[3]
 
-    df_player_impact = player_impact_df(player_name, hometeam_id, df_play_by_play)
-    player_game_stats = player_game_stats_nba(player_name, df_player_impact)
+    player_team_loc = player_team_loc_from_name(player_name, game_id_dict, hometeam_id)
+
+    df_player_impact = player_impact_df(player_name, player_team_loc, game_id_dict, df_play_by_play)
+    player_game_stats = player_game_stats_nba(player_name, game_id_dict, df_player_impact)
 
     shoot = player_game_stats[5]
     assist = player_game_stats[0]

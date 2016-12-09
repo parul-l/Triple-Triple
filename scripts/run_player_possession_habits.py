@@ -1,3 +1,6 @@
+import cPickle as pickle
+import os
+
 import triple_triple.player_possession_habits as pph
 from triple_triple.team_shooting_side import initial_shooting_side
 
@@ -8,9 +11,12 @@ from triple_triple.startup_data import (
     get_df_pos_dist_trunc,
     get_df_play_by_play,
 )
-from run_player_game_stats_data import player
+from triple_triple.config import DATASETS_DIR
 
-if __name__ == 'main':
+
+if __name__ == '__main__':
+
+    player_name = 'Chris Bosh'
 
     reg_to_num = {
         'back court': 0,
@@ -22,6 +28,7 @@ if __name__ == 'main':
     }
 
     game_id_dict = get_game_id_dict()
+
     df_pos_dist = get_df_pos_dist()
     df_pos_dist_trunc = get_df_pos_dist_trunc()
     df_play_by_play = get_df_play_by_play()
@@ -33,11 +40,12 @@ if __name__ == 'main':
         awayteam_id
     )
     df_pos_dist_reg_trunc = pph.get_pos_trunc_df(df_pos_dist_reg)
-    player_poss_idx = pph.player_possession_idx(player, df_pos_dist_trunc)
+    player_poss_idx = pph.player_possession_idx(player_name, df_pos_dist_trunc)
 
-    # returns [play_shot, play_assist,play_turnover,   start_idx_used,end_idx_used]
+    # returns [play_shot, play_assist,play_turnover, start_idx_used,end_idx_used]
     known_player_possessions = pph.characterize_player_possessions(
-        player,
+        player_name,
+        game_id_dict,
         df_pos_dist_trunc,
         player_poss_idx,
         hometeam_id,
@@ -47,7 +55,7 @@ if __name__ == 'main':
     )
 
     play_pass = pph.get_pass_not_assist(
-        player,
+        player_name,
         df_pos_dist_trunc,
         known_player_possessions,
         player_poss_idx,
@@ -59,4 +67,13 @@ if __name__ == 'main':
 
     df_player_possession = pph.result_player_possession_df(known_player_possessions, play_pass)
 
-    # plot_coord = plot_team_possession(df_pos_dist_trunc, 10,20,     hometeam_id, awayteam_id)
+    possession_dict = {
+        'df_player_possession': df_player_possession,
+        'known_player_possessions': known_player_possessions
+    }
+
+    # save file to use in run_simulate_player_positions
+    with open(os.path.join(DATASETS_DIR, 'player1_possession.json'), 'wb') as json_file:
+        pickle.dump(possession_dict, json_file)
+
+    # plot_coord = plot_team_possession(df_pos_dist_trunc, 10,20, hometeam_id, awayteam_id)

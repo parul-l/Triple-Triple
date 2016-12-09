@@ -8,9 +8,9 @@ from triple_triple.startup_data import (
 game_id_dict = get_game_id_dict()
 df_play_by_play = get_df_play_by_play()
 
-player_name = 'Chris Bosh'
 
 if __name__ == '__main__':
+    player_name = 'Chris Bosh'
 
     player_team_loc = pgs_data.player_team_loc_from_name(
         player_name,

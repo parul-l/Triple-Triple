@@ -1,25 +1,19 @@
-import triple_triple.player_possession_habits as pph
+import numpy as np
+
 import triple_triple.prob_player_possessions as ppp
 import triple_triple.simulate_player_positions as spp
 
-from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
+
 from triple_triple.startup_data import (
     get_player_possession_dataframes,
-    get_df_pos_dist,
-    get_df_pos_dist_trunc,
     get_df_box_score
 )
-from triple_triple.team_shooting_side import initial_shooting_side
-
-df_pos_dist = get_df_pos_dist()
-df_pos_dist_trunc = get_df_pos_dist_trunc()
-df_pos_dist_reg = pph.get_player_court_region_df(df_pos_dist, initial_shooting_side, hometeam_id, awayteam_id)
-
-# Get game box score from nbastats_game_data
-df_box_score = get_df_box_score()
 
 
 if __name__ == '__main__':
+
+    # Get game box score from nbastats_game_data
+    df_box_score = get_df_box_score()
 
     player_name = 'Chris Bosh'
     poss_type_to_num = {
@@ -43,44 +37,64 @@ if __name__ == '__main__':
     # returns [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]
     known_player_possessions = possession_dict['known_player_possessions']
     df_player_possession = possession_dict['df_player_possession']
-
-    player_poss_idx = pph.player_possession_idx(player_name, df_pos_dist_trunc)
-
-    play_pass = pph.get_pass_not_assist(
-        player_name,
-        df_pos_dist_trunc,
-        known_player_possessions,
-        player_poss_idx,
-        initial_shooting_side,
-        hometeam_id,
-        awayteam_id,
-        t=10
-    )
+    play_pass = possession_dict['play_pass']
+    player_poss_idx = possession_dict['player_poss_idx']
+    df_pos_dist_reg = possession_dict['df_pos_dist_reg']
 
     df_player_region = list(df_pos_dist_reg[player_name].region)
+
+    # use reg_to_num: 0 position = back court, etc
     reg_prob_dict, reg_prob_list = ppp.get_player_region_prob(player_name, df_pos_dist_reg)
 
+    # return [prob_pass, prob_shot, prob_assist, prob_turnover]
     prob_poss_type = ppp.get_prob_possession_type(df_player_possession, num_outcomes=4)
+
+    prob_shot_type = ppp.get_shot_type_prob(known_player_possessions)
 
     poss_per_sec = ppp.get_possession_per_second(df_box_score, player_name)
 
+    # use reg_to_num
+    # (0,2) position means possession started at backcourt and ended at key
     movement_matrix = ppp.count_player_court_movement(df_player_possession)
+    # prob of going from back court to key is (0, 2) entry
+    cond_prob_movement = ppp.cond_prob_player_per_region(movement_matrix)
 
-    cond_prob_movement = ppp.cond_prob_player_court_movement(movement_matrix)
+    # shot per region count
+    miss_shots_matrix = ppp.get_player_scoring_prob_region(known_player_possessions, 0)
+    _2pt_shots_matrix = ppp.get_player_scoring_prob_region(known_player_possessions, 2)
+    _3pt_shots_matrix = ppp.get_player_scoring_prob_region(known_player_possessions, 3)
 
-    pass_prob, shot_prob, assist_prob, turnover_prob = ppp.get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num)
+    # shot per region_probabilities
+    miss_shots_prob_matrix = ppp.cond_prob_player_per_region(miss_shots_matrix)
+    _2pt_shots_prob_matrix = ppp.cond_prob_player_per_region(_2pt_shots_matrix)
+    _3pt_shots_prob_matrix = ppp.cond_prob_player_per_region(_3pt_shots_matrix)
 
-    player_sim_reg_temp = spp.get_player_sim_reg(reg_prob_list)
-    player_sim_poss = spp.get_player_sim_poss(poss_per_sec)
+    # matrices of conditional probabilities
+    # (0, 2) in pass_prob gives prob of passing from backcourt to key
+    pass_prob_matrix, shot_prob_matrix, assist_prob_matrix, turnover_prob_matrix = ppp.get_cond_prob_poss(
+        known_player_possessions, play_pass, reg_to_num)
 
-    player_sim_reg, outcome_array = spp.get_simulated_play(
+    # simulate where a player is when he is on the court
+    player_sim_reg_temp = spp.get_player_sim_reg(reg_prob_list, num_sim=5000)
+
+    # of all the moments on the court, simulate when he has posssesssion
+    # 0 = no possession, 1 = possession
+    player_sim_poss = spp.get_player_sim_poss(poss_per_sec, num_sim=5000)
+
+    # outcome array keeps track of possessions:
+    # [pass, shot_miss, shot_2pt, shot_3pt, assist, turnover]
+    # points increase by 2 for every assist
+    player_sim_reg, outcome_array, points = spp.get_simulated_play(
         player_sim_poss,
         player_sim_reg_temp,
         prob_poss_type,
-        pass_prob,
-        shot_prob,
-        assist_prob,
-        turnover_prob,
+        prob_shot_type,
+        pass_prob_matrix,
+        assist_prob_matrix,
+        turnover_prob_matrix,
+        miss_shots_prob_matrix,
+        _2pt_shots_prob_matrix,
+        _3pt_shots_prob_matrix,
         num_outcomes=4
     )
 

@@ -13,6 +13,7 @@ from triple_triple.data_generators.player_game_stats_data import (
     player_game_stats_nba
 )
 
+# TODO: Change characterize_player_possessions so that input dataframe is df_pos_dist_reg_trunc (not df_pos_dist)
 
 # player_court_region determines player's region every moment he is on the court
 # and hence uses df_pos_dist
@@ -93,6 +94,15 @@ def player_possession_idx(player, df_pos_dist_trunc):
     ]
 
 
+def shot_made_or_miss(shoot_list):
+    if shoot_list[0] == 'MISS':
+        return 0
+    elif '3PT' in shoot_list:
+        return 3
+    else:
+        return 2
+
+
 def characterize_player_possessions(
     player_name, game_id_dict, df_pos_dist_trunc,
     player_poss_idx, hometeam_id, awayteam_id,
@@ -160,8 +170,9 @@ def characterize_player_possessions(
                     game_clock_play_end,
                     start_region,
                     end_region,
-                    'shot']
-                )
+                    'shot',
+                    shot_made_or_miss(shoot[i][2].split())
+                ])
 
                 start_idx_used.append(play_start_index)
                 # add +1 to account for play_end_index
@@ -322,7 +333,7 @@ def result_player_possession_df(known_player_possessions, play_pass):
     ]
 
     return pd.DataFrame(
-        known_player_possessions[0] +
+        [known_player_possessions[0][i][:-1] for i in range(len(known_player_possessions[0]))] +
         known_player_possessions[1] +
         known_player_possessions[2] +
         play_pass,

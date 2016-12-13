@@ -1,5 +1,6 @@
 from collections import Counter
 import numpy as np
+import pandas as pd
 
 
 def number_from_court_region(reg):
@@ -32,6 +33,43 @@ def court_region_from_number(num):
         return 'perimeter'
 
 
+def get_player_scoring_prob_region(known_player_possessions, type_shot):
+    # type_shot = 0, 2, or 3 <---> miss, 2pt, 3pt
+
+    headers = [
+        'period',
+        'game_clock',
+        'start_region',
+        'end_region',
+        'possession',
+        'type_shot'
+    ]
+    df_shots = pd.DataFrame(known_player_possessions[0], columns=headers)
+    df_shots = df_shots.query('type_shot==@type_shot').reset_index()
+
+    start = df_shots['start_region'].apply(number_from_court_region)
+
+    end = df_shots['end_region'].apply(number_from_court_region)
+
+    shot_matrix = np.zeros((6, 6))
+    # for each posession, count player shots
+    # for different regions on the court
+    # using only start (row) and end region (column) of possession
+    for i in range(len(start)):
+        shot_matrix[start[i], end[i]] += 1
+
+    return shot_matrix
+
+
+def get_shot_type_prob(known_player_possessions):
+    total_shots = len(known_player_possessions[0])
+    num_miss = sum([1 for i in range(len(known_player_possessions[0])) if known_player_possessions[0][i][-1] == 0])
+    num_2pt = sum([1 for i in range(len(known_player_possessions[0])) if known_player_possessions[0][i][-1] == 2])
+    num_3pt = sum([1 for i in range(len(known_player_possessions[0])) if known_player_possessions[0][i][-1] == 3])
+
+    return np.array([num_miss, num_2pt, num_3pt]) / float(total_shots)
+
+
 def get_player_region_prob(player_name, df_pos_dist_reg, num_regions=6):
     df_player_region = list(df_pos_dist_reg[player_name].region)
     # remove None values
@@ -57,7 +95,7 @@ def get_prob_possession_type(df_player_possession, num_outcomes=4):
     for outcome, count in Counter(df_player_possession.type).items():
         poss_type_prob[poss_type_to_num[outcome]] = count
 
-    print poss_type_to_num
+    # print poss_type_to_num
     return poss_type_prob / float(len(df_player_possession))
 
 
@@ -75,7 +113,7 @@ def count_player_court_movement(df_pos):
     return movement_matrix
 
 
-def cond_prob_player_court_movement(movement_matrix):
+def cond_prob_player_per_region(movement_matrix):
     # given start region, probability of end region is
     # each element divided by sum of its row
     return movement_matrix / movement_matrix.sum(axis=1)[:, None]
@@ -118,8 +156,8 @@ def get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num):
     assist_prob = assist_matrix / assist_matrix.sum(axis=1)[:, None]
     turnover_prob = turnover_matrix / turnover_matrix.sum(axis=1)[:, None]
 
-    print reg_to_num
-    print 'Row = start region, '
-    print 'Column = end region'
+    # print reg_to_num
+    # print 'Row = start region, '
+    # print 'Column = end region'
 
     return pass_prob, shot_prob, assist_prob, turnover_prob

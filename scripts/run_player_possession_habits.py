@@ -42,7 +42,9 @@ if __name__ == '__main__':
     df_pos_dist_reg_trunc = pph.get_pos_trunc_df(df_pos_dist_reg)
     player_poss_idx = pph.player_possession_idx(player_name, df_pos_dist_trunc)
 
-    # returns [play_shot, play_assist,play_turnover, start_idx_used,end_idx_used]
+    # returns list of lists
+    # [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]
+
     known_player_possessions = pph.characterize_player_possessions(
         player_name,
         game_id_dict,
@@ -68,8 +70,11 @@ if __name__ == '__main__':
     df_player_possession = pph.result_player_possession_df(known_player_possessions, play_pass)
 
     possession_dict = {
+        'play_pass': play_pass,
         'df_player_possession': df_player_possession,
-        'known_player_possessions': known_player_possessions
+        'known_player_possessions': known_player_possessions,
+        'player_poss_idx': player_poss_idx,
+        'df_pos_dist_reg': df_pos_dist_reg
     }
 
     # save file to use in run_simulate_player_positions

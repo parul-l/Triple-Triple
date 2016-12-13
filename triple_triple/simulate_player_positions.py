@@ -1,5 +1,4 @@
 import numpy as np
-import triple_triple.prob_player_possessions as ppp
 
 # TODO: create court image labeling the regions
 
@@ -339,7 +338,7 @@ def get_simulated_coord(player_sim_reg, shooting_side):
     return coord
 
 
-def get_player_sim_reg(player_reg_prob_list, num_regions=6, num_sim=1000):
+def get_player_sim_reg(player_reg_prob_list, num_sim, num_regions=6):
     return np.random.choice(
         a=np.arange(num_regions),
         p=player_reg_prob_list,
@@ -347,7 +346,7 @@ def get_player_sim_reg(player_reg_prob_list, num_regions=6, num_sim=1000):
     )
 
 
-def get_player_sim_poss(poss_per_sec, num_sim=1000):
+def get_player_sim_poss(poss_per_sec, num_sim):
     p = [1 - poss_per_sec, poss_per_sec]
     return np.random.choice(
         a=np.arange(2),
@@ -367,18 +366,21 @@ def choose_next_region(start_region, prob_matrix, num_outcomes=6):
 
 def get_simulated_play(
     player_sim_poss,
-    player_sim_reg,
+    player_sim_reg_temp,
     prob_poss_type,
-    pass_prob,
-    shot_prob,
-    assist_prob,
-    turnover_prob,
+    prob_shot_type,
+    pass_prob_matrix,
+    assist_prob_matrix,
+    turnover_prob_matrix,
+    miss_shots_prob_matrix,
+    _2pt_shots_prob_matrix,
+    _3pt_shots_prob_matrix,
     num_outcomes=4
 ):
     # determine indices where player has possession (list)
     idx_poss = np.argwhere(player_sim_poss == 1).flatten()
     # determine the region he is in at each index
-    reg_poss = [player_sim_reg[item] for item in idx_poss]
+    reg_poss = [player_sim_reg_temp[item] for item in idx_poss]
     # determine array of possession outcomes
     poss_type = np.random.choice(
         a=np.arange(4),
@@ -388,8 +390,10 @@ def get_simulated_play(
 
     # determine result and next move at each possession
     # change the simulated region at i+1 to reflect possession probabilities
-    # outcome array keeps track of possessions: pass, shot, assist, turnover
-    outcome_array = np.zeros(num_outcomes)
+    # outcome array keeps track of possessions:
+    # [pass, shot_miss, shot_2pt, shot_3pt, assist, turnover]
+    outcome_array = np.zeros(6)
+    points_count = 0
 
     for i in range(len(idx_poss)):
         # get region at i
@@ -399,22 +403,42 @@ def get_simulated_play(
         # determine region of next move
         # pass
         if poss == 0:
-            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, pass_prob)[0]
+            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, pass_prob_matrix)[0]
             outcome_array[0] += 1
         # shot
         if poss == 1:
-            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, shot_prob)[0]
-            outcome_array[1] += 1
+            # determine type of shot (0 = miss, 1 = 2pt, 2 = 3pt)
+            shot_type = np.random.choice(
+                a=np.arange(3),
+                p=prob_shot_type,
+                size=1
+            ).flatten()
+
+            # miss
+            if shot_type == 0:
+                player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, miss_shots_prob_matrix)[0]
+                outcome_array[1] += 1
+            # 2 pt
+            elif shot_type == 1:
+                player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, _2pt_shots_prob_matrix)[0]
+                outcome_array[2] += 1
+                points_count += 2
+            # 3 pt
+            elif shot_type == 2:
+                player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, _3pt_shots_prob_matrix)[0]
+                outcome_array[3] += 1
+                points_count += 3
+
         # assist
         if poss == 2:
-            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, assist_prob)[0]
+            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, assist_prob_matrix)[0]
 
             # assists and shot increases
-            outcome_array[1] += 1
-            outcome_array[2] += 1
+            outcome_array[4] += 1
+            points_count += 2 # ASSUMING 2 point shot < FIX THIS
         # turnover
         if poss == 3:
-            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, turnover_prob)[0]
-            outcome_array[3] += 1
+            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, turnover_prob_matrix)[0]
+            outcome_array[5] += 1
 
-    return player_sim_reg, outcome_array
+    return player_sim_poss, outcome_array, points_count

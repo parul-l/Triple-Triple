@@ -1,5 +1,3 @@
-import numpy as np
-
 import triple_triple.prob_player_possessions as ppp
 import triple_triple.simulate_player_positions as spp
 

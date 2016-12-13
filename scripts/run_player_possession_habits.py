@@ -1,6 +1,3 @@
-import cPickle as pickle
-import os
-
 import triple_triple.player_possession_habits as pph
 from triple_triple.team_shooting_side import initial_shooting_side
 
@@ -11,7 +8,6 @@ from triple_triple.startup_data import (
     get_df_pos_dist_trunc,
     get_df_play_by_play,
 )
-from triple_triple.config import DATASETS_DIR
 
 
 if __name__ == '__main__':
@@ -78,7 +74,6 @@ if __name__ == '__main__':
     }
 
     # save file to use in run_simulate_player_positions
-    with open(os.path.join(DATASETS_DIR, 'player1_possession.json'), 'wb') as json_file:
-        pickle.dump(possession_dict, json_file)
+    pph.save_player_poss_dict('test_save.json', possession_dict)
 
     # plot_coord = plot_team_possession(df_pos_dist_trunc, 10,20, hometeam_id, awayteam_id)

@@ -1,3 +1,5 @@
+import cPickle as pickle
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -6,6 +8,7 @@ from triple_triple.team_shooting_side import (
     team_id_from_name,
     team_shooting_side
 )
+from triple_triple.config import DATASETS_DIR
 from triple_triple.court_regions import region
 from triple_triple.data_generators.player_game_stats_data import (
     player_team_loc_from_name,
@@ -339,6 +342,12 @@ def result_player_possession_df(known_player_possessions, play_pass):
         play_pass,
         columns=player_play_data_headers
     )
+
+
+def save_player_poss_dict(filename, possession_dict):
+    with open(os.path.join(DATASETS_DIR, filename), 'wb') as json_file:
+        pickle.dump(possession_dict, json_file)
+
 
 # plots a visual of length of ball possessions for each team given a start
 # and stop index. I don't do much with this plot

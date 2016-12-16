@@ -344,6 +344,55 @@ def result_player_possession_df(known_player_possessions, play_pass):
     )
 
 
+def create_player_poss_dict(
+    player_name,
+    game_id_dict,
+    df_pos_dist_trunc,
+    hometeam_id,
+    awayteam_id,
+    initial_shooting_side,
+    df_play_by_play,
+    df_pos_dist_reg,
+    t=10
+):
+
+    player_poss_idx = player_possession_idx(player_name, df_pos_dist_trunc)
+
+    known_player_possessions = characterize_player_possessions(
+        player_name,
+        game_id_dict,
+        df_pos_dist_trunc,
+        player_poss_idx,
+        hometeam_id,
+        awayteam_id,
+        initial_shooting_side,
+        df_play_by_play
+    )
+
+    play_pass = get_pass_not_assist(
+        player_name,
+        df_pos_dist_trunc,
+        known_player_possessions,
+        player_poss_idx,
+        initial_shooting_side,
+        hometeam_id,
+        awayteam_id,
+        t=10
+    )
+
+    df_player_possession = result_player_possession_df(known_player_possessions, play_pass)
+
+    possession_dict = {
+        'play_pass': play_pass,
+        'df_player_possession': df_player_possession,
+        'known_player_possessions': known_player_possessions,
+        'player_poss_idx': player_poss_idx,
+        'df_pos_dist_reg': df_pos_dist_reg
+    }
+
+    return possession_dict
+
+
 def save_player_poss_dict(filename, possession_dict):
     with open(os.path.join(DATASETS_DIR, filename), 'wb') as json_file:
         pickle.dump(possession_dict, json_file)

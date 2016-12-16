@@ -161,3 +161,40 @@ def get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num):
     # print 'Column = end region'
 
     return pass_prob, shot_prob, assist_prob, turnover_prob
+
+
+def get_player_outcome_prob_matrix_list(
+    df_player_possession,
+    known_player_possessions,
+    play_pass,
+    reg_to_num
+):
+    movement_matrix = count_player_court_movement(df_player_possession)
+    # prob of going from back court to key is (0, 2) entry
+    movement_prob_matrix = cond_prob_player_per_region(movement_matrix)
+
+    # shot per region raw count
+    miss_shots_matrix = get_player_scoring_prob_region(known_player_possessions, 0)
+    _2pt_shots_matrix = get_player_scoring_prob_region(known_player_possessions, 2)
+    _3pt_shots_matrix = get_player_scoring_prob_region(known_player_possessions, 3)
+
+    # shot per region_probabilities
+    miss_shots_prob_matrix = cond_prob_player_per_region(miss_shots_matrix)
+    _2pt_shots_prob_matrix = cond_prob_player_per_region(_2pt_shots_matrix)
+    _3pt_shots_prob_matrix = cond_prob_player_per_region(_3pt_shots_matrix)
+
+    # matrices of outcome conditional probabilities
+    # (0, 2) in pass_prob gives prob of passing from backcourt to key
+    pass_prob_matrix, shot_prob_matrix, assist_prob_matrix, turnover_prob_matrix = get_cond_prob_poss(
+        known_player_possessions, play_pass, reg_to_num)
+
+    return [
+        movement_prob_matrix,
+        miss_shots_prob_matrix,
+        _2pt_shots_prob_matrix,
+        _3pt_shots_prob_matrix,
+        pass_prob_matrix,
+        shot_prob_matrix,
+        assist_prob_matrix,
+        turnover_prob_matrix
+    ]

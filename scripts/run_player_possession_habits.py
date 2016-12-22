@@ -37,8 +37,8 @@ if __name__ == '__main__':
 
     player_list = [
         'Chris Bosh',
-        'Dwyane Wade',
-        'Luol Deng'
+        'Luol Deng',
+        'Dwyane Wade'
     ]
 
     num_players = len(player_list)

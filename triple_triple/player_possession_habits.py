@@ -118,6 +118,7 @@ def characterize_player_possessions(
     player_team_loc = player_team_loc_from_name(player_name, game_id_dict, hometeam_id)
 
     df_player_impact = player_impact_df(player_name, player_team_loc, game_id_dict, df_play_by_play)
+
     player_game_stats = player_game_stats_nba(player_name, game_id_dict, df_player_impact)
 
     shoot = player_game_stats[5]
@@ -190,6 +191,7 @@ def characterize_player_possessions(
                     game_clock_play_end,
                     start_region,
                     end_region,
+                    'pass',
                     'assist']
                 )
 
@@ -220,7 +222,7 @@ def characterize_player_possessions(
     ]
 
 # t= 25 corresponds to 1 sec
-# only consider a 'possession' to be when player has ball for more than t seconds
+# only consider a 'possession' to be when player has ball for more than t/25 seconds
 
 
 def get_pass_not_assist(
@@ -242,13 +244,13 @@ def get_pass_not_assist(
     # collect possession indices
 
     length_possession = np.array(next_player_ball_idx) - np.array(player_ball_idx)
-    possession = np.argwhere(length_possession < t).flatten()
+    no_possession = np.argwhere(length_possession < t).flatten()
 
-    player_ball_idx = np.delete(np.array(player_ball_idx), possession)
-    next_player_ball_idx = np.delete(np.array(next_player_ball_idx), possession)
+    player_ball_idx = np.delete(np.array(player_ball_idx), no_possession)
+    next_player_ball_idx = np.delete(np.array(next_player_ball_idx), no_possession)
 
-    start_idx_used = np.delete(np.array(start_idx_used), possession)
-    end_idx_used = np.delete(np.array(end_idx_used), possession)
+    start_idx_used = np.delete(np.array(start_idx_used), no_possession)
+    end_idx_used = np.delete(np.array(end_idx_used), no_possession)
 
     # collect the discrepancies between the nba sets and my sets, and order them
 
@@ -337,7 +339,7 @@ def result_player_possession_df(known_player_possessions, play_pass):
 
     return pd.DataFrame(
         [known_player_possessions[0][i][:-1] for i in range(len(known_player_possessions[0]))] +
-        known_player_possessions[1] +
+        [known_player_possessions[1][i][:-1] for i in range(len(known_player_possessions[1]))] +
         known_player_possessions[2] +
         play_pass,
         columns=player_play_data_headers

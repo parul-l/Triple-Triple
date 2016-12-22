@@ -374,27 +374,29 @@ def choose_next_region(start_region, prob_matrix, num_outcomes=6):
         size=1
     ).flatten()
 
-# simulate plays for one player 
+
+# simulate plays for one player
 def get_simulated_play(
     player_sim_poss,
     player_sim_reg_temp,
     prob_poss_type,
     prob_shot_type,
+    prob_assist,
     pass_prob_matrix,
     assist_prob_matrix,
     turnover_prob_matrix,
     miss_shots_prob_matrix,
     _2pt_shots_prob_matrix,
     _3pt_shots_prob_matrix,
-    num_outcomes=4
+    num_outcomes=3
 ):
     # determine indices where player has possession (list)
     idx_poss = np.argwhere(player_sim_poss == 1).flatten()
     # determine the region he is in at each index
     reg_poss = [player_sim_reg_temp[item] for item in idx_poss]
-    # determine array of possession outcomes
+    # determine array of possession outcomes (pass, shoot, turnover)
     poss_type = np.random.choice(
-        a=np.arange(4),
+        a=np.arange(3),
         p=prob_poss_type,
         size=len(idx_poss)
     ).flatten()
@@ -414,8 +416,24 @@ def get_simulated_play(
         # determine region of next move
         # pass
         if poss == 0:
-            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, pass_prob_matrix)[0]
-            outcome_array[0] += 1
+            # determine if pass is assist or not
+            # 0 = no assist, 1 = assist
+            pass_type = np.random.choice(
+                a=np.arange(2),
+                p=[1 - prob_assist, prob_assist],
+                size=1
+            ).flatten()
+            # no assist
+            if pass_type == 0:
+                player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, pass_prob_matrix)[0]
+                outcome_array[0] += 1
+
+            # pass is assist
+            if pass_type == 1:
+                player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, assist_prob_matrix)[0]
+                outcome_array[4] += 1
+                points_count += 2   # assuming 2 point field goal
+
         # shot
         if poss == 1:
             # determine type of shot (0 = miss, 1 = 2pt, 2 = 3pt)
@@ -440,20 +458,17 @@ def get_simulated_play(
                 outcome_array[3] += 1
                 points_count += 3
 
-        # assist
-        if poss == 2:
-            player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, assist_prob_matrix)[0]
-
-            # assists and shot increases
-            outcome_array[4] += 1
-            points_count += 2 # ASSUMING 2 point shot < FIX THIS
         # turnover
-        if poss == 3:
+        if poss == 2:
             player_sim_poss[idx_poss[i] + 1] = choose_next_region(reg_at_idx, turnover_prob_matrix)[0]
             outcome_array[5] += 1
 
     return player_sim_poss, outcome_array, points_count
 
+
+######################################################
+# Functions for multi-player simulation
+######################################################
 
 def get_simulated_regions_dict(player_list, all_players_poss_prob_dict, all_players_outcome_prob_matrix_dict):
     simulated_regions_dict = {}
@@ -512,6 +527,7 @@ def get_simulate_play_mult_players(
     # change the simulated region at i+1 to reflect possession probabilities
     # outcome array keeps track of possessions:
     # [pass, shot_miss, shot_2pt, shot_3pt, assist, turnover]
+    
     outcome_array = np.zeros(6)
     player_possession_array = np.full(num_sim, np.nan)
     points_count = 0
@@ -535,11 +551,29 @@ def get_simulate_play_mult_players(
         # pass
         if poss_outcome == 0:
             play_pass_or_assist = True
-            simulated_regions_dict[player_name][i + 1] = \
-                choose_next_region(
-                    simulated_regions_dict[player_name][i],
-                    all_players_outcome_prob_matrix_dict[player_name][4])[0]
-            outcome_array[0] += 1
+
+            # determine if pass leads to assist
+            # 0 = no assist, 1 = assist
+            pass_type = np.random.choice(
+                a=np.arange(2),
+                p=[1 - all_players_poss_prob_dict[player_name][3], all_players_poss_prob_dict[player_name][3]],
+                size=1
+            ).flatten()
+            # no assist
+            if pass_type == 0:
+                simulated_regions_dict[player_name][i + 1] = \
+                    choose_next_region(
+                        simulated_regions_dict[player_name][i],
+                        all_players_outcome_prob_matrix_dict[player_name][4])[0]
+                outcome_array[0] += 1
+
+            # pass is assist INCREASE POINT TOTAL +2 OR +3 ON NEXT POSS
+            if pass_type == 1:
+                simulated_regions_dict[player_name][i + 1] = \
+                    choose_next_region(
+                        simulated_regions_dict[player_name][i],
+                        all_players_outcome_prob_matrix_dict[player_name][6])[0]
+                outcome_array[4] += 1
 
             # find closest player to player with ball at idx = i+1
             # this player is assumed to be the next player with the ball
@@ -586,29 +620,8 @@ def get_simulate_play_mult_players(
                 outcome_array[3] += 1
                 points_count += 3
 
-        # assist
-        elif poss_outcome == 2:
-            play_pass_or_assist = True
-            simulated_regions_dict[player_name][i + 1] = \
-                choose_next_region(
-                    simulated_regions_dict[player_name][i],
-                    all_players_outcome_prob_matrix_dict[player_name][6])[0]
-            outcome_array[4] += 1
-            points_count += 2 # ASSUMING ASSIST IS FOR 2PTS
-
-            # find closest player to player with ball at idx = i+1
-            # this player is assumed to be the next player with the ball
-            player_with_ball = get_closest_player_to_player_with_ball(
-                i + 1,
-                player_with_ball,
-                player_list,
-                simulated_region_coord_dict
-            )
-            player_possession_array[i + 1] = player_with_ball
-            player_name = player_list[player_with_ball]
-
         # turnover
-        elif poss_outcome == 3:
+        elif poss_outcome == 2:
             play_pass_or_assist = False
             simulated_regions_dict[player_name][i + 1] = \
                 choose_next_region(

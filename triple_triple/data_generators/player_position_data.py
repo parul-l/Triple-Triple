@@ -194,7 +194,6 @@ def get_closest_to_ball_df(dataframe):
     second_min_values = dist_matrix_sorted[:, 1]
 
     # collect closest and second closest player to ball
-    # import pdb; pdb.set_trace()
     closest_player = []
     second_closest_player = []
     for i in range(len(idx_min)):

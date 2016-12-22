@@ -53,6 +53,7 @@ def player_game_stats_nba(player_name, game_id_dict, df_player_impact):
 
     for i in range(len(df_player_impact)):
         descrip_split = df_player_impact.ix[:, 2].iloc[i].split()
+
         if (descrip_split[-3] == '(' + player_lastname and
                 descrip_split[-1] == 'AST)'):
             assist.append([

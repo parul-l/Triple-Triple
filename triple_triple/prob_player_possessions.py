@@ -70,6 +70,11 @@ def get_shot_type_prob(known_player_possessions):
     return np.array([num_miss, num_2pt, num_3pt]) / float(total_shots)
 
 
+def get_assist_prob(known_player_possessions, df_player_possession):
+    total_pass = len(df_player_possession[df_player_possession.type == 'pass'])
+    return len(known_player_possessions[1]) / float(total_pass)
+
+
 def get_player_region_prob(player_name, df_pos_dist_reg, num_regions=6):
     df_player_region = list(df_pos_dist_reg[player_name].region)
     # remove None values
@@ -84,18 +89,16 @@ def get_player_region_prob(player_name, df_pos_dist_reg, num_regions=6):
     return reg_prob_dict, reg_prob_list / float(total_moments)
 
 
-def get_prob_possession_type(df_player_possession, num_outcomes=4):
+def get_prob_possession_type(df_player_possession, num_outcomes=3):
     poss_type_to_num = {
         'pass': 0,
         'shot': 1,
-        'assist': 2,
-        'turnover': 3
+        'turnover': 2
     }
     poss_type_prob = np.zeros(num_outcomes)
     for outcome, count in Counter(df_player_possession.type).items():
         poss_type_prob[poss_type_to_num[outcome]] = count
 
-    # print poss_type_to_num
     return poss_type_prob / float(len(df_player_possession))
 
 
@@ -130,7 +133,7 @@ def get_possession_per_second(df_box_score, player_name):
 
 def count_outcome_per_region(play_list, reg_to_num):
     outcome_matrix = np.zeros((6, 6))
-    # create a matrix with pass count
+    # create a matrix with outcome count
     # row = start region
     # column = end region
     for item in play_list:
@@ -139,7 +142,7 @@ def count_outcome_per_region(play_list, reg_to_num):
 
 
 def get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num):
-    pass_matrix = count_outcome_per_region(play_pass, reg_to_num)
+    pass_not_assist_matrix = count_outcome_per_region(play_pass, reg_to_num)
 
     # shots = known_player_possessions[0]
     shots_matrix = count_outcome_per_region(known_player_possessions[0], reg_to_num)
@@ -151,7 +154,7 @@ def get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num):
     turnover_matrix = count_outcome_per_region(known_player_possessions[2], reg_to_num)
 
     # cond probabilities
-    pass_prob = pass_matrix / pass_matrix.sum(axis=1)[:, None]
+    pass_not_assist_prob = pass_not_assist_matrix / pass_not_assist_matrix.sum(axis=1)[:, None]
     shot_prob = shots_matrix / shots_matrix.sum(axis=1)[:, None]
     assist_prob = assist_matrix / assist_matrix.sum(axis=1)[:, None]
     turnover_prob = turnover_matrix / turnover_matrix.sum(axis=1)[:, None]
@@ -160,7 +163,7 @@ def get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num):
     # print 'Row = start region, '
     # print 'Column = end region'
 
-    return pass_prob, shot_prob, assist_prob, turnover_prob
+    return pass_not_assist_prob, shot_prob, assist_prob, turnover_prob
 
 
 def get_player_outcome_prob_matrix_list(
@@ -184,8 +187,8 @@ def get_player_outcome_prob_matrix_list(
     _3pt_shots_prob_matrix = cond_prob_player_per_region(_3pt_shots_matrix)
 
     # matrices of outcome conditional probabilities
-    # (0, 2) in pass_prob gives prob of passing from backcourt to key
-    pass_prob_matrix, shot_prob_matrix, assist_prob_matrix, turnover_prob_matrix = get_cond_prob_poss(
+    # (0, 2) in pass_not_assist_prob gives prob of passing from backcourt to key
+    pass_not_assist_prob_matrix, shot_prob_matrix, assist_prob_matrix, turnover_prob_matrix = get_cond_prob_poss(
         known_player_possessions, play_pass, reg_to_num)
 
     return [
@@ -193,7 +196,7 @@ def get_player_outcome_prob_matrix_list(
         miss_shots_prob_matrix,
         _2pt_shots_prob_matrix,
         _3pt_shots_prob_matrix,
-        pass_prob_matrix,
+        pass_not_assist_prob_matrix,
         shot_prob_matrix,
         assist_prob_matrix,
         turnover_prob_matrix

@@ -28,8 +28,8 @@ reg_to_num = {
 if __name__ == '__main__':
     player_list = [
         'Chris Bosh',
-        'Luol Deng',
-        'Dwyane Wade'
+        # 'Luol Deng',
+        # 'Dwyane Wade'
     ]
 
     num_players = len(player_list)
@@ -75,11 +75,14 @@ if __name__ == '__main__':
         all_players_outcome_prob_matrix_dict[player_name] = player_outcome_prob_matrix_list
 
         reg_prob_dict, reg_prob_list = ppp.get_player_region_prob(player_name, df_pos_dist_reg)
-        # return [prob_pass, prob_shot, prob_assist, prob_turnover]
-        prob_poss_type = ppp.get_prob_possession_type(df_player_possession, num_outcomes=4)
+        # return [prob_pass, prob_shot, prob_turnover]
+        prob_poss_type = ppp.get_prob_possession_type(df_player_possession, num_outcomes=3)
 
         # returns [miss, 2pt, 3pt]
         prob_shot_type = ppp.get_shot_type_prob(known_player_possessions)
+
+        # prob assist
+        prob_assist = ppp.get_assist_prob(known_player_possessions, df_player_possession)
 
         # returns possession per second
         poss_per_sec = ppp.get_possession_per_second(df_box_score, player_name)
@@ -89,6 +92,7 @@ if __name__ == '__main__':
             reg_prob_list,
             prob_poss_type,
             prob_shot_type,
+            prob_assist,
             poss_per_sec
         ]
 
@@ -101,14 +105,14 @@ if __name__ == '__main__':
         simulated_regions_dict = spp.get_simulated_regions_dict(player_list, all_players_poss_prob_dict, all_players_outcome_prob_matrix_dict)
         simulated_region_coord_dict = spp.get_simulated_region_coord_dict(player_list, simulated_regions_dict)
 
-        # simulate play
-        outcome_array, player_possession_array, points_count = spp.get_simulate_play_mult_players(
-            player_list,
-            simulated_regions_dict,
-            simulated_region_coord_dict,
-            all_players_poss_prob_dict,
-            all_players_outcome_prob_matrix_dict
-        )
+    # simulate play
+    outcome_array, player_possession_array, points_count = spp.get_simulate_play_mult_players(
+        player_list,
+        simulated_regions_dict,
+        simulated_region_coord_dict,
+        all_players_poss_prob_dict,
+        all_players_outcome_prob_matrix_dict
+    )
 
     ############################
     # ONE PLAYER SIMULATION
@@ -133,6 +137,7 @@ if __name__ == '__main__':
         player_sim_reg_temp,
         prob_poss_type,
         prob_shot_type,
+        prob_assist,
         all_players_outcome_prob_matrix_dict[player_list[0]][4],
         all_players_outcome_prob_matrix_dict[player_list[0]][6],
         all_players_outcome_prob_matrix_dict[player_list[0]][7],

@@ -89,6 +89,14 @@ def get_player_region_prob(player_name, df_pos_dist_reg, num_regions=6):
     return reg_prob_dict, reg_prob_list / float(total_moments)
 
 
+def get_reg_prob_no_backcourt(reg_prob_list):
+    total = reg_prob_list[1:].sum()
+    reg_prob_no_bc = reg_prob_list[1:] / total
+    # add 0 entry so that indicies follow reg_to_num
+    empty = np.array([0])
+    return np.concatenate((empty, reg_prob_no_bc))
+
+
 def get_prob_possession_type(df_player_possession, num_outcomes=3):
     poss_type_to_num = {
         'pass': 0,
@@ -102,7 +110,26 @@ def get_prob_possession_type(df_player_possession, num_outcomes=3):
     return poss_type_prob / float(len(df_player_possession))
 
 
-def count_player_court_movement(df_pos):
+def count_player_court_movement(df_pos_dist_reg, player_name, reg_to_num):
+    df_player = df_pos_dist_reg[df_pos_dist_reg[player_name].region.notnull()]
+    player_array = df_player[player_name].region.values
+
+    # convert regions to numbers
+    for i in range(len(player_array)):
+        player_array[i] = reg_to_num[player_array[i]]
+
+    movement_count_matrix = np.empty([6, 6])
+    for j in range(6):
+        reg_count = np.zeros(6)
+        for i in range(len(player_array) - 1):
+            if player_array[i] == j:
+                reg_count[player_array[i + 1]] += 1
+        movement_count_matrix[j] = reg_count
+
+    return movement_count_matrix
+
+
+def count_player_court_movement_poss(df_pos):
     start = df_pos['start_region'].apply(number_from_court_region)
 
     end = df_pos['end_region'].apply(number_from_court_region)
@@ -167,12 +194,15 @@ def get_cond_prob_poss(known_player_possessions, play_pass, reg_to_num):
 
 
 def get_player_outcome_prob_matrix_list(
+    df_pos_dist_reg,
+    player_name,
     df_player_possession,
     known_player_possessions,
     play_pass,
     reg_to_num
 ):
-    movement_matrix = count_player_court_movement(df_player_possession)
+    # this matrix is prob of movement regardless if player has possession
+    movement_matrix = count_player_court_movement(df_pos_dist_reg, player_name, reg_to_num)
     # prob of going from back court to key is (0, 2) entry
     movement_prob_matrix = cond_prob_player_per_region(movement_matrix)
 

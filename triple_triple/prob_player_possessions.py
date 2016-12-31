@@ -67,12 +67,21 @@ def get_shot_type_prob(known_player_possessions):
     num_2pt = sum([1 for i in range(len(known_player_possessions[0])) if known_player_possessions[0][i][-1] == 2])
     num_3pt = sum([1 for i in range(len(known_player_possessions[0])) if known_player_possessions[0][i][-1] == 3])
 
-    return np.array([num_miss, num_2pt, num_3pt]) / float(total_shots)
+    try:
+        return np.array([num_miss, num_2pt, num_3pt]) / float(total_shots)
+
+    except ZeroDivisionError:
+        pass
 
 
 def get_assist_prob(known_player_possessions, df_player_possession):
     total_pass = len(df_player_possession[df_player_possession.type == 'pass'])
-    return len(known_player_possessions[1]) / float(total_pass)
+
+    try:
+        return len(known_player_possessions[1]) / float(total_pass)
+
+    except ZeroDivisionError:
+        pass
 
 
 def get_player_region_prob(player_name, df_pos_dist_reg, num_regions=6):
@@ -86,7 +95,11 @@ def get_player_region_prob(player_name, df_pos_dist_reg, num_regions=6):
         reg_prob_dict[region] = count / float(total_moments)
         reg_prob_list[number_from_court_region(region)] = count
 
-    return reg_prob_dict, reg_prob_list / float(total_moments)
+    try:
+        return reg_prob_dict, reg_prob_list / float(total_moments)
+
+    except ZeroDivisionError:
+        pass
 
 
 def get_reg_prob_no_backcourt(reg_prob_list):
@@ -107,7 +120,11 @@ def get_prob_possession_type(df_player_possession, num_outcomes=3):
     for outcome, count in Counter(df_player_possession.type).items():
         poss_type_prob[poss_type_to_num[outcome]] = count
 
-    return poss_type_prob / float(len(df_player_possession))
+    try:
+        return poss_type_prob / float(len(df_player_possession))
+
+    except ZeroDivisionError:
+        pass
 
 
 def count_player_court_movement(df_pos_dist_reg, player_name, reg_to_num):
@@ -155,7 +172,12 @@ def get_possession_per_second(df_box_score, player_name):
     total_sec = df_box_score.query('PLAYER_NAME == @player_name')['MIN']\
         .iloc[0].second + total_min * 60
     touches = df_box_score.query('PLAYER_NAME == @player_name')['TCHS'].iloc[0]
-    return touches / float(total_sec)
+
+    try:
+        return touches / float(total_sec)
+
+    except ZeroDivisionError:
+        pass
 
 
 def count_outcome_per_region(play_list, reg_to_num):

@@ -16,7 +16,7 @@ from triple_triple.data_generators.player_game_stats_data import (
     player_game_stats_nba
 )
 
-# TODO: Change characterize_player_possessions so that input dataframe is df_pos_dist_reg_trunc (not df_pos_dist)
+# TODO: Change get_known_player_possession so that input dataframe is df_pos_dist_reg_trunc (not df_pos_dist)
 
 # player_court_region determines player's region every moment he is on the court
 # and hence uses df_pos_dist
@@ -67,8 +67,8 @@ def get_player_court_region_df(
     return df_pos_dist.sort_index(axis=1)
 
 
-def player_possession_idx(player, df_pos_dist_trunc):
-    closest_player_to_ball = df_pos_dist_trunc.closest_player.values.flatten()
+def player_possession_idx(player, df_pos_dist_reg_trunc):
+    closest_player_to_ball = df_pos_dist_reg_trunc.closest_player.values.flatten()
 
     player_ball = [None] * len(closest_player_to_ball)
     next_player_ball = [None] * len(closest_player_to_ball)
@@ -106,12 +106,48 @@ def shot_made_or_miss(shoot_list):
         return 2
 
 
-def characterize_player_possessions(
-    player_name, game_id_dict, df_pos_dist_trunc,
-    player_poss_idx, hometeam_id, awayteam_id,
-    initial_shooting_side, df_play_by_play
+def get_possession_list(
+    type_poss_list,
+    period_play_start,
+    game_clock_play_end,
+    time,
+    start_region,
+    end_region,
+    play_start_index,
+    play_end_index,
+    start_idx_used_list,
+    end_idx_used_list
 ):
 
+    play_poss_list = []
+    for i in range(len(type_poss_list)):
+        if (type_poss_list[i][0] == period_play_start and
+                0 <= game_clock_play_end - type_poss_list[i][1] < time):
+            play_poss_list.append([
+                period_play_start,
+                game_clock_play_end,
+                start_region,
+                end_region,
+                'shot',
+                shot_made_or_miss(type_poss_list[i][2].split())
+            ])
+
+            start_idx_used_list.append(play_start_index)
+            # add +1 to account for play_end_index
+            end_idx_used_list.append(play_end_index + 1)
+
+    return play_poss_list, start_idx_used_list, end_idx_used_list
+
+
+def get_known_player_possession(
+    player_name, game_id_dict, df_pos_dist_reg_trunc,
+    hometeam_id, awayteam_id, df_play_by_play, t_shot=4, t_pass=6, t_turnover=2
+):
+    # (assuming about 4 seconds to get to rim?)
+    # (assuming 6 seconds in between pass and shot?)
+    # (assuming 2 seconds between touch and turnover?)
+
+    player_poss_idx = player_possession_idx(player_name, df_pos_dist_reg_trunc)
     player_ball_idx = player_poss_idx[2]
     next_player_ball_idx = player_poss_idx[3]
 
@@ -128,47 +164,32 @@ def characterize_player_possessions(
     play_shot = []
     play_assist = []
     play_turnover = []
-    start_idx_used = []
-    end_idx_used = []
+    start_idx_used_list = []
+    end_idx_used_list = []
 
     for j in range(len(player_ball_idx)):
         # start of play
         play_start_index = player_ball_idx[j]
-        period_play_start = df_pos_dist_trunc.\
+        period_play_start = df_pos_dist_reg_trunc.\
             period.values.flatten()[play_start_index]
-        # game_clock_play_start = df_pos_dist_trunc.\
-        #     game_clock.values.flatten()[play_start_index]
 
-        shooting_side = team_shooting_side(
-            player_name, period_play_start,
-            initial_shooting_side,
-            hometeam_id,
-            awayteam_id
-        )
-
-        start_region = region(
-            df_pos_dist_trunc[player_name].x_loc.iloc[play_start_index],
-            df_pos_dist_trunc[player_name].y_loc.iloc[play_start_index],
-            shooting_side
-        )
+        start_region = df_pos_dist_reg_trunc[player_name, 'region'].\
+            iloc[play_start_index]
 
         # End of play
         play_end_index = next_player_ball_idx[j] - 1
-        game_clock_play_end = df_pos_dist_trunc.\
+        game_clock_play_end = df_pos_dist_reg_trunc.\
             game_clock.values.flatten()[play_end_index]
 
-        end_region = region(
-            df_pos_dist_trunc[player_name].x_loc.iloc[play_end_index],
-            df_pos_dist_trunc[player_name].y_loc.iloc[play_end_index],
-            shooting_side
-        )
+        end_region = df_pos_dist_reg_trunc[player_name, 'region'].\
+            iloc[play_end_index]
 
         # check if possession is shot, turnover, assist:
+        # shot
 
-        # shot (assuming about 4 seconds to get to rim?)
         for i in range(len(shoot)):
             if (shoot[i][0] == period_play_start and
-                    0 <= game_clock_play_end - shoot[i][1] < 4):
+                    0 <= game_clock_play_end - shoot[i][1] < t_shot):
                 play_shot.append([
                     period_play_start,
                     game_clock_play_end,
@@ -178,14 +199,14 @@ def characterize_player_possessions(
                     shot_made_or_miss(shoot[i][2].split())
                 ])
 
-                start_idx_used.append(play_start_index)
+                start_idx_used_list.append(play_start_index)
                 # add +1 to account for play_end_index
-                end_idx_used.append(play_end_index + 1)
+                end_idx_used_list.append(play_end_index + 1)
 
-        # assist (assuming 6 seconds in between pass and shot)
+        # assist
         for i in range(len(assist)):
             if (assist[i][0] == period_play_start and
-                    0 <= game_clock_play_end - assist[i][1] < 6):
+                    0 <= game_clock_play_end - assist[i][1] < t_pass):
                 play_assist.append([
                     period_play_start,
                     game_clock_play_end,
@@ -195,13 +216,13 @@ def characterize_player_possessions(
                     'assist']
                 )
 
-                start_idx_used.append(play_start_index)
-                end_idx_used.append(play_end_index + 1)
+                start_idx_used_list.append(play_start_index)
+                end_idx_used_list.append(play_end_index + 1)
 
-        # turnover (assuming 2 seconds between touch and turnover)
+        # turnover
         for i in range(len(turnover)):
             if (turnover[i][0] == period_play_start and
-                    0 <= game_clock_play_end - turnover[i][1] < 2):
+                    0 <= game_clock_play_end - turnover[i][1] < t_turnover):
                 play_turnover.append([
                     period_play_start,
                     game_clock_play_end,
@@ -210,19 +231,16 @@ def characterize_player_possessions(
                     'turnover']
                 )
 
-                start_idx_used.append(play_start_index)
-                end_idx_used.append(play_end_index + 1)
+                start_idx_used_list.append(play_start_index)
+                end_idx_used_list.append(play_end_index + 1)
 
     return [
         play_shot,
         play_assist,
         play_turnover,
-        start_idx_used,
-        end_idx_used
+        start_idx_used_list,
+        end_idx_used_list
     ]
-
-# t= 25 corresponds to 1 sec
-# only consider a 'possession' to be when player has ball for more than t/25 seconds
 
 
 def get_pass_not_assist(
@@ -233,8 +251,11 @@ def get_pass_not_assist(
     initial_shooting_side,
     hometeam_id,
     awayteam_id,
+    game_id_dict,
     t=10
 ):
+    # t= 25 corresponds to 1 sec
+    # only consider a 'possession' to be when player has ball for more than t/25 seconds
 
     player_ball_idx = player_poss_idx[2]
     next_player_ball_idx = player_poss_idx[3]
@@ -257,11 +278,11 @@ def get_pass_not_assist(
     start_idx_not_used = sorted(list(set(player_ball_idx) - set(start_idx_used)))
     end_idx_not_used = sorted(list(set(next_player_ball_idx) - set(end_idx_used)))
     play_pass = []
-    player_team_id = team_id_from_name(player_name)
+    player_team_id = team_id_from_name(player_name, game_id_dict)
 
     closest_player_to_ball = df_pos_dist_trunc['closest_player'].values.flatten()
 
-    closest_player_team = [team_id_from_name(item) for item in closest_player_to_ball]
+    closest_player_team = [team_id_from_name(item, game_id_dict) for item in closest_player_to_ball]
 
     for i in range(len(start_idx_not_used)):
         play_start_index = start_idx_not_used[i]
@@ -360,7 +381,7 @@ def create_player_poss_dict(
 
     player_poss_idx = player_possession_idx(player_name, df_pos_dist_trunc)
 
-    known_player_possessions = characterize_player_possessions(
+    known_player_possessions = get_known_player_possession(
         player_name,
         game_id_dict,
         df_pos_dist_trunc,
@@ -404,11 +425,11 @@ def save_player_poss_dict(filename, possession_dict):
 # and stop index. I don't do much with this plot
 
 
-def plot_team_possession(df_pos_dist_trunc, start, stop, hometeam_id, awayteam_id):
+def plot_team_possession(df_pos_dist_trunc, start, stop, hometeam_id, awayteam_id, game_id_dict):
 
     closest_player_to_ball = df_pos_dist_trunc['closest_player'].values.flatten()
 
-    closest_player_team = [team_id_from_name(item) for item in closest_player_to_ball]
+    closest_player_team = [team_id_from_name(item, game_id_dict) for item in closest_player_to_ball]
 
     closest_player_team = closest_player_team[start:stop]
     x_home = []

@@ -17,7 +17,7 @@ def open_json(file_name):
     return json.loads(json_data)
 
 
-def team_id_from_name(player_name):
+def team_id_from_name(player_name, game_id_dict):
     for player_info in game_id_dict.values():
         if player_info[0] == player_name:
             return player_info[2]
@@ -37,7 +37,7 @@ def get_initial_shooting_sides(df_play_by_play, df_pos_dist, hometeam_id, awayte
     first_score_period = df_play_by_play.PERIOD.iloc[first_score_idx]
     first_score_game_clock = df_play_by_play.PCTIMESTRING.iloc[first_score_idx]
     first_score_player = df_play_by_play.PLAYER1_NAME.iloc[first_score_idx]
-    first_score_team = team_id_from_name(first_score_player)
+    first_score_team = team_id_from_name(first_score_player, game_id_dict)
 
     # assuming it takes 4 seconds for ball to reach rim
     first_score = df_pos_dist_trunc[
@@ -57,7 +57,7 @@ def get_initial_shooting_sides(df_play_by_play, df_pos_dist, hometeam_id, awayte
 
 
 def team_shooting_side(player, period, initial_shooting_side, hometeam_id, awayteam_id):
-    team = team_id_from_name(player)
+    team = team_id_from_name(player, game_id_dict)
     if team == hometeam_id:
         if (period == 1 or period == 2):
             return initial_shooting_side[team]

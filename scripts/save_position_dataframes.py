@@ -11,9 +11,17 @@ if __name__ == '__main__':
     tracking_file = '/Users/pl/Downloads/' + game_id + '.json'
 
     data = ppd.open_json(tracking_file)
-    game_id_dict = ppd.get_game_id_dict(data)
-    df_raw_position_data = ppd.get_raw_position_data_df(data, game_id_dict)
-    df_positions = ppd.get_player_positions_df(data, game_id_dict)
+    game_info_dict = ppd.get_game_info(data)
+    game_player_dict = ppd.get_game_player_dict(data)
+    df_raw_position_data = ppd.get_raw_position_data_df(
+        data=data,
+        game_player_dict=game_player_dict,
+        game_info_dict=game_info_dict
+    )
+
+
+
+    df_positions = ppd.get_player_positions_df(data, game_player_dict)
     df_pos_dist = ppd.get_closest_to_ball_df(df_positions)
     df_pos_dist_trunc = ppd.get_df_pos_trunc(df_pos_dist, has_ball_dist=2)
 

@@ -33,6 +33,15 @@ def court_region_from_number(num):
         return 'perimeter'
 
 
+def number_from_possession(poss):
+    if poss == 'pass':
+        return 0
+    if poss == 'shot':
+        return 1
+    if poss == 'turnover':
+        return 2
+        
+
 def get_player_scoring_prob_region(known_player_possessions, type_shot):
     # type_shot = 0, 2, or 3 <---> miss, 2pt, 3pt
 
@@ -160,11 +169,22 @@ def count_player_court_movement_poss(df_pos):
     return movement_matrix
 
 
-def cond_prob_player_per_region(movement_matrix):
+def cond_prob_per_region(count_matrix):
     # given start region, probability of end region is
     # each element divided by sum of its row
-    return movement_matrix / movement_matrix.sum(axis=1)[:, None]
+    return count_matrix / count_matrix.sum(axis=1)[:, None]
 
+
+def poss_outcome_based_on_end_region(df_player_possession):
+    type_shot = df_player_possession['type'].apply(number_from_possession)
+    end = df_player_possession['end_region'].apply(number_from_court_region)
+
+    poss_matrix = np.zeros((6, 3))
+
+    for i in range(len(end)):
+        poss_matrix[end[i], type_shot[i]] += 1
+
+    return cond_prob_per_region(poss_matrix)
 
 def get_possession_per_second(df_box_score, player_name):
     total_min = df_box_score.query('PLAYER_NAME == @player_name')['MIN']\
@@ -226,7 +246,7 @@ def get_player_outcome_prob_matrix_list(
     # this matrix is prob of movement regardless if player has possession
     movement_matrix = count_player_court_movement(df_pos_dist_reg, player_name, reg_to_num)
     # prob of going from back court to key is (0, 2) entry
-    movement_prob_matrix = cond_prob_player_per_region(movement_matrix)
+    movement_prob_matrix = cond_prob_per_region(movement_matrix)
 
     # shot per region raw count
     miss_shots_matrix = get_player_scoring_prob_region(known_player_possessions, 0)
@@ -234,9 +254,9 @@ def get_player_outcome_prob_matrix_list(
     _3pt_shots_matrix = get_player_scoring_prob_region(known_player_possessions, 3)
 
     # shot per region_probabilities
-    miss_shots_prob_matrix = cond_prob_player_per_region(miss_shots_matrix)
-    _2pt_shots_prob_matrix = cond_prob_player_per_region(_2pt_shots_matrix)
-    _3pt_shots_prob_matrix = cond_prob_player_per_region(_3pt_shots_matrix)
+    miss_shots_prob_matrix = cond_prob_per_region(miss_shots_matrix)
+    _2pt_shots_prob_matrix = cond_prob_per_region(_2pt_shots_matrix)
+    _3pt_shots_prob_matrix = cond_prob_per_region(_3pt_shots_matrix)
 
     # matrices of outcome conditional probabilities
     # (0, 2) in pass_not_assist_prob gives prob of passing from backcourt to key

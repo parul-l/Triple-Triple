@@ -366,14 +366,6 @@ def get_player_sim_poss(poss_per_sec, num_sim):
     )
 
 
-def choose_next_region(start_region, prob_matrix, num_outcomes=6):
-
-    return np.random.choice(
-        a=np.arange(num_outcomes),
-        p=prob_matrix[start_region, :],
-        size=1
-    ).flatten()
-
 
 # simulate plays for one player
 def get_simulated_play(
@@ -487,11 +479,6 @@ def get_simulated_region_coord_dict(player_list, simulated_regions_dict):
     return simulated_region_coord_dict
 
 
-def pick_player_with_ball(player_list):
-    return np.random.choice(
-        a=np.arange(len(player_list)),
-        size=1
-    ).flatten()[0]
 
 
 def dist_two_coord(x, y):
@@ -519,7 +506,141 @@ def backcourt_violation(region1, region2):
     if region2 == 0 and region1 != 0:
         return True
 
+# USING CLASSES
 
+
+def pick_player_with_ball(players_on_court):
+    # use probability of possession to determine likelihood of possession
+    all_poss_per_sec = np.array([players_on_court[i].prob_lists[5] for i in range(len(players_on_court))])
+
+    prob_poss = all_poss_per_sec / float(all_poss_per_sec.sum())
+    return np.random.choice(
+        a=np.arange(len(players_on_court)),
+        p=prob_poss,
+        size=1
+    ).flatten()[0]
+
+
+def choose_next_region(start_region, prob_matrix, num_outcomes=6):
+
+    return np.random.choice(
+        a=np.arange(num_outcomes),
+        p=prob_matrix[start_region, :],
+        size=1
+    ).flatten()[0]
+
+
+def if_pass(player_with_ball, players_on_court):
+    # choose player to pass to
+    # pass to yourself means you move with the ball
+
+    # find index of player in players_on_court
+    idx = players_on_court.index(player_with_ball)
+
+    # assign probabilities of passing
+    # assume pass to oneself is 0.5 and remaining divided equally
+    # TODO: Fix these especially when adding shot clock parameters
+
+    p = np.full(len(players_on_court), 0.5 / (len(players_on_court) - 1))
+    p[idx] = 0.5
+
+    new_possession = np.random.choice(
+        a=np.arange(len(players_on_court)),
+        p=p,
+        size=1
+    ).flatten()[0]
+
+    # update players' possession status
+    player_with_ball.possession = False
+    players_on_court[new_possession].possession = True
+
+    # update players' region using movement_prob_matrix
+    for i in range(len(players_on_court)):
+        reg = players_on_court[i].court_region
+
+        new_region = choose_next_region(
+            reg,
+            players_on_court[i].prob_matrices[0],
+            num_outcomes=6
+        )
+
+        players_on_court[i].court_region = new_region
+
+
+def if_shoot(player_with_ball, players_on_court):
+    # find index of player in players_on_court
+    idx = players_on_court.index(player_with_ball)
+    
+    # determine type of shot (0 = miss, 1 = 2pt, 2 = 3pt)
+    shot_type = np.random.choice(
+        a=np.arange(3),
+        p=player_with_ball.prob_lists[3],
+        size=1
+    ).flatten()[0]
+
+    # update players' region using movement_prob_matrix
+    for i in range(len(players_on_court)):
+        if i != idx:
+            # use movement_matrix for players without possession
+            movement_matrix = 0
+        else:
+            # use shooting_matrix for player with possession
+            movement_matrix = 5
+
+        reg = players_on_court[i].court_region
+        new_region = choose_next_region(
+            reg,
+            players_on_court[i].prob_matrices[movement_matrix],
+            num_outcomes=6
+        )
+        players_on_court[i].court_region = new_region
+
+    # update possession_status
+    player_with_ball.possession = False
+
+    return shot_type
+
+
+def if_turnover(player_with_ball, players_on_court):
+    # update possession_status
+    player_with_ball.possession = False
+
+    # update players' region using turnover_prob_matrix
+    for i in range(len(players_on_court)):
+        reg = players_on_court[i].court_region
+
+        new_region = choose_next_region(
+            reg,
+            players_on_court[i].prob_matrices[7],
+            num_outcomes=6
+        )
+
+        players_on_court[i].court_region = new_region
+
+
+def simulate_one_play(players_on_court):
+    # check who has possession of the ball
+    try:
+        idx_ball = [players_on_court[i].possession for i in range(len(players_on_court))].index(True)
+    except:
+        idx_ball = pick_player_with_ball(players_on_court)
+
+    # determine outcome
+    poss_outcome = np.random.choice(
+        a=np.arange(3),
+        p=players_on_court[idx_ball].prob_lists[2],
+        size=1
+    ).flatten()[0]
+
+    return idx_ball, poss_outcome
+
+
+
+
+
+
+
+    
 def if_sim_pass(
     player_with_ball,
     player_list,

@@ -14,20 +14,12 @@ game_id_dict = get_game_id_dict()
 # Get game box score from nbastats_game_data
 df_box_score = get_df_box_score()
 
-poss_type_to_num = {
-    'pass': 0,
-    'shot': 1,
-    'assist': 2,
-    'turnover': 3
-}
-reg_to_num = {
-    'back court': 0,
-    'mid-range': 1,
-    'key': 2,
-    'out of bounds': 3,
-    'paint': 4,
-    'perimeter': 5
-}
+"""
+    This file uses the results of run_player_possession_habits, which outputs 'player_i_poss_dfs.json' for each player i in player list. Each json file contains known_player_possessions and df_player_possession.
+
+    After current script is run, delete each 'player_i_poss_dfs.json' because this info is contained in pickeled_file.
+"""
+
 
 if __name__ == '__main__':
 

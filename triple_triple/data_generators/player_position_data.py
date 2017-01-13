@@ -1,11 +1,7 @@
-import json
-import math
 import numpy as np
 import pandas as pd
 
-
-# Guided by:
-# http://savvastjortjoglou.com/nba-play-by-play-movements.html
+from datetime import datetime
 
 
 def open_json(file_name):
@@ -13,127 +9,166 @@ def open_json(file_name):
     return json.loads(json_data)
 
 
-def get_game_id_dict(data):
-    game_id_dict = {}
+def get_game_info(data):
+    game_info_dict = {
+        'game_id': data['gameid'],
+        'game_date': datetime.strptime(data['gamedate'], '%Y-%m-%d'),
+        'hometeam_id': data['events'][0]['home']['teamid'],
+        'visitorteam_id': data['events'][0]['visitor']['teamid'],
+        'hometeam': data['events'][0]['home']['name'],
+        'visitorteam': data['events'][0]['visitor']['name']
+    }
 
-    home_id = data['events'][0]['home']['teamid']
-    visitor_id = data['events'][0]['visitor']['teamid']
+    return game_info_dict
+
+
+def get_game_player_dict(data):
+    game_player_dict = {}
+
+    hometeam_id = data['events'][0]['home']['teamid']
+    visitorteam_id = data['events'][0]['visitor']['teamid']
 
     for item in data['events'][0]['home']['players']:
-        game_id_dict[str(item['playerid'])] = [
+        game_player_dict[str(item['playerid'])] = [
             item['firstname'] + ' ' + item['lastname'],
-            str(item['jersey']), str(home_id),
+            str(item['jersey']),
+            str(hometeam_id),
             item['position']
         ]
 
     for item in data['events'][0]['visitor']['players']:
-        game_id_dict[str(item['playerid'])] = [
+        game_player_dict[str(item['playerid'])] = [
             item['firstname'] + ' ' + item['lastname'],
             str(item['jersey']),
-            str(visitor_id), item['position']
+            str(visitorteam_id), item['position']
         ]
 
     # give the ball an id == -1
-    game_id_dict['-1'] = ['ball', -1, -1, -1]
+    game_player_dict['-1'] = ['ball', -1, -1, -1]
 
-    return game_id_dict
+    return game_player_dict
 
 
-def get_raw_position_data_df(data, game_id_dict):
+def game_time_remaining_sec(period, game_clock):
+    return (5 - period) * game_clock
+
+
+def dist_two_points(x1, y1, x2, y2):
+    return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
+def get_raw_position_data_df(data, game_player_dict, game_info_dict):
     len_events = len(data['events'])
     player_moments = []
 
-    # create a list that contains all the header info for each moment
+    # create a list that contains info for each moment
     for m in range(1, len_events):
-        len_moment = len(data['events'][m]['moments'])
+        event_moment = data['events'][m]['moments']
+        len_moment = len(event_moment)
         for i in range(len_moment):
-            for item in data['events'][m]['moments'][i][5]:
-                item.append(data['events'][m]['moments'][i][0])
-                item.append(data['events'][m]['moments'][i][2])
-                item.append(data['events'][m]['moments'][i][3])
-                player_moments.append(item)
-                # player_moments.append(item[:8])
+            # get ball (x, y) coord
+            ball_x = event_moment[i][5][0][2]
+            ball_y = event_moment[i][5][0][3]
+
+            # add basic_game_data
+            additional_info = [
+                game_info_dict['game_id'],          # game_id
+                game_info_dict['game_date'],        # game_date
+                event_moment[i][0],                 # period
+                event_moment[i][2],                 # game_clock
+                game_time_remaining_sec(
+                    period=event_moment[i][0], game_clock=event_moment[i][2]),                                                            # game_time remaining in sec
+                event_moment[i][3]                  # shot_clock
+            ]
+
+            # add additional info and player_ball_dist to each moment
+            [player_moments.append(
+                additional_info +
+                item +
+                [dist_two_points(ball_x, ball_y, item[2], item[3])]
+            ) for item in event_moment[i][5]]
 
     headers_raw_pos_data = [
+        'game_id',
+        'game_date',
+        'period',
+        'game_clock',
+        'game_time_remain',
+        'shot_clock',
         'team_id',
         'player_id',
         'x_loc',
         'y_loc',
-        'moment',   # height/radius of ball
-        'period',
-        'game_clock',
-        'shot_clock'
+        'moment',       # height/radius of ball
+        'dist_to_ball'  # distance to ball
     ]
 
     df_raw_position_data = pd.DataFrame(
         player_moments, columns=headers_raw_pos_data
     )
 
-    # add player name and jersey number to dataframe
+    # add player name to dataframe
     df_raw_position_data['player_name'] = df_raw_position_data.player_id.map(
-        lambda x: game_id_dict[str(x)][0]
-    )
-    df_raw_position_data['player_jersey'] = df_raw_position_data.player_id.map(
-        lambda x: game_id_dict[str(x)][1]
+        lambda x: game_player_dict[str(x)][0]
     )
 
-    return df_raw_position_data.drop_duplicates()
+    return df_raw_position_data
 
 ###################################################################
 # create a new dataframe with every player's position at all times
 # use this for the animations
 ###################################################################
 
-
-def get_player_positions_df(data, game_id_dict):
-
-    coord_labels = ['x_loc', 'y_loc']
-    headers_name = []
-    player_ids = []
-
-    for key, value in game_id_dict.items():
-        headers_name.append(game_id_dict[key][0])
-        player_ids.append(key)
-
-    player_positions_all_times = []
-    period = []
-    game_clock = []
-    shot_clock = []
-    ball_height = []
-    len_events = len(data['events'])
-    for k in range(len_events):
-        len_moments = len(data['events'][k]['moments'])
-        for i in range(len_moments):
-            moment = data['events'][k]['moments'][i]
-            # create empty list (*2 for x and y coordinates)
-            loc = np.empty(len(player_ids) * 2) * np.nan
-            for item in moment[5]:
-                # 2* index to account for each player
-                # corresponding to two slots
-                idx = 2 * player_ids.index(str(item[1]))
-                loc[idx] = item[2]
-                loc[idx + 1] = item[3]
-
-            player_positions_all_times.append(loc)
-            period.append(moment[0])
-            game_clock.append(moment[2])
-            shot_clock.append(moment[3])
-            ball_height.append(moment[5][0][4])
-
-    df_positions = pd.DataFrame(player_positions_all_times)
-    df_positions.columns = pd.MultiIndex.from_product(
-        [headers_name, coord_labels]
-    )
-
-    # insert period, game_clock, shot_clock, ball height/radius
-    # don't like that it's at the end and its doubled.
-    # re-indexing searches seem more complicated than needed.
-    df_positions['period'] = period
-    df_positions['game_clock'] = game_clock
-    df_positions['shot_clock'] = shot_clock
-    df_positions['ball_height'] = ball_height
-
-    return df_positions.drop_duplicates()
+# 
+# def get_player_positions_df(data, game_id_dict):
+# 
+#     coord_labels = ['x_loc', 'y_loc']
+#     headers_name = []
+#     player_ids = []
+# 
+#     for key, value in game_id_dict.items():
+#         headers_name.append(game_id_dict[key][0])
+#         player_ids.append(key)
+# 
+#     player_positions_all_times = []
+#     period = []
+#     game_clock = []
+#     shot_clock = []
+#     ball_height = []
+#     len_events = len(data['events'])
+#     for k in range(len_events):
+#         len_moments = len(data['events'][k]['moments'])
+#         for i in range(len_moments):
+#             moment = data['events'][k]['moments'][i]
+#             # create empty list (*2 for x and y coordinates)
+#             loc = np.empty(len(player_ids) * 2) * np.nan
+#             for item in moment[5]:
+#                 # 2* index to account for each player
+#                 # corresponding to two slots
+#                 idx = 2 * player_ids.index(str(item[1]))
+#                 loc[idx] = item[2]
+#                 loc[idx + 1] = item[3]
+# 
+#             player_positions_all_times.append(loc)
+#             period.append(moment[0])
+#             game_clock.append(moment[2])
+#             shot_clock.append(moment[3])
+#             ball_height.append(moment[5][0][4])
+# 
+#     df_positions = pd.DataFrame(player_positions_all_times)
+#     df_positions.columns = pd.MultiIndex.from_product(
+#         [headers_name, coord_labels]
+#     )
+# 
+#     # insert period, game_clock, shot_clock, ball height/radius
+#     # don't like that it's at the end and its doubled.
+#     # re-indexing searches seem more complicated than needed.
+#     df_positions['period'] = period
+#     df_positions['game_clock'] = game_clock
+#     df_positions['shot_clock'] = shot_clock
+#     df_positions['ball_height'] = ball_height
+# 
+#     return df_positions.drop_duplicates()
 
 ###################################################################
 # create a new dataframe with every player's position and distance
@@ -142,9 +177,8 @@ def get_player_positions_df(data, game_id_dict):
 ###################################################################
 
 
-def dist_two_points(p1, p2):
-    return math.sqrt((p2[0] - p1[0]) ** 2 +
-                     (p2[1] - p1[1]) ** 2)
+def dist_two_points(x1, y1, x2, y2):
+    return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
 def get_closest_to_ball_df(dataframe):

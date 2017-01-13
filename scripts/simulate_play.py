@@ -1,24 +1,17 @@
 import os
 import pickle
+import numpy as np
 
-import triple_triple.prob_player_possessions as ppp
 import triple_triple.simulate_player_positions as spp
 
 from triple_triple.config import DATASETS_DIR
-from triple_triple.startup_data import (
-    get_player_possession_dataframes,
-    get_df_box_score
-)
-
-# Get game box score from nbastats_game_data
-df_box_score = get_df_box_score()
 
 poss_type_to_num = {
     'pass': 0,
     'shot': 1,
-    'assist': 2,
-    'turnover': 3
+    'turnover': 2
 }
+
 reg_to_num = {
     'back court': 0,
     'mid-range': 1,
@@ -28,165 +21,70 @@ reg_to_num = {
     'perimeter': 5
 }
 
+player_instances = os.path.join(DATASETS_DIR, 'player_instances.p')
+
+with open(player_instances, 'rb') as json_file:
+    player_instances = pickle.load(json_file)
+
 
 if __name__ == '__main__':
 
-    pickeled_file = os.path.join(DATASETS_DIR, 'simulated.p')
-    if os.path.exists(pickeled_file):
-        with open(pickeled_file, 'rb') as a_file:
-            data = pickle.load(a_file)
+    # players to be chosen to be on court
+    # numbers are list_numbers in player_instances
+    player_numbers = [1, 9, 10]
 
-        player_list = data['player_list']
-        simulated_regions_dict = data['simulated_regions_dict']
-        simulated_region_coord_dict = data['simulated_region_coord_dict']
-        all_players_poss_prob_dict = data['all_players_poss_prob_dict']
-        all_players_outcome_prob_matrix_dict = data['all_players_outcome_prob_matrix_dict']
+    players_on_court = [player_instances['player{0}'.format(item)] for item in player_numbers]
 
-    else:
-        # same order as run_player_possession habits
-        # to keep order of the poss_df.json 's
-        player_list = [
-            'Chris Bosh',
-            'Luol Deng',
-            'Dwyane Wade'
-        ]
+    num_sim = 40
+    # outcome array keeps track of possessions:
+    # [move, pass, shot_miss, shot_2pt, shot_3pt, turnover]
+    outcome_array = np.zeros(6)
+    player_possession_array = np.full(num_sim, np.nan)
+    poss_type_array = np.full((num_sim, 2), np.nan)
+    points_count = 0
+    play_stop = 0
+    regions = np.full(num_sim, np.nan)
 
-        num_players = len(player_list)
+    for i in range(num_sim):
+        idx_ball, poss_outcome = spp.simulate_one_play(players_on_court)
+        player_possession_array[i] = idx_ball
+        player_with_ball = players_on_court[idx_ball]
+        regions[i] = player_with_ball.court_region
 
-        # collect probabilities
-        all_players_poss_prob_dict = {}
-        all_players_outcome_prob_matrix_dict = {}
+        # pass
+        if poss_outcome == 0:
+            spp.if_pass(player_with_ball, players_on_court)
+            poss_type_array[i] = [poss_outcome, -1]
 
-        for i in range(num_players):
-            player_name = player_list[i]
-            player_number = str(i)
-            filename = 'player' + player_number + 'poss_dfs.json'
+            if player_with_ball.possession:
+                outcome_array[0] += 1
+            else:
+                outcome_array[1] += 1
 
-            possession_dict = get_player_possession_dataframes(filename)
+        # shot
+        elif poss_outcome == 1:
+            shot_type = spp.if_shoot(player_with_ball, players_on_court)
+            play_stop += 1
+            # miss
+            if shot_type == 0:
+                outcome_array[2] += 1
+                poss_type_array[i] = [poss_outcome, 0]
 
-            # get all items/values from possession_dict
-            # known_player_possessions returns:
-            # [play_shot, play_assist, play_turnover, start_idx_used, end_idx_used]
-            known_player_possessions = possession_dict['known_player_possessions']
-            df_player_possession = possession_dict['df_player_possession']
-            play_pass = possession_dict['play_pass']
-            player_poss_idx = possession_dict['player_poss_idx']
-            df_pos_dist_reg = possession_dict['df_pos_dist_reg']
+            # 2 pt
+            elif shot_type == 1:
+                outcome_array[3] += 1
+                points_count += 2
+                poss_type_array[i] = [poss_outcome, 1]
 
-            # get list of outcome prob matrices
-            player_outcome_prob_matrix_list = ppp.get_player_outcome_prob_matrix_list(
-                df_pos_dist_reg,
-                player_name,
-                df_player_possession,
-                known_player_possessions,
-                play_pass,
-                reg_to_num
-            )
-            # add player_outcome prob matrices to dict
-            # list order:
-            # 0 movement_prob_matrix,
-            # 1 miss_shots_prob_matrix,
-            # 2 _2pt_shots_prob_matrix,
-            # 3 _3pt_shots_prob_matrix,
-            # 4 pass_prob_matrix,
-            # 5 shot_prob_matrix,
-            # 6 assist_prob_matrix,
-            # 7 turnover_prob_matrix
+            # 3 pt
+            elif shot_type == 2:
+                outcome_array[4] += 1
+                points_count += 3
+                poss_type_array[i] = [poss_outcome, 2]
 
-            all_players_outcome_prob_matrix_dict[player_name] = player_outcome_prob_matrix_list
-
-            reg_prob_dict, reg_prob_list = ppp.get_player_region_prob(player_name, df_pos_dist_reg)
-
-            reg_prob_list_no_bc = ppp.get_reg_prob_no_backcourt(reg_prob_list)
-
-            # return [prob_pass, prob_shot, prob_turnover]
-            prob_poss_type = ppp.get_prob_possession_type(df_player_possession, num_outcomes=3)
-
-            # returns [miss, 2pt, 3pt]
-            prob_shot_type = ppp.get_shot_type_prob(known_player_possessions)
-
-            # prob assist
-            prob_assist = ppp.get_assist_prob(known_player_possessions, df_player_possession)
-
-            # returns possession per second
-            poss_per_sec = ppp.get_possession_per_second(df_box_score, player_name)
-
-            # add reg_prob_list to dict
-            all_players_poss_prob_dict[player_name] = [
-                reg_prob_list_no_bc,
-                reg_prob_list,
-                prob_poss_type,
-                prob_shot_type,
-                prob_assist,
-                poss_per_sec
-            ]
-
-        ############################
-        # MULTIPLE PLAYER SIMULATION
-        ############################
-        # simulate regions, coordinates and play
-        for i in range(num_players):
-            # regions and coordinates
-            simulated_regions_dict = spp.get_simulated_regions_dict(
-                player_list=player_list,
-                all_players_poss_prob_dict=all_players_poss_prob_dict,
-                all_players_outcome_prob_matrix_dict=all_players_outcome_prob_matrix_dict
-            )
-            simulated_region_coord_dict = spp.get_simulated_region_coord_dict(
-                player_list=player_list,
-                simulated_regions_dict=simulated_regions_dict
-            )
-
-        data = {
-            'player_list': player_list,
-            'simulated_regions_dict': simulated_regions_dict,
-            'simulated_region_coord_dict': simulated_region_coord_dict,
-            'all_players_poss_prob_dict': all_players_poss_prob_dict,
-            'all_players_outcome_prob_matrix_dict': all_players_outcome_prob_matrix_dict,
-        }
-        with open(pickeled_file, 'wb') as a_file:
-            pickle.dump(data, a_file)
-
-    # simulate play
-    points_count, outcome_array, player_possession_array, poss_type_array, play_stop = spp.get_simulate_play_mult_players(
-        player_list=player_list,
-        simulated_regions_dict=simulated_regions_dict,
-        simulated_region_coord_dict=simulated_region_coord_dict,
-        all_players_poss_prob_dict=all_players_poss_prob_dict,
-        all_players_outcome_prob_matrix_dict=all_players_outcome_prob_matrix_dict
-    )
-    import ipdb; ipdb.set_trace()
-    ############################
-    # ONE PLAYER SIMULATION
-    ############################
-    # simulate region where a player is when he is on the court
-    # player_sim_reg_temp = spp.get_player_sim_reg(
-    #     reg_prob_list,
-    #     all_players_outcome_prob_matrix_dict[player_list[0]][0],
-    #     num_sim=5000,
-    #     num_regions=6
-    # )
-    #
-    # # of all the moments on the court, simulate when he has posssesssion
-    # # 0 = no possession, 1 = possession
-    # player_sim_poss = spp.get_player_sim_poss(poss_per_sec, num_sim=len(player_sim_reg_temp))
-    #
-    # # outcome array keeps track of possessions:
-    # # [pass, shot_miss, shot_2pt, shot_3pt, assist, turnover]
-    # # points increase by 2 for every assist
-    # player_sim_reg, outcome_array, points = spp.get_simulated_play(
-    #     player_sim_poss,
-    #     player_sim_reg_temp,
-    #     prob_poss_type,
-    #     prob_shot_type,
-    #     prob_assist,
-    #     all_players_outcome_prob_matrix_dict[player_list[0]][4],
-    #     all_players_outcome_prob_matrix_dict[player_list[0]][6],
-    #     all_players_outcome_prob_matrix_dict[player_list[0]][7],
-    #     all_players_outcome_prob_matrix_dict[player_list[0]][1],
-    #     all_players_outcome_prob_matrix_dict[player_list[0]][2],
-    #     all_players_outcome_prob_matrix_dict[player_list[0]][3],
-    #     num_outcomes=4
-    # )
-    #
-    # player_sim_coord = spp.get_simulated_coord(player_sim_reg, 'left')
+        # turnover
+        elif poss_outcome == 2:
+            spp.if_turnover(player_with_ball, players_on_court)
+            outcome_array[5] += 1
+            poss_type_array[i] = [poss_outcome, -1]
+            play_stop += 1

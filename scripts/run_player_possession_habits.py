@@ -9,6 +9,13 @@ from triple_triple.startup_data import (
     get_df_play_by_play,
 )
 
+"""
+    Use this file to collect player possession dictionaries for each player in player list.
+
+    The script 'all_players_prob_dict' uses these files to collect probabilities for each player and saves info as a dictionary to be used in player instances.
+
+    These files, 'player_i_poss_dfs.json' can be deleted after all_players_prob_dict.py is run.
+"""
 
 reg_to_num = {
     'back court': 0,
@@ -33,13 +40,12 @@ df_pos_dist_reg = pph.get_player_court_region_df(
 )
 df_pos_dist_reg_trunc = pph.get_pos_trunc_df(df_pos_dist_reg)
 
+
 if __name__ == '__main__':
 
-    player_list = [
-        'Chris Bosh',
-        'Luol Deng',
-        'Dwyane Wade'
-    ]
+    # all players in the game
+    player_list = [value[0] for value in game_id_dict.values()]
+    player_list.remove('ball')
 
     num_players = len(player_list)
 
@@ -63,4 +69,4 @@ if __name__ == '__main__':
         filename = 'player' + player_number + 'poss_dfs.json'
         pph.save_player_poss_dict(filename, player_possession_dict)
 
-    # plot_coord = plot_team_possession(df_pos_dist_trunc, 10,20, hometeam_id, awayteam_id)
+    # plot_coord = plot_team_possession(df_pos_dist_trunc, 10,20, hometeam_id, awayteam_id, game_id_dict)

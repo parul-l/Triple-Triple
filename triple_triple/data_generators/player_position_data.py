@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pandas as pd
 
@@ -57,6 +58,14 @@ def dist_two_points(x1, y1, x2, y2):
     return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
+def closest_player_to_ball_array(dist_array):
+    min_idxs = np.where(dist_array[1:] == dist_array[1:].min())
+    closest_to_ball = [False] * 11
+    for idx in min_idxs[0]:
+        closest_to_ball[idx + 1] = True
+    return closest_to_ball
+
+
 def get_raw_position_data_df(data, game_player_dict, game_info_dict):
     len_events = len(data['events'])
     player_moments = []
@@ -66,10 +75,6 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict):
         event_moment = data['events'][m]['moments']
         len_moment = len(event_moment)
         for i in range(len_moment):
-            # get ball (x, y) coord
-            ball_x = event_moment[i][5][0][2]
-            ball_y = event_moment[i][5][0][3]
-
             # add basic_game_data
             additional_info = [
                 game_info_dict['game_id'],          # game_id
@@ -77,16 +82,32 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict):
                 event_moment[i][0],                 # period
                 event_moment[i][2],                 # game_clock
                 game_time_remaining_sec(
-                    period=event_moment[i][0], game_clock=event_moment[i][2]),                                                            # game_time remaining in sec
+                    period=event_moment[i][0], game_clock=event_moment[i][2]), # game_time remaining in sec
                 event_moment[i][3]                  # shot_clock
             ]
 
-            # add additional info and player_ball_dist to each moment
+            # get dist_to_ball if it exists
+            location_list = event_moment[i][5]
+
+            if len(location_list) == 11:
+                ball_x = location_list[0][2]
+                ball_y = location_list[0][3]
+
+                dist_to_ball = np.array([dist_two_points(ball_x, ball_y, item[2], item[3]) for item in location_list])
+
+                closest_to_ball = closest_player_to_ball_array(dist_array=dist_to_ball)
+
+            else:
+                dist_to_ball = [None] * len(location_list)
+                closest_to_ball = [None] * len(location_list)
+
+            # add additional info, player_ball_dist, closest_to_ball to each moment
             [player_moments.append(
                 additional_info +
-                item +
-                [dist_two_points(ball_x, ball_y, item[2], item[3])]
-            ) for item in event_moment[i][5]]
+                location_list[j] +
+                [dist_to_ball[j]] +
+                [closest_to_ball[j]]
+            ) for j in range(len(location_list))]
 
     headers_raw_pos_data = [
         'game_id',
@@ -99,20 +120,26 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict):
         'player_id',
         'x_loc',
         'y_loc',
-        'moment',       # height/radius of ball
-        'dist_to_ball'  # distance to ball
+        'moment',           # height/radius of ball
+        'dist_to_ball',     # distance to ball
+        'closest_to_ball'   # closest_to_ball if ball in play
     ]
 
     df_raw_position_data = pd.DataFrame(
         player_moments, columns=headers_raw_pos_data
     )
 
-    # add player name to dataframe
+    # add player_name to dataframe
     df_raw_position_data['player_name'] = df_raw_position_data.player_id.map(
         lambda x: game_player_dict[str(x)][0]
     )
 
-    return df_raw_position_data
+    # add jersey_number to dataframe
+    df_raw_position_data['player_jersey'] = df_raw_position_data.player_id.map(
+        lambda x: game_player_dict[str(x)][1]
+    )
+
+    return df_raw_position_data.drop_duplicates()
 
 ###################################################################
 # create a new dataframe with every player's position at all times
@@ -175,10 +202,6 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict):
 # from the ball at all times
 # use this for the player_passing_habits
 ###################################################################
-
-
-def dist_two_points(x1, y1, x2, y2):
-    return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
 def get_closest_to_ball_df(dataframe):

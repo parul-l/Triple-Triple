@@ -12,6 +12,18 @@ def get_player_ids():
     return json.load(open(filepath))
 
 
+def get_game_info_dict():
+    filepath = os.path.join(DATASETS_DIR, 'game_info_dict.json')
+    with open(filepath, 'rb') as json_file:
+        return pickle.load(json_file)
+
+
+def get_game_player_dict():
+    filepath = os.path.join(DATASETS_DIR, 'game_player_dict.json')
+    with open(filepath, 'rb') as json_file:
+        return pickle.load(json_file)
+
+
 def get_game_id_dict():
     filepath = os.path.join(DATASETS_DIR, 'game_id_dict.json')
     return json.load(open(filepath))

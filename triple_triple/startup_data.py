@@ -7,6 +7,12 @@ import pandas as pd
 from triple_triple.config import DATASETS_DIR
 
 
+def get_player_instances():
+    filepath = os.path.join(DATASETS_DIR, 'player_instances.p')
+    with open(filepath, 'rb') as json_file:
+        return pickle.load(json_file)
+
+
 def get_player_ids():
     filepath = os.path.join(DATASETS_DIR, 'player_ids.json')
     return json.load(open(filepath))
@@ -46,7 +52,7 @@ def get_df_pos_dist_trunc():
 
 def get_df_raw_position_data():
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
-    return pd.read_csv(filepath)
+    return pd.read_csv(filepath, low_memory=False)
 
 
 def get_df_play_by_play():

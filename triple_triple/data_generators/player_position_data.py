@@ -51,7 +51,7 @@ def get_game_player_dict(data):
 
 
 def game_time_remaining_sec(period, game_clock):
-    return (5 - period) * game_clock
+    return (4 - period) * 720. + game_clock
 
 
 def dist_two_points(x1, y1, x2, y2):
@@ -66,7 +66,17 @@ def closest_player_to_ball_array(dist_array):
     return closest_to_ball
 
 
-def get_raw_position_data_df(data, game_player_dict, game_info_dict):
+def add_has_ball_dist_to_df(closest_player, dist_to_ball, has_ball_dist=2):
+
+    if closest_player and dist_to_ball < has_ball_dist:
+        return True
+    else:
+        return False
+
+add_has_ball_dist_to_df = np.vectorize(add_has_ball_dist_to_df)
+
+
+def get_raw_position_data_df(data, game_player_dict, game_info_dict, has_ball_dist=2):
     len_events = len(data['events'])
     player_moments = []
 
@@ -97,16 +107,20 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict):
 
                 closest_to_ball = closest_player_to_ball_array(dist_array=dist_to_ball)
 
+                # has_ball_dist_array = add_has_ball_dist_to_df(closest_player=closest_to_ball, dist_to_ball=dist_to_ball, has_ball_dist=has_ball_dist)
+
             else:
                 dist_to_ball = [None] * len(location_list)
                 closest_to_ball = [None] * len(location_list)
+                # has_ball_dist_array = [None] * len(location_list)
 
             # add additional info, player_ball_dist, closest_to_ball to each moment
             [player_moments.append(
                 additional_info +
                 location_list[j] +
                 [dist_to_ball[j]] +
-                [closest_to_ball[j]]
+                [closest_to_ball[j]] 
+                # [has_ball_dist_array[j]]
             ) for j in range(len(location_list))]
 
     headers_raw_pos_data = [
@@ -120,9 +134,10 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict):
         'player_id',
         'x_loc',
         'y_loc',
-        'moment',           # height/radius of ball
-        'dist_to_ball',     # distance to ball
-        'closest_to_ball'   # closest_to_ball if ball in play
+        'moment',               # height/radius of ball
+        'dist_to_ball',         # distance to ball
+        'closest_to_ball',      # closest_to_ball if ball in play
+        # 'less_has_ball_dist'
     ]
 
     df_raw_position_data = pd.DataFrame(
@@ -139,7 +154,7 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict):
         lambda x: game_player_dict[str(x)][1]
     )
 
-    return df_raw_position_data.drop_duplicates()
+    return df_raw_position_data.drop_duplicates().reset_index(drop=True)
 
 ###################################################################
 # create a new dataframe with every player's position at all times

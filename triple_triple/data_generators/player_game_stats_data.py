@@ -304,4 +304,4 @@ def parse_df_play_by_play(df_play_by_play):
     )
     df_descrip_parsed['game_id'] = game_id_col
 
-    return df_descrip_parsed
+    return df_descrip_parsed.sort(['period', 'game_clock'], ascending=[True, False])

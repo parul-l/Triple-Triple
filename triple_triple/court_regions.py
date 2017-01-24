@@ -2,7 +2,7 @@
 # uses function shooting_side from team_shooting_side.py
 
 
-def region(x, y, shooting_side):
+def get_region(x, y, shooting_side):
     if shooting_side == 'left':
         if (0 <= x <= 19 and 19 <= y <= 31):
             return 'paint'

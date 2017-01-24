@@ -15,7 +15,8 @@ df_raw_position_data = get_df_raw_position_data()
 
 
 def fixedtime_df(period, time_start, time_end, dataframe=df_raw_position_data):
-
+    # return dataframe.query('@time_end <= game_clock <= @time_start and '
+    #                       ' period == @period')
     return dataframe[
         (dataframe.game_clock.values <= time_start) &
         (dataframe.game_clock.values >= time_end) &
@@ -23,8 +24,8 @@ def fixedtime_df(period, time_start, time_end, dataframe=df_raw_position_data):
     ]
 
 
-def team_coord(idx_num, team_id, dataframe=df_fixedtime):
-    grouped_fixedtime = df_fixedtime.groupby(['game_clock', 'shot_clock'])
+def team_coord(idx_num, team_id, dataframe):
+    grouped_fixedtime = dataframe.groupby(['game_clock', 'shot_clock'])
     instance_array = grouped_fixedtime.groups.keys()
 
     # group info at ind = idx_num:
@@ -64,7 +65,7 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
     # tuple: (game_clock, shot_clock)
     grouped_fixedtime = df_fixedtime.groupby(['game_clock', 'shot_clock'])
     instance_array = grouped_fixedtime.groups.keys()
-
+    instance_array.sort(reverse=True)
     # get coordintates
     ax = fig.gca()
     msg_game_clock = 'game clock: ' + str(instance_array[0][0])
@@ -129,12 +130,12 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
         shot_clock_annotations.set_text(
             'shot clock: ' + str(instance_array[frame_number][1]))
         ball_height_annotations.set_text(
-            'ball height: ' +  str(grouped_fixedtime.get_group(instance_array[frame_number]).moment.iloc[0]))
+            'ball height: ' + str(grouped_fixedtime.get_group(instance_array[frame_number]).moment.iloc[0]))
 
     # number of frames
     no_frame = len(instance_array)
 
-    anim = animation.FuncAnimation(fig, init_func=init, func=update,frames=no_frame, blit=False, interval=10, repeat=False)
+    anim = animation.FuncAnimation(fig, init_func=init, func=update, frames=no_frame, blit=False, interval=10, repeat=False)
 
     # anim.save('play.mpeg', fps=10, extra_args=['-vcodec', 'libx264'])
 
@@ -144,8 +145,8 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
 
 
     period = 1
-    time_start = 400
-    time_end = 398
+    time_start = 665
+    time_end = 663
     #
     # # There is a glitch with these times, quarter 1
     # # time_start = 394
@@ -158,6 +159,10 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
     plt.show()
     plt.ioff()
 
+
+cols = ['period', u'game_clock', 'game_time_remain', u'shot_clock', 'x_loc',
+        u'y_loc', u'moment', u'dist_to_ball', u'closest_to_ball',
+        u'player_name']
 
 ##############################################
 ##############################################

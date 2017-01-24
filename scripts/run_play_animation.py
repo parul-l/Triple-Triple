@@ -28,8 +28,8 @@ if __name__ == '__main__':
     df_positions = ppd.get_player_positions_df(data, game_id_dict)
 
     period = 1
-    time_start = 300
-    time_end = 290
+    time_start = 665
+    time_end = 660
     #
     # # There is a glitch with these times, quarter 1
     # # time_start = 394

@@ -1,3 +1,161 @@
+from triple_triple.team_shooting_side import get_initial_shooting_sides
+
+from triple_triple.config import DATASETS_DIR
+from triple_triple.court_regions import get_region
+
+from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
+
+
+from triple_triple.startup_data import (
+    get_df_play_by_play,
+    get_df_raw_position_data,
+    get_game_info_dict
+)
+
+df_raw_position_data = get_df_raw_position_data()
+df_play_by_play = get_df_play_by_play()
+game_info_dict = get_game_info_dict()
+df_game_stats = parse_df_play_by_play(df_play_by_play)
+
+
+initial_shooting_side = get_initial_shooting_sides(df_play_by_play, df_raw_position_data, game_info_dict)
+
+
+def get_possession_df(df_raw_position_data, has_ball_dist=2.0, len_poss=25):
+    df_possession = df_raw_position_data.query('closest_to_ball==True and dist_to_ball<=@has_ball_dist').reset_index(drop=True)
+
+    # determine where player_ids change
+    idx_poss_change = np.where(df_possession.player_id.values[:-1] != df_possession.player_id.values[1:])[0]
+
+    # length of consecutive player
+    idx_diff = idx_poss_change[1:] - idx_poss_change[:-1]
+
+    # idices where length is >= len_poss
+    idx_of_poss = np.where(idx_diff >= len_poss)[0]
+
+    # add possession column
+    df_possession['possession'] = None
+
+    for idx in idx_of_poss:
+        df_possession.possession.loc[idx_poss_change[idx] + 1] = 'Start'
+        df_possession.possession.loc[idx_poss_change[idx + 1]] = 'Stop'
+        
+        df_possession.possession.loc[idx_poss_change[idx] + 2:idx_poss_change[idx + 1] - 1] = True
+
+    return df_possession[df_possession.possession.notnull()]
+
+
+def get_court_region(dataframe_row, initial_shooting_side):
+    period, team_id, x, y = dataframe_row[0], dataframe_row[1], dataframe_row[2], dataframe_row[3]
+
+    if team_id != -1:
+        if period == 1 or period == 3:
+            shooting_side = initial_shooting_side[team_id]
+            return get_region(x, y, shooting_side)
+        if period == 2 or period == 4:
+            # switch sides
+            teams = initial_shooting_side.keys()
+            initial_shooting_side[teams[0]], initial_shooting_side[teams[1]] = initial_shooting_side[teams[1]], initial_shooting_side[teams[0]]
+            shooting_side = initial_shooting_side[team_id]
+            return get_region(x, y, shooting_side)
+
+
+def add_regions_to_df(df_possession):
+    df_select = df_possession[['period', 'team_id', 'x_loc', 'y_loc']]
+    regions_array = df_select.apply(get_court_region, axis=1)
+    df_possession['region'] = regions_array
+
+    return df_possession
+
+
+def add_empty_action_to_df_raw(df_possession):
+    df_possession['action'] = None
+
+    return df_possession
+
+
+def update_df_possession_action(end_poss_idx, action, df_possession_action):
+    df_possession_action.action.loc[end_poss_idx] = action
+    return df_possession_action
+
+
+def check_action(game_clock_tuple, df_game_player, action, time_error):
+    start_game_clock = game_clock_tuple[0]
+    end_game_clock = game_clock_tuple[1]
+
+    if action == "shot":
+        df_game_player_action_gc = df_game_player.query('action==@action or action=="missed_shot"').game_clock.values
+    else:
+        df_game_player_action_gc = df_game_player.query('action==@action').game_clock.values
+
+    if any(end_game_clock - time_error <= gc <= start_game_clock for gc in df_game_player_action_gc):
+        return True
+    else:
+        return False
+
+
+def characterize_possession_to_player(game_id, player_id, df_possession_action, df_game_stats):
+
+    grouped_poss_df = df_possession_action.groupby(['game_id', 'player_id'])
+
+    df_player_poss = grouped_poss_df.get_group((game_id, player_id)).query('possession=="Start" or possession=="Stop"')
+
+    # characterize each possession
+    
+    for i in range(0, len(df_player_poss), 2):
+        period = df_player_poss.period.iloc[i]
+        game_clock_start = df_player_poss.game_clock.iloc[i]
+        game_clock_end = df_player_poss.game_clock.iloc[i + 1]
+
+        end_poss_idx = df_player_poss.index[i + 1]
+
+        df_game_player = df_game_stats.query('game_id==@game_id and player_id==@player_id and period==@period')
+
+        # check shot
+        if check_action(
+            game_clock_tuple=(game_clock_start, game_clock_end),
+            df_game_player=df_game_player,
+            action='shot',
+            time_error=2
+        ):
+            update_df_possession_action(
+                end_poss_idx=end_poss_idx,
+                action='shot',
+                df_possession_action=df_possession_action
+            )
+
+        # check turnover
+        elif check_action(
+            game_clock_tuple=(game_clock_start, game_clock_end),
+            df_game_player=df_game_player,
+            action="turnover",
+            time_error=2
+        ):
+            update_df_possession_action(
+                end_poss_idx=end_poss_idx,
+                action='turnover',
+                df_possession_action=df_possession_action
+            )
+
+        # deduce pass
+        else:
+            update_df_possession_action(
+                end_poss_idx=end_poss_idx,
+                action='pass',
+                df_possession_action=df_possession_action,
+            )
+
+    return df_possession_action
+
+
+
+
+
+
+
+#####################
+##### OLD ONE #######
+#####################
 import cPickle as pickle
 import os
 import matplotlib.pyplot as plt

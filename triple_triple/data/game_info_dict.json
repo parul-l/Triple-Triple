@@ -1,0 +1,27 @@
+(dp1
+S'hometeam_id'
+p2
+I1610612744
+sS'hometeam'
+p3
+VGolden State Warriors
+p4
+sS'visitorteam'
+p5
+VMiami Heat
+p6
+sS'visitorteam_id'
+p7
+I1610612748
+sS'game_date'
+p8
+cdatetime
+datetime
+p9
+(S'\x07\xe0\x01\x0b\x00\x00\x00\x00\x00\x00'
+tRp10
+sS'game_id'
+p11
+V0021500568
+p12
+s.

@@ -3,12 +3,24 @@ import pickle
 
 from triple_triple.class_player import (Player, playerid_from_name)
 from triple_triple.config import DATASETS_DIR
-from triple_triple.startup_data import get_game_id_dict
+from triple_triple.startup_data import get_game_player_dict
 
 
-game_id_dict = get_game_id_dict()
+# file opens as strings
+game_player_dict = get_game_player_dict()
 
 if __name__ == '__main__':
+
+
+
+
+
+
+
+
+
+
+
     pickeled_file = os.path.join(DATASETS_DIR, 'player_instances_info.p')
 
     with open(pickeled_file, 'rb') as a_file:

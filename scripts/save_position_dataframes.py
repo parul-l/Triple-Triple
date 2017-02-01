@@ -22,6 +22,14 @@ if __name__ == '__main__':
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
     df_raw_position_data.to_csv(filepath)
 
+    # save the files as jsons but they open as strings
+    filepath = os.path.join(DATASETS_DIR, 'game_info_dict.json')
+    with open(filepath, 'wb') as json_file:
+        pickle.dump(game_info_dict, json_file)
+
+    filepath = os.path.join(DATASETS_DIR, 'game_player_dict.json')
+    with open(filepath, 'wb') as json_file:
+        pickle.dump(game_player_dict, json_file)
 
 
 

@@ -157,7 +157,7 @@ def parse_descrip(df_descrip, descrip_split, idx_list, action_list, description)
                 description=description
             )
 
-        # Check BLOCK/MISSED SHOT
+        # # Check BLOCK/MISSED SHOT
         elif descrip_split[idx][1] == 'BLOCK':
             # add block
             add_poss_to_action_list(
@@ -241,6 +241,22 @@ def parse_descrip(df_descrip, descrip_split, idx_list, action_list, description)
                 other_note=df_descrip.iloc[idx].PLAYER1_NAME,
                 description=description
             )
+            
+            # add attempted shot
+            if '3PT' in descrip_split[idx]:
+                other_note = 3
+            else:
+                other_note = 2
+            add_poss_to_action_list(
+                idx=idx,
+                action_list=action_list,
+                df_descrip=df_descrip,
+                action='shot',
+                player_num=1,
+                other_note=other_note,
+                description=description
+            )
+
 
         else:
             # add attempted shot
@@ -299,9 +315,9 @@ def parse_df_play_by_play(df_play_by_play):
     df_descrip_parsed = pd.DataFrame(data=action_list, columns=column_headers)
     # add game_id column
     game_id_col = np.full(
-        shape=len(df_descrip_parsed), fill_value=df_play_by_play.loc[0]['Game_ID'],
+        shape=len(df_descrip_parsed), fill_value=df_play_by_play.loc[0, 'Game_ID'],
         dtype=int
     )
     df_descrip_parsed['game_id'] = game_id_col
 
-    return df_descrip_parsed.sort(['period', 'game_clock'], ascending=[True, False])
+    return df_descrip_parsed.sort_values(['period', 'game_clock'], ascending=[True, False])

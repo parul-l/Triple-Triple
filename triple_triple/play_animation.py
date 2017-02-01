@@ -160,10 +160,6 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
     plt.ioff()
 
 
-cols = ['period', u'game_clock', 'game_time_remain', u'shot_clock', 'x_loc',
-        u'y_loc', u'moment', u'dist_to_ball', u'closest_to_ball',
-        u'player_name']
-
 ##############################################
 ##############################################
 ##############################################

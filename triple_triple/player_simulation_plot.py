@@ -11,7 +11,7 @@ def generate_pixel_points(x1, x2, new_coord_list, num_pixel):
     return new_coord_list
 
 
-def plot_player_simulation(sim_coord, df_raw_position_data):
+def plot_player_simulation(sim_coord, df_raw_position_data, player_name):
     x, y = zip(*sim_coord)
     t = df_raw_position_data.query('player_id==2547').iloc[7000:7300].game_clock.values
 
@@ -30,9 +30,10 @@ def plot_player_simulation(sim_coord, df_raw_position_data):
         y_new = generate_pixel_points(y[i], y[i + 1], y_new, num_pixel=50)
         t_new = generate_pixel_points(t[i], t[i + 1], t_new, num_pixel=50)
 
-    plt.scatter(x_new, y_new, c=t_new, cmap=plt.cm.Blues, s=1000,zorder=1)
-    cbar = plt.colorbar(orientation="horizontal")
+    plt.scatter(x_new, y_new, c=t_new, cmap=plt.cm.Blues, s=1000, zorder=1)
+    cbar = plt.colorbar(format='%.3f', orientation="horizontal")
     cbar.ax.invert_xaxis()
 
-        # plt.plot(x_coord, y_coord)
+    ax.set_title(player_name + ' simulated court movement')
+    fig.savefig('player_sim_movement.png')
     plt.show()

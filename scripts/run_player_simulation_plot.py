@@ -41,4 +41,4 @@ if __name__ == '__main__':
 
     sim_coord = spp.get_simulated_coord(player_sim_reg=sim_reg, shooting_side='right')
 
-    plot_player_simulation(sim_coord[:10], df_raw_position_data)
+    plot_player_simulation(sim_coord[:10], df_raw_position_data, 'Chris Bosh')

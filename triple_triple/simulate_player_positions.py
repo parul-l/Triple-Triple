@@ -2,7 +2,7 @@ import numpy as np
 
 # TODO: create court image labeling the regions
 # Use midpoint of the region as the simulated coordinate
-
+# TODO: check right side boundary points. 75 should be 80?
 
 def generate_back_court(shooting_side):
     if shooting_side == 'left':

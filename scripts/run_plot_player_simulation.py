@@ -24,27 +24,37 @@ if __name__ == '__main__':
         'perimeter': 5
     }
 
-    player_id_list = [2547, 2548]
+    player_id_list = [2547, 2548, 2736]
     game_id_list = [21500568]
-    player_classes_dict = create_player_class_instance(
+    players_offense_dict = create_player_class_instance(
         player_list=player_id_list,
         game_player_dict=game_player_dict,
     )
 
-    for player in player_id_list:
-        ppp.update_movement_prob_matrix(
-            player_class=player_classes_dict['_' + str(player)],
+    for player, player_class in players_offense_dict.items():
+        ppp.update_region_prob_matrix(
+            player_class=player_class,
             game_id=game_id_list[0],
             game_player_dict=game_player_dict,
             df_raw_position_region=df_raw_position_region,
             player_possession=False,
             team_on_offense=True,
             team_on_defense=False,
+            half_court=True
+        )
+        ppp.update_possession_prob(
+            player_class=player_class,
+            df_raw_position_region=df_raw_position_region,
+            game_id=None
         )
 
+    ppp.who_has_possession(players_offense_dict=players_offense_dict)
     # choose player to simulate
-    sim_reg = spp.get_player_sim_reg(cond_prob_movement=movement_prob[2547], num_sim=300, num_regions=6)
+    sim_reg = spp.get_player_sim_reg(
+        cond_prob_movement=players_offense_dict['_2547'].region_prob_matrix,
+        num_sim=10,
+        num_regions=6)
 
     sim_coord = spp.get_simulated_coord(player_sim_reg=sim_reg, shooting_side='right')
 
-    plot_player_simulation(sim_coord[:8], df_raw_position_region, 'Chris Bosh')
+    # plot_player_simulation(sim_coord, 'Chris Bosh')

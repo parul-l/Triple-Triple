@@ -31,7 +31,7 @@ if __name__ == '__main__':
     game_id_list = [21500568]
 #    player_id_list = [2547, 2548, 203110, 201939]
     player_id_list = [2547]
-    
+
     df_possession_action = pph.get_multi_games_players_possessions(
         game_id_list=game_id_list,
         player_id_list=player_id_list,

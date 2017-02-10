@@ -4,17 +4,12 @@ class Player(object):
             name: A string representing the player's name
             playerid: A string representing the player's id
             teamid: A string representing player's current teamid
-            prob_lists: A list of lists of probabilities
-                    [
-                    0 - reg_prob_list,
-                    1 - ]
 
-            prob_matrices: A list of conditional probabilities (positions, passes, shots, turnovers)
-                    [
-                    0 - movement_prob_matrix,
-                    1 - ]
+            region_prob_matrix: row = start region, column = end region
+                                (row, column) = probability of going from start region to end region
+            possession_prob: Proability of having possession of the ball when on team is on offense (float)
 
-            possession: A boolean to indicate if player has possession of ball
+            has_possession: A boolean to indicate if player has possession of ball
 
             court_region: Int between 0 and 5
                         reg_to_num = {
@@ -33,9 +28,9 @@ class Player(object):
         self.name = name
         self.player_id = player_id
         self.team_id = team_id
-        self.prob_lists = None
-        self.prob_matrices = None
-        self.possession = False
+        self.region_prob_matrix = None
+        self.possession_prob = 0
+        self.has_possession = False
         self.court_region = 0
 
 

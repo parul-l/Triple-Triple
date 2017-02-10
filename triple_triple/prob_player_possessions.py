@@ -79,7 +79,7 @@ def get_prob_count_matrix(count_matrix):
     return count_matrix / count_matrix.sum(axis=1)[:, None]
 
 
-def update_movement_prob_matrix(
+def update_region_prob_matrix(
     player_class,
     game_id,
     game_player_dict,
@@ -87,7 +87,7 @@ def update_movement_prob_matrix(
     player_possession=False,
     team_on_offense=False,
     team_on_defense=False,
-    back_court=True
+    half_court=True
 ):
     player_id = player_class.player_id
     team_id = player_class.team_id
@@ -106,7 +106,7 @@ def update_movement_prob_matrix(
     # get data for specific game
     df_game = df_raw_position_region.query('game_id==@game_id')
 
-    if back_court is False:
+    if half_court is True:
         df_game = df_game.query('region != "back court"')
 
     # get times when player has possession
@@ -114,27 +114,31 @@ def update_movement_prob_matrix(
     keep_game_clock = df_game.query(query_params).game_clock.values
 
     # get regions for player with desired times
-    df_region = df_game.query('player_id==@player_id')[
+    reg_array = df_game.query('player_id==@player_id')[
         df_game.period.isin(keep_period) &
         df_game.game_clock.isin(keep_game_clock)
     ].region.values
 
-    # create empty movement_matrix
-    movement_matrix = np.zeros((6, 6))
+    # create empty region_matrix
+    region_matrix = np.zeros((6, 6))
 
-    
+    # use this to allow staying in a region
+    # for i in range(len(reg_array) - 1):
+    #     start_reg = get_reg_to_num(reg_array[i])
+    #     end_reg = get_reg_to_num(reg_array[i + 1])
+    #     region_matrix[start_reg, end_reg] += 1
 
     # determine where regions change
-    # idx_reg_change = np.where(df_region[:-1] != df_region[1:])[0]
-    # 
-    # for idx in idx_reg_change:
-    #     start_reg = get_reg_to_num(df_region[idx])
-    #     end_reg = get_reg_to_num(df_region[idx + 1])
-    # 
-    #     movement_matrix[start_reg, end_reg] += 1
+    idx_reg_change = np.where(reg_array[:-1] != reg_array[1:])[0]
 
-    player_class.prob_matrices = get_prob_count_matrix(movement_matrix)
+    for idx in idx_reg_change:
+        start_reg = get_reg_to_num(reg_array[idx])
+        end_reg = get_reg_to_num(reg_array[idx + 1])
 
+        region_matrix[start_reg, end_reg] += 1
+
+    # update player_class
+    player_class.region_prob_matrix = get_prob_count_matrix(region_matrix)
 
 
 def get_action_prob_matrix(player_id_list, df_possession_action):
@@ -157,9 +161,81 @@ def get_action_prob_matrix(player_id_list, df_possession_action):
     return action_prob
 
 
-def get_prob_having_ball(player_id_list, df_raw_position_data):
-    for player in player_id_list:
-        df_raw_position_data.query('player_id==@player')[['period', 'game_clock', 'region']].drop_duplicates()
+def update_possession_prob(
+    player_class,
+    df_raw_position_region,
+    game_id=None
+):
+    if game_id is not None:
+        df_raw_position_region = df_raw_position_region\
+            .query('game_id==@game_id')
+
+    player_id = player_class.player_id
+    team_id = player_class.team_id
+
+    df_team_possession = df_raw_position_region\
+        .query('team_id==@team_id and closest_to_ball==True')
+
+    df_player_possession = df_team_possession.query('player_id==@player_id')
+
+    # update player_class
+    player_class.possession_prob = \
+        len(df_player_possession) / float(len(df_team_possession))
+
+
+def who_has_possession(players_offense_dict):
+    for player, player_class in players_offense_dict.items():
+        if player_class.has_possession is True:
+            return player
+
+
+def relative_player_possession_prob(players_offense_dict):
+    raw_prob = []
+    player_list = []
+
+    for player, player_class in players_offense_dict.items():
+        raw_prob.append(player_class.possession_prob)
+        player_list.append(player)
+
+    raw_prob = np.array(raw_prob)
+    return player_list, raw_prob / raw_prob.sum()
+
+
+def choose_player_has_possession(players_offense_dict):
+    player_list, prob = relative_player_possession_prob(players_offense_dict)
+    has_poss = np.random.choice(
+        a=np.arange(len(player_list)),
+        size=1,
+        p=prob
+    )[0]
+
+    # update player possession to True
+    # update player position to 'out of bounds' <--> 3
+    players_offense_dict[player_list[has_poss]].has_possession = True
+    players_offense_dict[player_list[has_poss]].court_region = get_reg_to_num('out of bounds')
+
+
+def update_has_possession(players_offense_dict):
+    has_ball = who_has_possession(players_offense_dict)
+
+    if update_has_possession is None:
+        choose_player_has_possession(players_offense_dict)
+        has_ball = who_has_possession(players_offense_dict)
+
+    players_no_ball = [player for player in players_offense_dict.keys()
+                       if player != has_ball]
+
+    # choose new player randomly
+    # update has_possession of new player and old player
+    players_offense_dict[has_ball].has_possession = False
+    new_has_ball = np.random.choice(
+        a=np.arange(len(players_no_ball)),
+        size=1
+    )[0]
+
+    players_offense_dict[players_no_ball[new_has_ball]].has_possession = True
+
+
 
 ########## OLD ONE ###################
 ###################################

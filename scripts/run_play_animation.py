@@ -6,14 +6,15 @@ import triple_triple.data_generators.player_position_data as ppd
 from triple_triple.full_court import draw_court
 from triple_triple.data_generators.nbastats_game_data import teams_playing
 from triple_triple.startup_data import (
-    get_player_ids,
-    get_df_all_game_info
+    get_game_player_dict,
+    get_df_all_game_info,
+    get_player_ids
 )
 
 
 df_game_info = get_df_all_game_info()
 player_ids = get_player_ids()
-
+game_player_dict = get_game_player_dict()
 
 if __name__ == '__main__':
     # January 11, 2016: MIA @ GSW
@@ -22,10 +23,10 @@ if __name__ == '__main__':
     tracking_file = '/Users/pl/Downloads/' + game_id + '.json'
 
     data = ppd.open_json(tracking_file)
-    game_id_dict = ppd.get_game_id_dict(data)
+    game_player_dict = ppd.get_game_player_dict(data)
     hometeam_id, awayteam_id = teams_playing(game_id, df_game_info)
 
-    df_positions = ppd.get_player_positions_df(data, game_id_dict)
+    df_positions = ppd.get_player_positions_df(data, game_player_dict)
 
     period = 1
     time_start = 665
@@ -43,7 +44,7 @@ if __name__ == '__main__':
         time_end=time_end, hometeam_id=hometeam_id,
         awayteam_id=awayteam_id
     )
-    # anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
+    anim.save('play.m4v', fps=10, extra_args=['-vcodec', 'libx264'])
     plt.show()
     plt.ioff()
 

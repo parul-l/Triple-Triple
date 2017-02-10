@@ -1,7 +1,7 @@
 from collections import Counter
 import numpy as np
-import pandas as pd
 
+np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
 def get_reg_to_num(reg):
     if reg == 'back court':
@@ -79,24 +79,62 @@ def get_prob_count_matrix(count_matrix):
     return count_matrix / count_matrix.sum(axis=1)[:, None]
 
 
-def get_movement_prob_matrix(player_id_list, df_raw_position_region):
-    movement_prob = {}
-    for player in player_id_list:
-        movement_matrix = np.zeros((6, 6))
+def update_movement_prob_matrix(
+    player_class,
+    game_id,
+    game_player_dict,
+    df_raw_position_region,
+    player_possession=False,
+    team_on_offense=False,
+    team_on_defense=False,
+    back_court=True
+):
+    player_id = player_class.player_id
+    team_id = player_class.team_id
 
-        df_player = df_raw_position_region.query('player_id==@player').region.values
-        # determine where regions change
-        idx_reg_change = np.where(df_player[:-1] != df_player[1:])[0]
+    if player_possession is True:
+        query_params = 'player_id==@player_id and closest_to_ball==True'
+    # get times when player's team has possession
+    elif team_on_offense is True:
+        query_params = 'team_id==@team_id and closest_to_ball==True'
+    # get times when player's team is on defense
+    elif team_on_defense is True:
+        query_params = 'team_id!=@team_id and closest_to_ball==True'
+    else:
+        query_params = 'player_id==@player_id'
 
-        for idx in idx_reg_change:
-            start_reg = get_reg_to_num(df_player[idx])
-            end_reg = get_reg_to_num(df_player[idx + 1])
+    # get data for specific game
+    df_game = df_raw_position_region.query('game_id==@game_id')
 
-            movement_matrix[start_reg, end_reg] += 1
+    if back_court is False:
+        df_game = df_game.query('region != "back court"')
 
-        movement_prob[player] = get_prob_count_matrix(movement_matrix)
+    # get times when player has possession
+    keep_period = df_game.query(query_params).period.values
+    keep_game_clock = df_game.query(query_params).game_clock.values
 
-    return movement_prob
+    # get regions for player with desired times
+    df_region = df_game.query('player_id==@player_id')[
+        df_game.period.isin(keep_period) &
+        df_game.game_clock.isin(keep_game_clock)
+    ].region.values
+
+    # create empty movement_matrix
+    movement_matrix = np.zeros((6, 6))
+
+    
+
+    # determine where regions change
+    # idx_reg_change = np.where(df_region[:-1] != df_region[1:])[0]
+    # 
+    # for idx in idx_reg_change:
+    #     start_reg = get_reg_to_num(df_region[idx])
+    #     end_reg = get_reg_to_num(df_region[idx + 1])
+    # 
+    #     movement_matrix[start_reg, end_reg] += 1
+
+    player_class.prob_matrices = get_prob_count_matrix(movement_matrix)
+
 
 
 def get_action_prob_matrix(player_id_list, df_possession_action):

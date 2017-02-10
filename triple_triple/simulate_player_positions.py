@@ -71,27 +71,29 @@ def generate_perimeter(shooting_side):
     component = np.random.choice(np.arange(4), p=np.ones(4) / 4)
     if component == 0:
         if shooting_side == 'left':
-            return [9.5, 1.5]
+            return [7, 1.5]
         elif shooting_side == 'right':
-            return [84.5, 1.5]
+            return [89, 1.5]
 
     if component == 1:
         if shooting_side == 'left':
-            return [9.5, 48.5]
+            return [7, 48.5]
         elif shooting_side == 'right':
-            return [84.5, 48.5]
+            return [89, 48.5]
 
-    # centroid of triangle (19, 3), (47, 0), (47, 25)
     if component == 2:
+        # centroid of triangle (19, 3), (47, 0), (47, 25)
         if shooting_side == 'left':
             return [37.67, 9.33]
+        # centroid of triangle (75, 3), (47, 0), (47, 25)
         elif shooting_side == 'right':
             return [56.33, 9.33]
 
-    # centroid of triangle (19, 47), (47, 25), (47, 50)
     if component == 3:
+        # centroid of triangle (19, 47), (47, 25), (47, 50)
         if shooting_side == 'left':
             return [37.67, 40.67]
+        # centroid of triangle (75, 47), (47, 25), (47, 50)
         elif shooting_side == 'right':
             return [56.33, 40.67]
 
@@ -125,6 +127,7 @@ def get_player_sim_poss(poss_per_sec, num_sim):
         p=p,
         size=num_sim
     )
+
 
 def generate_rand_positions(pos_num, shooting_side):
     # back court

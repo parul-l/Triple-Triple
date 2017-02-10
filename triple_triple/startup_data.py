@@ -30,11 +30,6 @@ def get_game_player_dict():
         return pickle.load(json_file)
 
 
-def get_game_id_dict():
-    filepath = os.path.join(DATASETS_DIR, 'game_id_dict.json')
-    return json.load(open(filepath))
-
-
 def get_df_positions():
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
@@ -52,6 +47,11 @@ def get_df_pos_dist_trunc():
 
 def get_df_raw_position_data():
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
+    return pd.read_csv(filepath, low_memory=False)
+
+
+def get_df_raw_position_region():
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
     return pd.read_csv(filepath, low_memory=False)
 
 

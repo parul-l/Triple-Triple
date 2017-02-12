@@ -1,107 +1,11 @@
 import numpy as np
-
-# TODO: create court image labeling the regions
-# Use midpoint of the region as the simulated coordinate
-
-
-def generate_back_court(shooting_side):
-    if shooting_side == 'left':
-        return [70.5, 25]
-    elif shooting_side == 'right':
-        return [23.5, 25]
-
-
-def generate_mid_range(shooting_side):
-    # break down the region in to 3 components
-    # randomly choose one of the components
-    # generate coordinates in that component
-    # approximate with rectangles and triangles
-
-    component = np.random.choice(np.arange(3), p=np.ones(3) / 3)
-    if component == 0:
-        if shooting_side == 'left':
-            return [9.5, 11]
-        elif shooting_side == 'right':
-            return [84.5, 11]
-
-    if component == 1:
-        if shooting_side == 'left':
-            return [9.5, 39]
-        elif shooting_side == 'right':
-            return [84.5, 39]
-
-    if component == 2:
-        if shooting_side == 'left':
-            return [27.5, 25]
-        elif shooting_side == 'right':
-            return [67, 25]
-
-
-def generate_key(shooting_side):
-    # approximate with rectangle
-
-    if shooting_side == 'left':
-        return [22, 25]
-    elif shooting_side == 'right':
-        return [72, 25]
-
-
-def generate_paint(shooting_side):
-    if shooting_side == 'left':
-        return [9.5, 25]
-    elif shooting_side == 'right':
-        return [84.5, 25]
-
-
-def generate_out_of_bounds(shooting_side):
-    # use behind the rim
-    if shooting_side == 'left':
-        return [-2, 25]
-
-    elif shooting_side == 'right':
-        return [96, 25]
-
-
-def generate_perimeter(shooting_side):
-    # break down the region in to 4 components
-    # randomly choose one of the components
-    # generate coordinates in that component
-    # approximate with rectangles and triangles
-
-    component = np.random.choice(np.arange(4), p=np.ones(4) / 4)
-    if component == 0:
-        if shooting_side == 'left':
-            return [7, 1.5]
-        elif shooting_side == 'right':
-            return [89, 1.5]
-
-    if component == 1:
-        if shooting_side == 'left':
-            return [7, 48.5]
-        elif shooting_side == 'right':
-            return [89, 48.5]
-
-    if component == 2:
-        # centroid of triangle (19, 3), (47, 0), (47, 25)
-        if shooting_side == 'left':
-            return [37.67, 9.33]
-        # centroid of triangle (75, 3), (47, 0), (47, 25)
-        elif shooting_side == 'right':
-            return [56.33, 9.33]
-
-    if component == 3:
-        # centroid of triangle (19, 47), (47, 25), (47, 50)
-        if shooting_side == 'left':
-            return [37.67, 40.67]
-        # centroid of triangle (75, 47), (47, 25), (47, 50)
-        elif shooting_side == 'right':
-            return [56.33, 40.67]
+import court_region_coord as crc
 
 
 def get_simulated_coord(player_sim_reg, shooting_side):
     coord = []
     for i in range(len(player_sim_reg)):
-        coord.append(generate_rand_positions(player_sim_reg[i], shooting_side))
+        coord.append(crc.generate_rand_positions(player_sim_reg[i], shooting_side))
     return coord
 
 
@@ -129,30 +33,90 @@ def get_player_sim_poss(poss_per_sec, num_sim):
     )
 
 
-def generate_rand_positions(pos_num, shooting_side):
-    # back court
-    if pos_num == 0:
-        return generate_back_court(shooting_side)
+def who_has_possession(players_offense_dict):
+    for player, player_class in players_offense_dict.items():
+        if player_class.has_possession is True:
+            return player
 
-    # mid-range
-    elif pos_num == 1:
-        return generate_mid_range(shooting_side)
 
-    # key
-    elif pos_num == 2:
-        return generate_key(shooting_side)
+def choose_player_has_possession(players_offense_dict):
+    player_list, prob = relative_player_possession_prob(players_offense_dict)
+    has_poss = np.random.choice(
+        a=np.arange(len(player_list)),
+        size=1,
+        p=prob
+    )[0]
 
-    # out of bounds
-    elif pos_num == 3:
-        return generate_out_of_bounds(shooting_side)
+    # update player possession to True
+    # update player position to 'out of bounds' <--> 3
+    players_offense_dict[player_list[has_poss]].has_possession = True
+    players_offense_dict[player_list[has_poss]].court_region = get_reg_to_num('out of bounds')
 
-    # paint
-    elif pos_num == 4:
-        return generate_paint(shooting_side)
 
-    # perimeter
-    elif pos_num == 5:
-        return generate_perimeter(shooting_side)
+def update_has_possession(players_offense_dict):
+    has_ball = who_has_possession(players_offense_dict)
+
+    if has_ball is None:
+        choose_player_has_possession(players_offense_dict)
+        has_ball = who_has_possession(players_offense_dict)
+
+    players_no_ball = [player for player in players_offense_dict.keys()
+                       if player != has_ball]
+
+    # choose new player randomly
+    # update has_possession of new player and old player
+    players_offense_dict[has_ball].has_possession = False
+    new_has_ball = np.random.choice(
+        a=np.arange(len(players_no_ball)),
+        size=1
+    )[0]
+
+    players_offense_dict[players_no_ball[new_has_ball]].has_possession = True
+
+
+def update_player_positions(players_offense_dict):
+    for player_class in players_offense_dict.values():
+        if player_class.court_region is None:
+            # give players initial region
+        else:
+            current_region = player_class.court_region
+            # update to new region
+            player_class.court_region = np.random.choice(
+                a=np.arange(6),
+                p=player_class.region_prob_matrix[current_region],
+                size=1
+            )[0]
+
+
+
+def choose_player_action(has_ball_player_class):
+    current_region = has_ball_player_class.court_region
+    prob = has_ball_player_class.action_prob_matrix[current_region]
+    # action in [0, 1, 2] <---> pass, shoot, turnover
+    return np.random.choice(
+        a=np.arange(3),
+        size=1,
+        p=prob
+    )[0]
+
+
+def sim_offense_play(players_offense_dict, start_play=False):
+    if start_play:
+        # choose who has possession and place them out of bounds
+
+    else:
+        has_ball = who_has_possession(players_offense_dict)
+        # determine his action
+        player_action = choose_player_action(players_offense_dict[has_ball])
+        # if pass
+        update_has_possession(players_offense_dict)
+        # if shoot
+
+        # if turnover
+
+
+
+
 
 
 

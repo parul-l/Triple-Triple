@@ -5,8 +5,14 @@ class Player(object):
             playerid: A string representing the player's id
             teamid: A string representing player's current teamid
 
-            region_prob_matrix: row = start region, column = end region
+            region_prob_matrix: A 6 x 6 matrix where
+                                row = start region, column = end region
                                 (row, column) = probability of going from start region to end region
+
+            action_prob_matrix: A 6 x 3 matrix where
+                                row = region, column = action [0, 1, 2]
+                                0 - pass, 1 - shoot, 2 - turnover
+
             possession_prob: Proability of having possession of the ball when on team is on offense (float)
 
             has_possession: A boolean to indicate if player has possession of ball
@@ -20,6 +26,7 @@ class Player(object):
                             'paint': 4,
                             'perimeter': 5
                         }
+            court_coord: A tuple that reflects court region. 
 
 
     """
@@ -29,9 +36,11 @@ class Player(object):
         self.player_id = player_id
         self.team_id = team_id
         self.region_prob_matrix = None
+        self.action_prob_matrix = None
         self.possession_prob = 0
         self.has_possession = False
         self.court_region = 0
+        self.court_coord = 0
 
 
 def playerid_from_name(player_name, game_player_dict):

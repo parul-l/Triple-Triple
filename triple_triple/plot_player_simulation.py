@@ -46,3 +46,6 @@ def plot_play_simulation(players_offense_dict, player_defense_dict, num_sim=10):
     ax = draw_court(ax)
     ax.set_xlim([0, 94])
     ax.set_ylim([0, 50])
+
+    for i in range(num_sim):
+        plt.scatter()

@@ -141,52 +141,22 @@ def update_region_prob_matrix(
     player_class.region_prob_matrix = get_prob_count_matrix(region_matrix)
 
 
-def get_action_prob_matrix(player_id_list, df_possession_action):
-    action_prob = {}
-    for player in player_id_list:
-        df_player = df_possession_action.query('player_id==@player').query('possession=="Start" or possession=="Stop"')[['action', 'region', 'possession']]
-
-        num_poss = len(df_player)
-        possession_matrix = np.zeros((6, 3))
-        # count by 2 since each pair is one possession ('Start', 'Stop')
-        for i in range(0, num_poss, 2):
-            end_reg = df_player.region.iloc[i + 1]
-
-            poss_action = df_player.action.iloc[i + 1]
-            poss_num = get_poss_to_num(poss_action)
-            possession_matrix[get_reg_to_num(end_reg), poss_num] += 1
-
-        action_prob[player] = possession_matrix
-
-    return action_prob
-
-
 def update_possession_prob(
     player_class,
-    df_raw_position_region,
+    df_possession,
     game_id=None
 ):
     if game_id is not None:
-        df_raw_position_region = df_raw_position_region\
-            .query('game_id==@game_id')
+        df_possession = df_possession.query('game_id==@game_id')
 
-    player_id = player_class.player_id
-    team_id = player_class.team_id
-
-    df_team_possession = df_raw_position_region\
-        .query('team_id==@team_id and closest_to_ball==True')
-
-    df_player_possession = df_team_possession.query('player_id==@player_id')
+    df_team_possession = df_possession\
+        .query('team_id==@player_class.team_id and possession=="end"')
+    df_player_possession = df_team_possession\
+        .query('player_id==@player_class.player_id')
 
     # update player_class
     player_class.possession_prob = \
         len(df_player_possession) / float(len(df_team_possession))
-
-
-def who_has_possession(players_offense_dict):
-    for player, player_class in players_offense_dict.items():
-        if player_class.has_possession is True:
-            return player
 
 
 def relative_player_possession_prob(players_offense_dict):
@@ -201,39 +171,22 @@ def relative_player_possession_prob(players_offense_dict):
     return player_list, raw_prob / raw_prob.sum()
 
 
-def choose_player_has_possession(players_offense_dict):
-    player_list, prob = relative_player_possession_prob(players_offense_dict)
-    has_poss = np.random.choice(
-        a=np.arange(len(player_list)),
-        size=1,
-        p=prob
-    )[0]
+def get_action_prob_matrix(player_class, df_possession):
+    query_params = 'player_id==@player_class.player_id and possession=="end"'
 
-    # update player possession to True
-    # update player position to 'out of bounds' <--> 3
-    players_offense_dict[player_list[has_poss]].has_possession = True
-    players_offense_dict[player_list[has_poss]].court_region = get_reg_to_num('out of bounds')
+    imp_columns = ['player_name', 'action', 'region', 'possession']
+    df_player = df_possession.query(query_params)[imp_columns]
 
+    # rows = region, columns = action [0, 1, 2] <--> [pass, shoot, turnover]
+    possession_matrix = np.zeros((6, 3))
 
-def update_has_possession(players_offense_dict):
-    has_ball = who_has_possession(players_offense_dict)
+    for i in range(len(df_player)):
+        end_reg = df_player.region.iloc[i]
+        poss_num = get_poss_to_num(df_player.action.iloc[i])
+        possession_matrix[get_reg_to_num(end_reg), poss_num] += 1
 
-    if update_has_possession is None:
-        choose_player_has_possession(players_offense_dict)
-        has_ball = who_has_possession(players_offense_dict)
+    player_class.action_prob_matrix = get_prob_count_matrix(possession_matrix)
 
-    players_no_ball = [player for player in players_offense_dict.keys()
-                       if player != has_ball]
-
-    # choose new player randomly
-    # update has_possession of new player and old player
-    players_offense_dict[has_ball].has_possession = False
-    new_has_ball = np.random.choice(
-        a=np.arange(len(players_no_ball)),
-        size=1
-    )[0]
-
-    players_offense_dict[players_no_ball[new_has_ball]].has_possession = True
 
 
 

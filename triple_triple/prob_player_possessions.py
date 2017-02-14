@@ -1,7 +1,10 @@
 from collections import Counter
 import numpy as np
 
+# TODO: Change out of bounds to 0
+
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+
 
 def get_reg_to_num(reg):
     if reg == 'back court':

@@ -19,7 +19,7 @@ df_game_stats = parse_df_play_by_play(df_play_by_play)
 
 
 if __name__ == '__main__':
-    player_id_list = [2547, 2548, 2736]
+    player_id_list = [-1, 2547, 2548, 2736]
     game_id_list = [21500568]
 
     df_possession = pph.get_possession_df(
@@ -41,7 +41,12 @@ if __name__ == '__main__':
         game_player_dict=game_player_dict,
     )
 
-    for player_class in players_offense_dict.values():
+    # remove ball to update probabilities
+    players_no_ball_dict = spp.get_player_dict_no_ball(
+        players_offense_dict=players_offense_dict
+    )
+
+    for player_class in players_no_ball_dict.values():
         # update region probability
         ppp.update_region_prob_matrix(
             player_class=player_class,
@@ -75,14 +80,23 @@ if __name__ == '__main__':
             df_possession=df_possession
         )
 
+start_play = True
+player_action = None
+sim_coord = {
+    '_2547': []
+}
 
-    ppp.who_has_possession(players_offense_dict=players_offense_dict)
-    # choose player to simulate
-    sim_reg = spp.get_player_sim_reg(
-        cond_prob_movement=players_offense_dict['_2547'].region_prob_matrix,
-        num_sim=10,
-        num_regions=6)
+for i in range(10):
+    player_action, start_play = spp.sim_offense_play(
+        players_offense_dict=players_offense_dict,
+        shooting_side='right',
+        start_play=start_play,
+        player_action=player_action
+    )
+    sim_coord['_2547'].append(players_offense_dict['_2547'].court_coord)
 
-    sim_coord = spp.get_simulated_coord(player_sim_reg=sim_reg, shooting_side='right')
+    # for player_class in players_offense_dict.values():
+    #     print player_class.name, player_class.has_possession, player_class.court_region, player_class.court_coord
 
-    # plot_player_simulation(sim_coord, 'Chris Bosh')
+
+    plot_player_simulation(sim_coord['_2547'], 'Chris Bosh')

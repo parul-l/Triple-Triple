@@ -26,7 +26,7 @@ class Player(object):
                             'paint': 4,
                             'perimeter': 5
                         }
-            court_coord: A tuple that reflects court region. 
+            court_coord: A tuple that reflects court region
 
 
     """
@@ -39,8 +39,8 @@ class Player(object):
         self.action_prob_matrix = None
         self.possession_prob = 0
         self.has_possession = False
-        self.court_region = 0
-        self.court_coord = 0
+        self.court_region = None
+        self.court_coord = None
 
 
 def playerid_from_name(player_name, game_player_dict):

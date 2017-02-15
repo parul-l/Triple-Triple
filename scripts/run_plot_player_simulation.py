@@ -9,8 +9,7 @@ from triple_triple.startup_data import (
     get_df_play_by_play
 )
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
-from triple_triple.plot_player_simulation import plot_player_simulation
-
+from triple_triple.plot_player_simulation import plot_play_simulation
 
 df_raw_position_region = get_df_raw_position_region()
 game_player_dict = get_game_player_dict()
@@ -80,23 +79,10 @@ if __name__ == '__main__':
             df_possession=df_possession
         )
 
-start_play = True
-player_action = None
-sim_coord = {
-    '_2547': []
-}
-
-for i in range(10):
-    player_action, start_play = spp.sim_offense_play(
+    plot_play_simulation(
         players_offense_dict=players_offense_dict,
-        shooting_side='right',
-        start_play=start_play,
-        player_action=player_action
+        player_defense_dict={},
+        num_sim=5,
+        num_pixel=50,
+        title_text='Team'
     )
-    sim_coord['_2547'].append(players_offense_dict['_2547'].court_coord)
-
-    # for player_class in players_offense_dict.values():
-    #     print player_class.name, player_class.has_possession, player_class.court_region, player_class.court_coord
-
-
-    plot_player_simulation(sim_coord['_2547'], 'Chris Bosh')

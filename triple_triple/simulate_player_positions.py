@@ -223,6 +223,35 @@ def sim_offense_play(
     return player_action, start_play
 
 
+def add_sim_coord_to_dict(players_dict, sim_coord_dict):
+    for player, player_class in players_dict.items():
+        sim_coord_dict.setdefault(player, []).append(player_class.court_coord)
+
+    return sim_coord_dict
+
+
+def create_sim_coord_dict(players_offense_dict, num_sim):
+    # simulate the play
+    start_play = True
+    player_action = None
+    sim_coord_dict = {}
+
+    # get coordinates
+    for i in range(num_sim):
+        player_action, start_play = sim_offense_play(
+            players_offense_dict=players_offense_dict,
+            shooting_side='right',
+            start_play=start_play,
+            player_action=player_action
+        )
+
+        sim_coord_dict = add_sim_coord_to_dict(
+            players_dict=players_offense_dict,
+            sim_coord_dict=sim_coord_dict
+        )
+
+    return sim_coord_dict
+
 
 
 

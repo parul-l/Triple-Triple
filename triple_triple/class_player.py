@@ -4,6 +4,7 @@ class Player(object):
             name: A string representing the player's name
             playerid: A string representing the player's id
             teamid: A string representing player's current teamid
+            jersey: A string representing player's current jersey number
 
             region_prob_matrix: A 6 x 6 matrix where
                                 row = start region, column = end region
@@ -31,10 +32,11 @@ class Player(object):
 
     """
 
-    def __init__(self, name, player_id, team_id):
+    def __init__(self, name, player_id, team_id, jersey):
         self.name = name
         self.player_id = player_id
         self.team_id = team_id
+        self.jersey = jersey
         self.region_prob_matrix = None
         self.action_prob_matrix = None
         self.possession_prob = 0
@@ -57,6 +59,7 @@ def create_player_class_instance(player_list, game_player_dict):
                 name=game_player_dict[str(player_id)][0],           # name
                 player_id=player_id,                                # player_id
                 team_id=int(game_player_dict[str(player_id)][2]),   # team_id
+                jersey=game_player_dict[str(player_id)][1]          # jersey
         )
 
     return player_class_dict

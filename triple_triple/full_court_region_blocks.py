@@ -1,7 +1,9 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
+from triple_triple.config import IMG_DIR
 from triple_triple.full_court import draw_court
 
 
@@ -66,6 +68,8 @@ def region_block_court(ax=ax):
     ax.fill_between(x4, 50, y12, facecolor='#78ff00', alpha=0.4, lw=0)
 
     plt.legend(loc='upper left')
+    filepath = os.path.join(IMG_DIR, 'full_court_region_block.png')
+    fig.savefig(filepath)
     # plt.show()
     return ax
 
@@ -90,5 +94,5 @@ def label_court_prob(ax, prob_array):
     ax.text(82, 25, str(prob_array[4]) + '%', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
     # perimeter
     ax.text(53, 25, str(prob_array[5]) + '%', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
-    
+
     return ax

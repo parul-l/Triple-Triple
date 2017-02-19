@@ -1,5 +1,5 @@
 # RESTRUCTURED:
-# TODO: CLEAN THIS UP AND INCORPORATE ONE-PLAYER 
+# TODO: CLEAN THIS UP AND INCORPORATE ONE-PLAYER
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,14 +14,16 @@ game_info_dict = get_game_info_dict()
 df_raw_position_data = get_df_raw_position_data()
 
 
-def fixedtime_df(period, time_start, time_end, dataframe=df_raw_position_data):
-    # return dataframe.query('@time_end <= game_clock <= @time_start and '
-    #                       ' period == @period')
-    return dataframe[
-        (dataframe.game_clock.values <= time_start) &
-        (dataframe.game_clock.values >= time_end) &
-        (dataframe.period.values == period)
-    ]
+def get_fixedtime_df(
+    period,
+    time_start,
+    time_end,
+    dataframe=df_raw_position_data
+):
+
+    return dataframe.query(
+        '@time_end <= game_clock <= @time_start and \
+         period == @period')
 
 
 def team_coord(idx_num, team_id, dataframe):
@@ -55,8 +57,17 @@ def update_annotations(annotations, xx, yy):
         anno.set_position((x - 0.5, y - 0.4))
 
 
-def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_dict, dataframe=df_raw_position_data):
-    df_fixedtime = fixedtime_df(
+def play_animation(
+    period,
+    time_start,
+    time_end,
+    fig,
+    game_info_dict=game_info_dict,
+    dataframe=df_raw_position_data
+):
+
+
+    df_fixedtime = get_fixedtime_df(
         period=period,
         time_start=time_start,
         time_end=time_end
@@ -91,11 +102,23 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
     hometeam_id = game_info_dict['hometeam_id']
     visitorteam_id = game_info_dict['visitorteam_id']
 
-    x_home, y_home, jersey_home = team_coord(idx_num=0, team_id=hometeam_id, dataframe=df_fixedtime)
-    x_away, y_away, jersey_away = team_coord(idx_num=0, team_id=visitorteam_id, dataframe=df_fixedtime)
+    x_home, y_home, jersey_home = team_coord(
+        idx_num=0,
+        team_id=hometeam_id,
+        dataframe=df_fixedtime
+    )
+    x_away, y_away, jersey_away = team_coord(
+        idx_num=0,
+        team_id=visitorteam_id,
+        dataframe=df_fixedtime
+    )
 
     # initial ball coordinates
-    x_ball, y_ball, ball_id = team_coord(idx_num=0, team_id=-1, dataframe=df_fixedtime)
+    x_ball, y_ball, ball_id = team_coord(
+        idx_num=0,
+        team_id=-1
+        dataframe=df_fixedtime
+    )
 
     # plot the initial point
     scat_home = plot_points(ax, x_home, y_home, color='blue')
@@ -135,7 +158,15 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
     # number of frames
     no_frame = len(instance_array)
 
-    anim = animation.FuncAnimation(fig, init_func=init, func=update, frames=no_frame, blit=False, interval=10, repeat=False)
+    anim = animation.FuncAnimation(
+        fig,
+        init_func=init,
+        func=update,
+        frames=no_frame,
+        blit=False,
+        interval=10,
+        repeat=False
+    )
 
     # anim.save('play.mpeg', fps=10, extra_args=['-vcodec', 'libx264'])
 
@@ -144,9 +175,9 @@ def play_animation(period, time_start, time_end, fig, game_info_dict=game_info_d
 
 
 
-    period = 1
-    time_start = 665
-    time_end = 663
+    period = 2
+    time_start = 340
+    time_end = 338
     #
     # # There is a glitch with these times, quarter 1
     # # time_start = 394

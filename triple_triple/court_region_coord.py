@@ -1,6 +1,5 @@
 import numpy as np
 
-# TODO: create court image labeling the regions
 # Use midpoint of the region as the simulated coordinate
 
 
@@ -17,7 +16,7 @@ def generate_mid_range(shooting_side):
     # generate coordinates in that component
     # approximate with rectangles and triangles
 
-    component = np.random.choice(np.arange(3), p=np.ones(3) / 3)
+    component = np.random.choice(np.arange(3))
     if component == 0:
         if shooting_side == 'left':
             return [9.5, 11]
@@ -68,7 +67,7 @@ def generate_perimeter(shooting_side):
     # generate coordinates in that component
     # approximate with rectangles and triangles
 
-    component = np.random.choice(np.arange(4), p=np.ones(4) / 4)
+    component = np.random.choice(np.arange(4))
     if component == 0:
         if shooting_side == 'left':
             return [7, 1.5]
@@ -82,20 +81,20 @@ def generate_perimeter(shooting_side):
             return [89, 48.5]
 
     if component == 2:
-        # centroid of triangle (19, 3), (47, 0), (47, 25)
+        # centroid of triangle (14, 0), (47, 0), (47, 25)
         if shooting_side == 'left':
-            return [37.67, 9.33]
-        # centroid of triangle (75, 3), (47, 0), (47, 25)
+            return [36, 8.33]
+        # centroid of triangle (80, 0), (47, 0), (47, 25)
         elif shooting_side == 'right':
-            return [56.33, 9.33]
+            return [58, 8.33]
 
     if component == 3:
-        # centroid of triangle (19, 47), (47, 25), (47, 50)
+        # centroid of triangle (14, 50), (47, 25), (47, 50)
         if shooting_side == 'left':
-            return [37.67, 40.67]
-        # centroid of triangle (75, 47), (47, 25), (47, 50)
+            return [36, 41.67]
+        # centroid of triangle (80, 50), (47, 25), (47, 50)
         elif shooting_side == 'right':
-            return [56.33, 40.67]
+            return [58, 41.67]
 
 
 def generate_rand_positions(pos_num, shooting_side):

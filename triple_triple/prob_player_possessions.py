@@ -2,6 +2,7 @@ from collections import Counter
 import numpy as np
 
 # TODO: Change out of bounds to 0
+# TODO: Change shooting probability to incorporate regions
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
@@ -191,7 +192,23 @@ def get_action_prob_matrix(player_class, df_possession):
     player_class.action_prob_matrix = get_prob_count_matrix(possession_matrix)
 
 
+def get_shooting_prob(player_class, df_game_stats):
+    query_params = 'player_id==@player_class.player_id and \
+                    (action=="shot" or action=="missed_shot")'
+    df_player = df_game_stats.query(query_params)
+    
+    shot_prob = np.zeros(2)
 
+    # get 2pt and 3pt prob
+    for i in range(2, 4):
+        df_specific_shot = df_player.query('other_note==@i')
+        total_attempts = len(df_specific_shot)
+        total_made = len(df_specific_shot.query('action=="shot"'))
+
+        if total_attempts != 0:
+            shot_prob[i - 2] = total_made / float(total_attempts)
+
+    player_class.shooting_prob = shot_prob
 
 ########## OLD ONE ###################
 ###################################

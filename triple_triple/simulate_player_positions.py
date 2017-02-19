@@ -7,11 +7,13 @@ from triple_triple.prob_player_possessions import (
     get_reg_to_num
 )
 
-# TODO: in sim_offense_play, keep track of made/missed shots, and who gets rebound after missed shot
+# TODO: in sim_offense_play, keep track of made/missed shots,
+# TODO: Fix score in sim_offense_play. It's too redundant
+# TODO:  who gets rebound after missed shot
 # TODO: Decide whether to keep ball in players_offense_dict or make it separate
 # TODO: Perhaps change update_player_positions so that player positions are unique
 # TODO: Incorporate shot clock to force shot
-# TODO: This is way too messy than it needs to be
+# TODO: This is messier than it needs to be
 
 
 def get_simulated_coord(player_sim_reg, shooting_side):
@@ -166,6 +168,32 @@ def choose_player_action(has_ball_player_class, num_actions=3):
     )
 
 
+def shot_outcome(player_class):
+    shooting_region = player_class.court_region
+    if shooting_region == 5:
+        idx = 1
+        score = 3
+    else:
+        idx = 0
+        score = 2
+    # determine if shot made or miss
+    # 0 = miss, 1 = make
+    outcome = np.random.choice(
+        a=np.arange(2),
+        p=[1 - player_class.shooting_prob[idx],
+           player_class.shooting_prob[idx]]
+    )
+    if outcome == 0:
+        score = 0
+    else:
+        player_class.shots_made += 1
+
+    player_class.shot_attempts += 1
+    player_class.total_points += score
+
+    return score
+
+
 def sim_offense_play(
     players_offense_dict,
     shooting_side,
@@ -186,14 +214,16 @@ def sim_offense_play(
             shooting_side=shooting_side,
             action=player_action
         )
+        score = 0
 
     else:
         has_ball = who_has_possession(players_offense_dict)
         # determine his action
         player_action = choose_player_action(players_offense_dict[has_ball])
-
+        score = 0
         # pass
         if player_action == 0:
+            players_offense_dict[has_ball].passes += 1
             start_play = False
             update_has_possession(players_offense_dict)
             update_player_positions(
@@ -207,10 +237,11 @@ def sim_offense_play(
                 shooting_side=shooting_side
             )
 
-        # shoot, turnover
-        elif player_action == 1 or player_action == 2:
+        # shoot
+        elif player_action == 1:
+            score = shot_outcome(players_offense_dict[has_ball])
             start_play = True
-            # update ball to rim or out of bounds
+            # update ball tp rim
             update_ball_position(
                 players_offense_dict=players_offense_dict,
                 action=player_action,
@@ -220,7 +251,21 @@ def sim_offense_play(
             # change player's possession to False
             players_offense_dict[has_ball].has_possession = False
 
-    return player_action, start_play
+        # turnover
+        elif player_action == 2:
+            players_offense_dict[has_ball].turnovers += 1
+            start_play = True
+            # update out of bounds
+            update_ball_position(
+                players_offense_dict=players_offense_dict,
+                action=player_action,
+                shooting_side=shooting_side
+            )
+
+            # change player's possession to False
+            players_offense_dict[has_ball].has_possession = False
+
+    return player_action, start_play, score
 
 
 def add_sim_coord_to_dict(players_dict, sim_coord_dict):
@@ -235,6 +280,7 @@ def create_sim_coord_dict(players_offense_dict, num_sim):
     start_play = True
     player_action = None
     sim_coord_dict = {}
+    action_array = np.empty(num_sim)
 
     # get coordinates
     for i in range(num_sim):
@@ -245,12 +291,14 @@ def create_sim_coord_dict(players_offense_dict, num_sim):
             player_action=player_action
         )
 
+        action_array[i] = player_action
+
         sim_coord_dict = add_sim_coord_to_dict(
             players_dict=players_offense_dict,
             sim_coord_dict=sim_coord_dict
         )
 
-    return sim_coord_dict
+    return sim_coord_dict, action_array
 
 
 

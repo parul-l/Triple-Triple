@@ -79,6 +79,12 @@ if __name__ == '__main__':
             df_possession=df_possession
         )
 
+        # update shooting_prob
+        ppp.get_shooting_prob(
+            player_class=player_class,
+            df_game_stats=df_game_stats
+        )
+
     plot_play_simulation(
         players_offense_dict=players_offense_dict,
         player_defense_dict={},

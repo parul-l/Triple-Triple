@@ -16,21 +16,61 @@ ax.set_ylim([0, 50])
 
 def region_block_court(ax=ax):
     # PAINT
-
-    ax.add_patch(patches.Rectangle((75, 19), 19, 12, facecolor='#1e9abe', alpha=0.4, edgecolor='none', label='paint'))
+    ax.add_patch(patches.Rectangle(
+        xy=(75, 19),
+        width=19,
+        height=12,
+        facecolor='#1e9abe',
+        alpha=0.4,
+        edgecolor='none',
+        label='paint')
+    )
 
     # BACK COURT
-    ax.add_patch(patches.Rectangle((0, 0), 47, 50, facecolor='#e82e15', alpha=0.6, edgecolor='none', label='back court'))
+    ax.add_patch(patches.Rectangle(
+        xy=(0, 0),
+        width=47,
+        height=50,
+        facecolor='#e82e15',
+        alpha=0.6,
+        edgecolor='none',
+        label='back court')
+    )
 
     # KEY
-    ax.add_patch(patches.Wedge((75, 25), 6, theta1=0, theta2=360, ec='none', facecolor='#04d18d', alpha=0.6, edgecolor='none', label='key'))
+    ax.add_patch(patches.Wedge(
+        center=(75, 25),
+        r=6,
+        theta1=0,
+        theta2=360,
+        ec='none',
+        facecolor='#04d18d',
+        alpha=0.6,
+        edgecolor='none',
+        label='key')
+    )
 
     # MID-RANGE
-    ax.add_patch(patches.Rectangle((80, 3), 16, 16, facecolor='#601ebe', alpha=0.6, edgecolor='none'))
-    ax.add_patch(patches.Rectangle((80, 31), 16, 16, facecolor='#601ebe', alpha=0.6, edgecolor='none', label='mid-range'))
+    ax.add_patch(patches.Rectangle(
+        xy=(80, 3),
+        width=16,
+        height=16,
+        facecolor='#601ebe',
+        alpha=0.6,
+        edgecolor='none')
+    )
+    ax.add_patch(patches.Rectangle(
+        xy=(80, 31),
+        width=16,
+        height=16,
+        facecolor='#601ebe',
+        alpha=0.6,
+        edgecolor='none',
+        label='mid-range')
+    )
 
-    # 3 point circle: (x - 88.75)**2 + (y - 25)**2 = 23.75**2
-    # key circle: (x - 75)**2 + (y - 25)**2 = 6**2
+    # # 3 point circle: (x - 88.75)**2 + (y - 25)**2 = 23.75**2
+    # # key circle: (x - 75)**2 + (y - 25)**2 = 6**2
 
     # top and bottom right arc
     x1 = np.arange(75, 80, 0.01)
@@ -43,34 +83,59 @@ def region_block_court(ax=ax):
 
     # top and bottom left arc
     x2 = np.arange(69, 75, 0.01)
-    y5 = - np.sqrt(6**2 - (x2 - 75)**2) + 25
-    y6 = - np.sqrt((23.75)**2 - (x2 - 88.75)**2) + 25
-    y7 = np.sqrt((23.75)**2 - (x2 - 88.75)**2) + 25
-    y8 = np.sqrt(6**2 - (x2 - 75)**2) + 25
-    ax.fill_between(x2, y5, y6, facecolor='#601ebe', alpha=0.6, lw=0)
-    ax.fill_between(x2, y7, y8, facecolor='#601ebe', alpha=0.6, lw=0)
+    y1 = - np.sqrt(6**2 - (x2 - 75)**2) + 25
+    y2 = - np.sqrt((23.75)**2 - (x2 - 88.75)**2) + 25
+    y3 = np.sqrt((23.75)**2 - (x2 - 88.75)**2) + 25
+    y4 = np.sqrt(6**2 - (x2 - 75)**2) + 25
+    ax.fill_between(x2, y1, y2, facecolor='#601ebe', alpha=0.6, lw=0)
+    ax.fill_between(x2, y3, y4, facecolor='#601ebe', alpha=0.6, lw=0)
 
     x3 = np.arange(65, 69, 0.01)
-    y9 = np.sqrt((23.75)**2 - (x3 - 88.75)**2) + 25
-    y10 = - np.sqrt((23.75)**2 - (x3 - 88.75)**2) + 25
-    ax.fill_between(x3, y9, y10, facecolor='#601ebe', alpha=0.6, lw=0)
+    y1 = np.sqrt((23.75)**2 - (x3 - 88.75)**2) + 25
+    y2 = - np.sqrt((23.75)**2 - (x3 - 88.75)**2) + 25
+    ax.fill_between(x3, y1, y2, facecolor='#601ebe', alpha=0.6, lw=0)
 
     # PERIMETER
-    ax.add_patch(patches.Rectangle((47, 0), 18, 50, facecolor='#78ff00', alpha=0.4, edgecolor='none'))
-    ax.add_patch(patches.Rectangle((80, 0), 14, 3, facecolor='#78ff00', alpha=0.4, edgecolor='none'))
-    ax.add_patch(patches.Rectangle((80, 47), 14, 3, facecolor='#78ff00', alpha=0.4, edgecolor='none', label='perimeter'))
+    ax.add_patch(patches.Rectangle(
+        xy=(47, 0),
+        width=18,
+        height=50,
+        facecolor='#78ff00',
+        alpha=0.4,
+        edgecolor='none')
+    )
+    ax.add_patch(patches.Rectangle(
+        xy=(80, 0),
+        width=14,
+        height=3,
+        facecolor='#78ff00',
+        alpha=0.4,
+        edgecolor='none')
+    )
+    ax.add_patch(patches.Rectangle(
+        xy=(80, 47),
+        width=14,
+        height=3,
+        facecolor='#78ff00',
+        alpha=0.4,
+        edgecolor='none',
+        label='perimeter')
+    )
 
     # arc regions
     x4 = np.arange(65, 80, 0.01)
-    y11 = - np.sqrt((23.75)**2 - (x4 - 88.75)**2) + 25
-    y12 = np.sqrt((23.75)**2 - (x4 - 88.75)**2) + 25
-    ax.fill_between(x4, y11, 0, facecolor='#78ff00', alpha=0.4, lw=0)
-    ax.fill_between(x4, 50, y12, facecolor='#78ff00', alpha=0.4, lw=0)
+    y1 = - np.sqrt((23.75)**2 - (x4 - 88.75)**2) + 25
+    y2 = 0
+    y3 = 50
+    y4 = np.sqrt((23.75)**2 - (x4 - 88.75)**2) + 25
+    ax.fill_between(x4, y1, y2, facecolor='#78ff00', alpha=0.4, lw=0)
+    ax.fill_between(x4, y3, y4, facecolor='#78ff00', alpha=0.4, lw=0)
 
     plt.legend(loc='upper left')
     filepath = os.path.join(IMG_DIR, 'full_court_region_block.png')
     fig.savefig(filepath)
-    # plt.show()
+    
+    plt.show()
     return ax
 
 

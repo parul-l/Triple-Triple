@@ -98,7 +98,12 @@ def plot_play_simulation(
             s=200,
             zorder=1
         )
-        color_bar_dict[player] = plt.colorbar(format='%.2f', orientation="horizontal", fraction=0.046, pad=0.04)
+        color_bar_dict[player] = plt.colorbar(
+            format='%.2f',
+            orientation="horizontal",
+            fraction=0.046,
+            pad=0.04
+        )
 
     # plot jersey number
     plot_jersey_numbers(ax=ax, players_dict=players_offense_dict)

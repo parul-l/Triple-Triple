@@ -280,25 +280,22 @@ def create_sim_coord_dict(players_offense_dict, num_sim):
     start_play = True
     player_action = None
     sim_coord_dict = {}
-    action_array = np.empty(num_sim)
 
     # get coordinates
     for i in range(num_sim):
-        player_action, start_play = sim_offense_play(
+        player_action, start_play, score = sim_offense_play(
             players_offense_dict=players_offense_dict,
             shooting_side='right',
             start_play=start_play,
             player_action=player_action
         )
 
-        action_array[i] = player_action
-
         sim_coord_dict = add_sim_coord_to_dict(
             players_dict=players_offense_dict,
             sim_coord_dict=sim_coord_dict
         )
 
-    return sim_coord_dict, action_array
+    return sim_coord_dict
 
 
 

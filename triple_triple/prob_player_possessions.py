@@ -196,7 +196,7 @@ def get_shooting_prob(player_class, df_game_stats):
     query_params = 'player_id==@player_class.player_id and \
                     (action=="shot" or action=="missed_shot")'
     df_player = df_game_stats.query(query_params)
-    
+
     shot_prob = np.zeros(2)
 
     # get 2pt and 3pt prob

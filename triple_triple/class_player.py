@@ -86,11 +86,7 @@ def create_player_class_instance(player_list, game_player_dict):
 
 
 def player_class_reset(player_class_dict):
-    for player_class in player_class_dict:
-        player_class.region_prob_matrix = None
-        player_class.action_prob_matrix = None
-        player_class.shooting_prob = None
-        player_class.possession_prob = 0
+    for player_class in player_class_dict.values():
         player_class.shot_attempts = 0
         player_class.shots_made = 0
         player_class.total_points = 0

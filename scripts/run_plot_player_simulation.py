@@ -18,7 +18,7 @@ df_game_stats = parse_df_play_by_play(df_play_by_play)
 
 
 if __name__ == '__main__':
-    player_id_list = [-1, 2547, 2548, 2736]
+    player_id_list = [-1, 2547, 2548, 2736, 1626159, 201609]
     game_id_list = [21500568]
 
     df_possession = pph.get_possession_df(

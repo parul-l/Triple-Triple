@@ -14,7 +14,6 @@ from triple_triple.startup_data import (
 )
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
 
-
 df_raw_position_region = get_df_raw_position_region()
 game_player_dict = get_game_player_dict()
 df_play_by_play = get_df_play_by_play()
@@ -22,7 +21,7 @@ df_game_stats = parse_df_play_by_play(df_play_by_play)
 
 
 if __name__ == '__main__':
-    player_id_list = [-1, 2547, 2548, 2736]
+    player_id_list = [-1, 2547, 2548, 2736, 1626159, 201609]
     game_id_list = [21500568]
 
     df_possession = pph.get_possession_df(
@@ -89,36 +88,40 @@ if __name__ == '__main__':
             df_game_stats=df_game_stats
         )
 
-        start_play = True
-        player_action = None
-        shooting_side = 'right'
+    start_play = True
+    player_action = None
+    shooting_side = 'right'
 
-        for i in range(10):
-            player_action, start_play, score = spp.sim_offense_play(
-                players_offense_dict=players_offense_dict,
-                shooting_side=shooting_side,
-                start_play=start_play,
-                player_action=player_action
-            )
+    for i in range(10):
+        player_action, start_play, score = spp.sim_offense_play(
+            players_offense_dict=players_offense_dict,
+            shooting_side=shooting_side,
+            start_play=start_play,
+            player_action=player_action
+        )
 
-            print i
-            print 'action: ', player_action
-            print 'score: ', score
+        print i
+        print 'action: ', player_action
+        print 'score: ', score
 
-            for player_class in players_offense_dict.values():
-                print player_class.name
-                print 'region', player_class.court_region
-                print 'possession', player_class.has_possession
-                print 'passes', player_class.passes
-                print 'shot_attempts', player_class.shot_attempts
-                print 'shots_made', player_class.shots_made
-                print 'turnovers', player_class.turnovers
-                print 'total_points', player_class.total_points
-                print ""
+        for player_class in players_offense_dict.values():
+            print player_class.name
+            print 'region', player_class.court_region
+            print 'possession', player_class.has_possession
+            print 'passes', player_class.passes
+            print 'shot_attempts', player_class.shot_attempts
+            print 'shots_made', player_class.shots_made
+            print 'turnovers', player_class.turnovers
+            print 'total_points', player_class.total_points
+            print ""
 
     sim_coord_dict = spp.create_sim_coord_dict(
         players_offense_dict=players_offense_dict,
-        num_sim=20)
+        num_sim=2880)
+
+    players_no_ball_dict = spp.get_player_dict_no_ball(
+        players_offense_dict=players_offense_dict
+    )
 
     # to re-do the simulation we reset the parameters
     player_class_reset(players_offense_dict)

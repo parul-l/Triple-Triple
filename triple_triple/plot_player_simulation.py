@@ -4,7 +4,7 @@ import triple_triple.simulate_player_positions as spp
 from triple_triple.full_court import draw_court
 
 #TODO: Fix player_color_dict having colors in argument
-
+# TODO: Fix color list in bar graph
 # TODO: Real time plotting: http://stackoverflow.com/questions/11874767/real-time-plotting-in-while-loop-with-matplotlib
 # TODO: Multiple color bars http://stackoverflow.com/questions/22128166/two-different-color-colormaps-in-the-same-imshow-matplotlib
 
@@ -48,7 +48,7 @@ def plot_jersey_numbers(ax, players_dict):
 
 def create_player_color_dict(coord_dict):
     color_map_list = [plt.cm.Blues, plt.cm.Greens, plt.cm.Oranges,
-                      plt.cm.Purples, plt.cm.Reds]
+                      plt.cm.Purples, plt.cm.Reds, plt.cm.Greys]
     player_color_dict = {}
     i = 0
     for player in coord_dict.keys():
@@ -60,10 +60,9 @@ def create_player_color_dict(coord_dict):
 
 def plot_color_bars(ax, color_bar_dict, players_offense_dict):
     for player, cbar in color_bar_dict.items():
-        cbar
         cbar.set_label(players_offense_dict[player].name, labelpad=-30)
         cbar.ax.invert_xaxis()
-
+        
 
 def plot_play_simulation(
     players_offense_dict,
@@ -102,7 +101,8 @@ def plot_play_simulation(
             format='%.2f',
             orientation="horizontal",
             fraction=0.046,
-            pad=0.04
+            pad=0.04,
+            shrink=0.35
         )
 
     # plot jersey number
@@ -113,4 +113,40 @@ def plot_play_simulation(
 
     ax.set_title(title_text + ' simulated court movement')
     fig.savefig('player_sim_movement.png')
+    plt.show()
+
+
+def plot_outcomes_bar_graph(players_no_ball_dict):
+    N = 4 # (passes, shot_attempts, shots_made, turnovers)
+    ind = np.arange(N)
+    width = 0.3
+    fig, ax = plt.subplots()
+    color_list = ['midnightblue', 'steelblue', 'turquoise']
+    i = 0
+
+    legend_ax_list = []
+    legend_name_list = []
+
+    for player_class in players_no_ball_dict.values():
+        player_outcome = [
+            player_class.passes,
+            player_class.shot_attempts,
+            player_class.shots_made,
+            player_class.turnovers
+        ]
+        player = ax.bar(ind + i * width, player_outcome, width, color=color_list[i])
+        legend_ax_list.append(player[0])
+        legend_name_list.append(player_class.name)
+
+        # increment i
+        i += 1
+
+    ax.set_ylabel('Totals')
+    ax.set_title('Simulated Player Outcomes')
+    ax.set_xticks(ind + 1.5 * width)
+    ax.set_xticklabels((
+        'passes', 'shot attempts', 'shots made', 'turnovers'))
+
+    ax.legend(legend_ax_list, legend_name_list)
+
     plt.show()

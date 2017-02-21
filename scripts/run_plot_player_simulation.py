@@ -9,7 +9,11 @@ from triple_triple.startup_data import (
     get_df_play_by_play
 )
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
-from triple_triple.plot_player_simulation import plot_play_simulation
+from triple_triple.plot_player_simulation import (
+    plot_play_simulation,
+    plot_outcomes_bar_graph
+)
+
 
 df_raw_position_region = get_df_raw_position_region()
 game_player_dict = get_game_player_dict()
@@ -91,4 +95,17 @@ if __name__ == '__main__':
         num_sim=5,
         num_pixel=50,
         title_text='Team'
+    )
+
+    color_list = [
+        'midnightblue',
+        'salmon',
+        'mediumpurple',
+        'turquoise',
+        'chartreuse'
+    ]
+
+    plot_outcomes_bar_graph(
+        players_no_ball_dict=players_no_ball_dict,
+        color_list=color_list
     )

@@ -48,7 +48,7 @@ def plot_jersey_numbers(ax, players_dict):
 
 def create_player_color_dict(coord_dict):
     color_map_list = [plt.cm.Blues, plt.cm.Greens, plt.cm.Oranges,
-                      plt.cm.Purples, plt.cm.Reds, plt.cm.Greys]
+                      plt.cm.Purples, plt.cm.Reds, plt.cm.autumn]
     player_color_dict = {}
     i = 0
     for player in coord_dict.keys():
@@ -102,7 +102,7 @@ def plot_play_simulation(
             orientation="horizontal",
             fraction=0.046,
             pad=0.04,
-            shrink=0.35
+            shrink=0.38
         )
 
     # plot jersey number
@@ -116,12 +116,11 @@ def plot_play_simulation(
     plt.show()
 
 
-def plot_outcomes_bar_graph(players_no_ball_dict):
+def plot_outcomes_bar_graph(players_no_ball_dict, color_list):
     N = 4 # (passes, shot_attempts, shots_made, turnovers)
     ind = np.arange(N)
-    width = 0.3
+    width = 0.18
     fig, ax = plt.subplots()
-    color_list = ['midnightblue', 'steelblue', 'turquoise']
     i = 0
 
     legend_ax_list = []
@@ -142,11 +141,11 @@ def plot_outcomes_bar_graph(players_no_ball_dict):
         i += 1
 
     ax.set_ylabel('Totals')
-    ax.set_title('Simulated Player Outcomes')
-    ax.set_xticks(ind + 1.5 * width)
+    ax.set_title('Player outcomes after 100 simulations')
+    ax.set_xticks(ind + 2.2 * width)
     ax.set_xticklabels((
         'passes', 'shot attempts', 'shots made', 'turnovers'))
 
     ax.legend(legend_ax_list, legend_name_list)
-
+    fig.savefig('sim_outcome_results.png')
     plt.show()

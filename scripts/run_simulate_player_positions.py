@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     sim_coord_dict = spp.create_sim_coord_dict(
         players_offense_dict=players_offense_dict,
-        num_sim=2880)
+        num_sim=100)
 
     players_no_ball_dict = spp.get_player_dict_no_ball(
         players_offense_dict=players_offense_dict

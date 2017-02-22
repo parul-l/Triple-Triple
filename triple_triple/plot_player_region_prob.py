@@ -11,8 +11,8 @@ df_raw_position_data = get_df_raw_position_data()
 
 if __name__ == '__main__':
     game_id_list = [21500568]
-    player_id = 2547
-    team_id = 1610612748
+    player_id = 201939
+    team_id = 1610612744
 
     # get Chris Bosh locations when Miami Heat has ball
     df_player = df_raw_position_data.query('team_id==@team_id and dist_to_ball < 2').query('player_id==@player_id')
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     im = ax.imshow(heatmap.T / heatmap.sum(), extent=extent, origin='lower', cmap='viridis')
     fig.colorbar(im, cax=cax, orientation='vertical')
-    ax.set_title('Chris Bosh court region proportion in \n' 'Miami Heat vs. Golden State Warriors on Jan 11, 2016')
+    ax.set_title('Stephen Curry court region proportion in \n' 'Miami Heat vs. Golden State Warriors on Jan 11, 2016')
 
     fig.savefig('player_region_prob_heatmap.png')
 

@@ -116,7 +116,7 @@ def plot_play_simulation(
     plt.show()
 
 
-def plot_outcomes_bar_graph(players_no_ball_dict, color_list):
+def plot_outcomes_bar_graph(players_offense_dict, color_list):
     N = 4 # (passes, shot_attempts, shots_made, turnovers)
     ind = np.arange(N)
     width = 0.18
@@ -126,7 +126,7 @@ def plot_outcomes_bar_graph(players_no_ball_dict, color_list):
     legend_ax_list = []
     legend_name_list = []
 
-    for player_class in players_no_ball_dict.values():
+    for player_class in players_offense_dict.values():
         player_outcome = [
             player_class.passes,
             player_class.shot_attempts,

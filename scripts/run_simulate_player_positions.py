@@ -21,8 +21,16 @@ df_game_stats = parse_df_play_by_play(df_play_by_play)
 
 
 if __name__ == '__main__':
-    player_id_list = [-1, 2547, 2548, 2736, 1626159, 201609]
+    player_id_list = [2547, 2548, 2736, 1626159, 201609]
     game_id_list = [21500568]
+
+    # this is weird since this will only have one element
+    ball_class_dict = create_player_class_instance(
+        player_list=[-1],
+        game_player_dict=game_player_dict,
+    )
+
+    ball_class = ball_class_dict['_-1']
 
     df_possession = pph.get_possession_df(
         dataframe=df_raw_position_region,
@@ -43,12 +51,7 @@ if __name__ == '__main__':
         game_player_dict=game_player_dict,
     )
 
-    # remove ball to update probabilities
-    players_no_ball_dict = spp.get_player_dict_no_ball(
-        players_offense_dict=players_offense_dict
-    )
-
-    for player_class in players_no_ball_dict.values():
+    for player_class in players_offense_dict.values():
         # update region probability
         ppp.update_region_prob_matrix(
             player_class=player_class,
@@ -88,16 +91,24 @@ if __name__ == '__main__':
             df_game_stats=df_game_stats
         )
 
+        # update region_shooting_prob
+        ppp.get_regional_shooting_prob(
+            player_class=player_class,
+            df_possession=df_possession
+        )
+
     start_play = True
     player_action = None
     shooting_side = 'right'
+    score = 0
 
-    for i in range(10):
+    for i in range(100):
         player_action, start_play, score = spp.sim_offense_play(
             players_offense_dict=players_offense_dict,
             shooting_side=shooting_side,
             start_play=start_play,
-            player_action=player_action
+            player_action=player_action,
+            score=score
         )
 
         print i

@@ -24,6 +24,7 @@ from triple_triple.court_regions import get_region
 # Also, Bosh period=2, game_clock=307 has layup on NBA stats
 # but position data indicates back court and perimeter
 
+
 def get_possession_df(dataframe, has_ball_dist=2.0, len_poss=25):
     # add column to characterize possession
     dataframe['action'] = None
@@ -86,19 +87,14 @@ def check_action(game_clock_tuple, df_game_player, action, time_error):
     start_game_clock = game_clock_tuple[0]
     end_game_clock = game_clock_tuple[1]
 
-    if action == "shot":
-        df_game_player_action_gc = df_game_player\
-            .query('action==@action or action=="missed_shot"')\
-            .game_clock.values
-    else:
-        df_game_player_action_gc = df_game_player\
-            .query('action==@action')\
-            .game_clock.values
+    df_game_player_action_gc = df_game_player\
+        .query('action==@action')\
+        .game_clock.values
 
     if any(
             end_game_clock - time_error <= gc <= start_game_clock
             for gc in df_game_player_action_gc
-        ):
+    ):
         return True
     else:
         return False
@@ -132,7 +128,7 @@ def characterize_player_possessions(
 
         end_poss_idx = df_player_poss.index[i + 1]
 
-        # check shot
+        # check made shot
         if check_action(
             game_clock_tuple=(game_clock_start, game_clock_end),
             df_game_player=df_game_player.query('period==@period'),
@@ -142,6 +138,19 @@ def characterize_player_possessions(
             update_df_possession_action(
                 end_poss_idx=end_poss_idx,
                 action='shot',
+                df_possession_action=df_possession
+            )
+
+        # check missed shot
+        elif check_action(
+            game_clock_tuple=(game_clock_start, game_clock_end),
+            df_game_player=df_game_player.query('period==@period'),
+            action='missed_shot',
+            time_error=5
+        ):
+            update_df_possession_action(
+                end_poss_idx=end_poss_idx,
+                action='missed_shot',
                 df_possession_action=df_possession
             )
 

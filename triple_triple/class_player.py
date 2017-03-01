@@ -17,6 +17,10 @@ class Player(object):
             shooting_prob: A 1 x 2 matrix where
                            0- prob of making 2 point, 1- prob of making 3pt
 
+            region_shooting_prob: A 1 x 6 array where each entry is the
+                                  prob of making a shot in the region
+                                  corresponding to the entry's index
+
             possession_prob: Proability of having possession of the ball
                              when on team is on offense (float)
 
@@ -25,9 +29,9 @@ class Player(object):
             shots_made: An integer of the total number of shots made
 
             total_points: An integer of the number of points scored
-            
+
             turnovers: An integer of the total turnovers made
-            
+
             passes: An integer of the total passes
 
             has_possession: A boolean to indicate if player has possession of ball
@@ -54,6 +58,7 @@ class Player(object):
         self.region_prob_matrix = None
         self.action_prob_matrix = None
         self.shooting_prob = None
+        self.region_shooting_prob = None
         self.possession_prob = 0
         self.shot_attempts = 0
         self.shots_made = 0

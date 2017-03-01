@@ -1,22 +1,19 @@
-import triple_triple.player_possession_habits as pph
 import triple_triple.prob_player_possessions as ppp
+import triple_triple.player_possession_habits as pph
 
-from triple_triple.team_shooting_side import get_initial_shooting_sides
-from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
+from triple_triple.class_player import create_player_class_instance
 
 from triple_triple.startup_data import (
-    get_df_play_by_play,
-    get_df_raw_position_data,
-    get_game_info_dict
+    get_df_raw_position_region,
+    get_game_player_dict,
+    get_df_play_by_play
 )
+from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
 
-df_raw_position_data = get_df_raw_position_data()
+df_raw_position_region = get_df_raw_position_region()
+game_player_dict = get_game_player_dict()
 df_play_by_play = get_df_play_by_play()
-game_info_dict = get_game_info_dict()
 df_game_stats = parse_df_play_by_play(df_play_by_play)
-
-initial_shooting_side = get_initial_shooting_sides(df_play_by_play, df_raw_position_data, game_info_dict)
-
 
 if __name__ == '__main__':
 
@@ -35,29 +32,61 @@ if __name__ == '__main__':
         'perimeter': 5
     }
 
-    df_possession = pph.get_possession_df(
-        df_raw_position_data=df_raw_position_data,
-        has_ball_dist=2.0,
-        len_poss=15
-    )
-
-    df_possession = pph.add_regions_to_df(df_possession, initial_shooting_side)
-    df_possession_action = pph.add_empty_action_to_df_raw(df_possession)
-
+    player_id_list = [2547, 2548, 2736, 1626159, 201609]
     game_id_list = [21500568]
-    player_id_list = [2547, 2548, 203110, 201939]
 
-    df_possession_action = pph.get_multi_games_players_possessions(
-        game_id_list=game_id_list,
-        player_id_list=player_id_list,
-        df_possession_action=df_possession_action,
-        df_game_stats=df_game_stats
+    df_possession = pph.get_possession_df(
+        dataframe=df_raw_position_region,
+        len_poss=10
     )
 
-    df_raw_position_region = pph.add_regions_to_df(df_raw_position_data, initial_shooting_side)
+    players_offense_dict = create_player_class_instance(
+        player_list=player_id_list,
+        game_player_dict=game_player_dict,
+    )
 
-    # this heavily weights back court. Perhaps it is better to use df_possession
-    # Also, TODO: drop_duplicates when doing this
-    reg_prob_lists = ppp.get_region_prob_list(player_id_list, df_raw_position_region)
+    for player_class in players_offense_dict.values():
+        # update region probability
+        ppp.update_region_prob_matrix(
+            player_class=player_class,
+            game_id=game_id_list[0],
+            game_player_dict=game_player_dict,
+            df_raw_position_region=df_raw_position_region,
+            player_possession=False,
+            team_on_offense=True,
+            team_on_defense=False,
+            half_court=True
+        )
 
-    movement_prob = ppp.get_movement_prob_matrix(player_id_list, df_raw_position_region)
+        # update df_possessions using NBA df_game_stats info
+        df_possession = pph.characterize_player_possessions(
+            game_id=game_id_list[0],
+            player_class=player_class,
+            df_possession=df_possession,
+            df_game_stats=df_game_stats
+        )
+
+        # update possession probability
+        ppp.update_possession_prob(
+            player_class=player_class,
+            df_possession=df_possession,
+            game_id=None
+        )
+
+        # update action probabilities
+        ppp.get_action_prob_matrix(
+            player_class=player_class,
+            df_possession=df_possession
+        )
+
+        # update shooting_prob
+        ppp.get_shooting_prob(
+            player_class=player_class,
+            df_game_stats=df_game_stats
+        )
+
+        # update region_shooting_prob
+        ppp.get_regional_shooting_prob(
+            player_class=player_class,
+            df_possession=df_possession
+        )

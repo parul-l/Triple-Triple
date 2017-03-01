@@ -1,16 +1,27 @@
 import copy
 import numpy as np
 
+from triple_triple.class_player import create_player_class_instance
+
 from triple_triple.court_region_coord import generate_rand_positions
+from triple_triple.startup_data import get_game_player_dict
 from triple_triple.prob_player_possessions import (
     relative_player_possession_prob,
     get_reg_to_num
 )
 
+game_player_dict = get_game_player_dict()
+# this is weird since this will only have one element
+ball_class_dict = create_player_class_instance(
+    player_list=[-1],
+    game_player_dict=game_player_dict,
+)
+
+ball_class = ball_class_dict['_-1']
+
 # TODO: in sim_offense_play, keep track of made/missed shots,
 # TODO: Fix score in sim_offense_play. It's too redundant
 # TODO:  who gets rebound after missed shot
-# TODO: Decide whether to keep ball in players_offense_dict or make it separate
 # TODO: Perhaps change update_player_positions so that player positions are unique
 # TODO: Incorporate shot clock to force shot
 # TODO: This is messier than it needs to be
@@ -30,13 +41,7 @@ def who_has_possession(players_offense_dict):
     if len(has_ball_list) == 1:
         return has_ball_list[0]
     else:
-        raise ValueError('Two people have possession')
-
-
-def get_player_dict_no_ball(players_offense_dict):
-    players_no_ball_dict = copy.copy(players_offense_dict)
-    del players_no_ball_dict['_-1']
-    return players_no_ball_dict
+        raise ValueError('No one or multiple players have ball')
 
 
 def initiate_player_has_possession(players_offense_dict):
@@ -45,8 +50,7 @@ def initiate_player_has_possession(players_offense_dict):
         player_class.has_possession = False
 
     # choose player with possession
-    players_no_ball_dict = get_player_dict_no_ball(players_offense_dict)
-    player_list, prob = relative_player_possession_prob(players_no_ball_dict)
+    player_list, prob = relative_player_possession_prob(players_offense_dict)
     has_poss = np.random.choice(
         a=np.arange(len(player_list)),
         p=prob
@@ -59,10 +63,10 @@ def initiate_player_has_possession(players_offense_dict):
 
 def update_ball_position(
     players_offense_dict,
+    ball_class=ball_class,
     shooting_side=None,
     action=None
 ):
-    ball_class = players_offense_dict['_-1']
     # result of a pass
     if action == 0 or action is None:
         has_ball = who_has_possession(players_offense_dict)
@@ -109,12 +113,11 @@ def initiate_player_positions(players_offense_dict, shooting_side, num_reg=6):
     )
 
 
-def update_has_possession(players_offense_dict):
-    players_no_ball_dict = get_player_dict_no_ball(players_offense_dict)
+def update_has_possession(players_offense_dict, ball_class=ball_class):
     old_has_ball = who_has_possession(players_offense_dict)
 
     players_without_ball = [
-        player for player in players_no_ball_dict.keys()
+        player for player in players_offense_dict.keys()
         if player != old_has_ball
     ]
 
@@ -129,7 +132,7 @@ def update_has_possession(players_offense_dict):
     players_offense_dict[new_has_ball].has_possession = True
 
     # update ball region/coordinates
-    update_ball_position(players_offense_dict)
+    update_ball_position(players_offense_dict, ball_class=ball_class)
 
 
 def update_player_positions(
@@ -137,9 +140,8 @@ def update_player_positions(
     shooting_side,
     num_reg=6
 ):
-    players_no_ball_dict = get_player_dict_no_ball(players_offense_dict)
 
-    for player_class in players_no_ball_dict.values():
+    for player_class in players_offense_dict.values():
         current_region = player_class.court_region
 
         if current_region is None:
@@ -172,33 +174,49 @@ def shot_outcome(player_class):
     shooting_region = player_class.court_region
     if shooting_region == 5:
         idx = 1
-        score = 3
+        add_score = 3
     else:
         idx = 0
-        score = 2
+        add_score = 2
+
     # determine if shot made or miss
     # 0 = miss, 1 = make
+
+    # if the entry is nan, use general shooting probabilities
+    if np.isnan(player_class.region_shooting_prob[shooting_region]):
+        prob_array = [
+            1 - player_class.shooting_prob[idx],
+            player_class.shooting_prob[idx]
+        ]
+    # otherwise use regional shooting probabilities
+    else:
+        prob_array = [
+            1 - player_class.region_shooting_prob[shooting_region],
+            player_class.region_shooting_prob[shooting_region]
+        ]
+
     outcome = np.random.choice(
         a=np.arange(2),
-        p=[1 - player_class.shooting_prob[idx],
-           player_class.shooting_prob[idx]]
+        p=prob_array
     )
+
     if outcome == 0:
-        score = 0
+        add_score = 0
     else:
         player_class.shots_made += 1
 
     player_class.shot_attempts += 1
-    player_class.total_points += score
+    player_class.total_points += add_score
 
-    return score
+    return add_score
 
 
 def sim_offense_play(
     players_offense_dict,
     shooting_side,
     start_play,
-    player_action
+    player_action,
+    score
 ):
     if start_play:
         start_play = False
@@ -211,16 +229,15 @@ def sim_offense_play(
 
         update_ball_position(
             players_offense_dict=players_offense_dict,
+            ball_class=ball_class,
             shooting_side=shooting_side,
             action=player_action
         )
-        score = 0
 
     else:
         has_ball = who_has_possession(players_offense_dict)
         # determine his action
         player_action = choose_player_action(players_offense_dict[has_ball])
-        score = 0
         # pass
         if player_action == 0:
             players_offense_dict[has_ball].passes += 1
@@ -239,7 +256,7 @@ def sim_offense_play(
 
         # shoot
         elif player_action == 1:
-            score = shot_outcome(players_offense_dict[has_ball])
+            score += shot_outcome(players_offense_dict[has_ball])
             start_play = True
             # update ball tp rim
             update_ball_position(

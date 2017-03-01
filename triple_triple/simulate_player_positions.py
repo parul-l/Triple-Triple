@@ -173,27 +173,16 @@ def choose_player_action(has_ball_player_class, num_actions=3):
 def shot_outcome(player_class):
     shooting_region = player_class.court_region
     if shooting_region == 5:
-        idx = 1
         add_score = 3
     else:
-        idx = 0
         add_score = 2
 
     # determine if shot made or miss
     # 0 = miss, 1 = make
-
-    # if the entry is nan, use general shooting probabilities
-    if np.isnan(player_class.region_shooting_prob[shooting_region]):
-        prob_array = [
-            1 - player_class.shooting_prob[idx],
-            player_class.shooting_prob[idx]
-        ]
-    # otherwise use regional shooting probabilities
-    else:
-        prob_array = [
-            1 - player_class.region_shooting_prob[shooting_region],
-            player_class.region_shooting_prob[shooting_region]
-        ]
+    prob_array = [
+        1 - player_class.region_shooting_prob[shooting_region],
+        player_class.region_shooting_prob[shooting_region]
+    ]
 
     outcome = np.random.choice(
         a=np.arange(2),

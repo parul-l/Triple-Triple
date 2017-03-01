@@ -115,6 +115,6 @@ if __name__ == '__main__':
     ]
 
     plot_outcomes_bar_graph(
-        players_no_ball_dict=players_offense_dict,
+        players_offense_dict=players_offense_dict,
         color_list=color_list
     )

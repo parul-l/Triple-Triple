@@ -235,7 +235,10 @@ def get_regional_shooting_prob(player_class, df_possession):
 
     total_shots = made_shot_array + missed_shot_array
 
-    player_class.region_shooting_prob = made_shot_array / total_shots
+    # find prob and replace nan with zero
+    player_class.region_shooting_prob = np.nan_to_num(
+        made_shot_array / total_shots
+    )
 
 ########## OLD ONE ###################
 ###################################

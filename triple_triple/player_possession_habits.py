@@ -29,31 +29,35 @@ def get_possession_df(dataframe, has_ball_dist=2.0, len_poss=25):
     # add column to characterize possession
     dataframe['action'] = None
 
-    df_possession = dataframe.query('closest_to_ball==True and dist_to_ball<=@has_ball_dist').reset_index(drop=True)
+    # filter to player-ball dist < has_ball
+    df_possession_raw = dataframe\
+        .query('closest_to_ball==True and dist_to_ball<=@has_ball_dist')\
+        .reset_index()
 
-    # determine where player_ids change
-    idx_poss_change = np.where(
-        df_possession.player_id.values[:-1] != df_possession.player_id.values[1:]
-    )[0]
+    # count total number of blocks
+    cond = df_possession_raw.player_id != df_possession_raw.player_id.shift()
+    df_possession_raw['block'] = (cond).astype(int).cumsum()
 
-    # length of consecutive player
-    idx_diff = idx_poss_change[1:] - idx_poss_change[:-1]
+    # groupby blocks and get length of each
+    df_poss_length = df_possession_raw\
+        .groupby('block')\
+        .size()\
+        .reset_index()
+    df_poss_length.columns = ['block', 'possession_length']
 
-    # idices where length is >= len_poss
-    idx_of_poss = np.where(idx_diff >= len_poss)[0]
+    df_possession = df_possession_raw.merge(df_poss_length, on='block')
 
-    # add possession column
-    df_possession['possession'] = None
+    # drop rows with length < len_poss
+    df_possession = df_possession.query('possession_length >= @len_poss')
 
-    for idx in idx_of_poss:
-        df_possession.loc[idx_poss_change[idx] + 1, 'possession'] = 'start'
-        df_possession.loc[idx_poss_change[idx + 1], 'possession'] = 'end'
+    # add possession changes
+    df_possession['possession_start'] = \
+        df_possession.block != df_possession.block.shift()
 
-        # insert boolean (True) in between possession indices
-        df_possession.loc[
-            idx_poss_change[idx] + 2:idx_poss_change[idx + 1] - 1, 'possession'] = True
+    df_possession['possession_end'] = \
+        df_possession.block != df_possession.block.shift(-1)
 
-    return df_possession[df_possession.possession.notnull()]
+    return df_possession
 
 
 def get_court_region(dataframe_row, initial_shooting_side):

@@ -20,7 +20,7 @@ if __name__ == '__main__':
     )
     # save files
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
-    df_raw_position_data.to_csv(filepath)
+    df_raw_position_data.to_csv(filepath, index=False)
 
     # save the files as jsons but they open as strings
     filepath = os.path.join(DATASETS_DIR, 'game_info_dict.json')

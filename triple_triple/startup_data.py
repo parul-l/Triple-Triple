@@ -30,21 +30,6 @@ def get_game_player_dict():
         return pickle.load(json_file)
 
 
-def get_df_positions():
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
-    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-
-
-def get_df_pos_dist():
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
-    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-
-
-def get_df_pos_dist_trunc():
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
-    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-
-
 def get_df_raw_position_data():
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
     return pd.read_csv(filepath, low_memory=False)
@@ -84,3 +69,19 @@ def get_df_all_game_info():
 def get_player_possession_dataframes(json_file_name):
     with open(os.path.join(DATASETS_DIR, json_file_name), 'rb') as json_file:
         return pickle.load(json_file)
+#
+#
+# def get_df_positions():
+#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
+#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+#
+#
+# def get_df_pos_dist():
+#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
+#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+#
+#
+# def get_df_pos_dist_trunc():
+#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
+#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+#

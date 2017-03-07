@@ -1,5 +1,4 @@
 import triple_triple.prob_player_possessions as ppp
-import triple_triple.simulate_player_positions as spp
 import triple_triple.player_possession_habits as pph
 
 from triple_triple.class_player import create_player_class_instance

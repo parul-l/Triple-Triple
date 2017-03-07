@@ -1,5 +1,6 @@
-import numpy as np
 from triple_triple.court_regions import get_region
+
+# TODO: Fix get_df_possession_defender to limit defender's distance
 
 # TODO: Fix get_possession_df. Right now it is double counting possessions. Perhaps check ball height/moment? Here Wade has the ball as two separate possessions
 # 867984       4      114.74     Dwyane Wade
@@ -57,7 +58,7 @@ def get_possession_df(dataframe, has_ball_dist=2.0, len_poss=25):
     df_possession['possession_end'] = \
         df_possession.block != df_possession.block.shift(-1)
 
-    return df_possession
+    return df_possession.set_index('index')
 
 
 def get_court_region(dataframe_row, initial_shooting_side):
@@ -80,7 +81,7 @@ def add_regions_to_df(df_possession, initial_shooting_side):
     df_possession['region'] = df_select_cols.apply(
         lambda row: get_court_region(row, initial_shooting_side), axis=1)
 
-    return df_possession
+    return df_possession.set_index('index')
 
 
 def update_df_possession_action(end_poss_idx, action, df_possession_action):
@@ -120,7 +121,7 @@ def characterize_player_possessions(
     # query on start and end of possession
     df_player_poss = grouped_poss_df\
         .get_group((game_id, player_id))\
-        .query('possession=="start" or possession=="end"')
+        .query('possession_start==True or possession_end==True')
 
     # characterize each possession
     # index by 2 since each (start, end) is one possession
@@ -180,3 +181,54 @@ def characterize_player_possessions(
             )
 
     return df_possession
+
+
+def get_df_possession_defender(
+    players_dict,
+    df_possession_region,
+    df_raw_position_region,
+    defender_team_id
+):
+    cols = [
+        'period',
+        'game_clock',
+        'player_id',
+        'player_name',
+        'region',
+        'x_loc',
+        'y_loc'
+        'dist_to_ball'
+    ]
+
+    df_other_team = df_raw_position_region.query('team_id==@defender_team_id')[cols]
+    # get relevant columns and original indices before groupby
+    rename_cols = [
+        'period',
+        'game_clock',
+        'defender_id',
+        'defender_name',
+        'defender_region',
+        'defender_x_loc',
+        'defender_y_loc',
+        'defender_ball_dist'
+    ]
+
+    df_other_team.columns = rename_cols
+
+    # get closest to ball from other team
+    # this takes long
+    df_defender = df_other_team\
+        .groupby(['period', 'game_clock'])\
+        .min()\
+        .reset_index()
+
+    # merge two dataframes on period and game_clock
+    for player_class in players_dict.values():
+        player_id = player_class.player_id
+        df_player = df_possession_region.query('player_id==@player_id')
+        df_possession_defender = df_player.merge(
+            df_defender,
+            on=['period', 'game_clock']
+        )
+
+    return df_possession_defender

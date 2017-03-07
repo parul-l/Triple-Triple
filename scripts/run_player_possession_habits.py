@@ -7,6 +7,7 @@ from triple_triple.class_player import create_player_class_instance
 from triple_triple.startup_data import (
     get_df_play_by_play,
     get_df_raw_position_data,
+    get_df_raw_position_region(),
     get_game_info_dict,
     get_game_player_dict
 )

@@ -81,7 +81,7 @@ def add_regions_to_df(df_possession, initial_shooting_side):
     df_possession['region'] = df_select_cols.apply(
         lambda row: get_court_region(row, initial_shooting_side), axis=1)
 
-    return df_possession.set_index('index')
+    return df_possession
 
 
 def update_df_possession_action(end_poss_idx, action, df_possession_action):
@@ -183,52 +183,10 @@ def characterize_player_possessions(
     return df_possession
 
 
-def get_df_possession_defender(
-    players_dict,
-    df_possession_region,
-    df_raw_position_region,
-    defender_team_id
-):
-    cols = [
-        'period',
-        'game_clock',
-        'player_id',
-        'player_name',
-        'region',
-        'x_loc',
-        'y_loc'
-        'dist_to_ball'
-    ]
-
-    df_other_team = df_raw_position_region.query('team_id==@defender_team_id')[cols]
-    # get relevant columns and original indices before groupby
-    rename_cols = [
-        'period',
-        'game_clock',
-        'defender_id',
-        'defender_name',
-        'defender_region',
-        'defender_x_loc',
-        'defender_y_loc',
-        'defender_ball_dist'
-    ]
-
-    df_other_team.columns = rename_cols
-
-    # get closest to ball from other team
-    # this takes long
-    df_defender = df_other_team\
-        .groupby(['period', 'game_clock'])\
-        .min()\
-        .reset_index()
-
-    # merge two dataframes on period and game_clock
-    for player_class in players_dict.values():
-        player_id = player_class.player_id
-        df_player = df_possession_region.query('player_id==@player_id')
-        df_possession_defender = df_player.merge(
-            df_defender,
-            on=['period', 'game_clock']
-        )
-
-    return df_possession_defender
+def get_defender_team_id(players_dict, initial_shooting_side):
+    # team_id of players_dict
+    offense_team_id = players_dict.values()[0].team_id
+    if offense_team_id == initial_shooting_side.keys()[0]:
+        return initial_shooting_side.keys()[1]
+    else:
+        return initial_shooting_side.keys()[0]

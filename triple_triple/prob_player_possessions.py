@@ -37,12 +37,12 @@ def court_region_from_number(num):
         return 'perimeter'
 
 
-def get_poss_to_num(poss):
-    if poss == 'pass':
+def get_action_to_num(action):
+    if action == 'pass':
         return 0
-    if poss == 'shot' or 'missed_shot':
+    if action == 'shot' or action == 'missed_shot':
         return 1
-    if poss == 'turnover':
+    if action == 'turnover':
         return 2
 
 
@@ -58,7 +58,7 @@ def prob_from_list(counter_list, type_prob=None):
                 prob_list[get_reg_to_num(outcome)] = count
 
             elif type_prob == 'action':
-                prob_list[get_poss_to_num(outcome)] = count
+                prob_list[get_action_to_num(outcome)] = count
 
         return prob_list / float(sum(prob_list))
 
@@ -186,7 +186,7 @@ def get_action_prob_matrix(player_class, df_possession):
 
     for i in range(len(df_player)):
         end_reg = df_player.region.iloc[i]
-        poss_num = get_poss_to_num(df_player.action.iloc[i])
+        poss_num = get_action_to_num(df_player.action.iloc[i])
         possession_matrix[get_reg_to_num(end_reg), poss_num] += 1
 
     player_class.action_prob_matrix = get_prob_count_matrix(possession_matrix)

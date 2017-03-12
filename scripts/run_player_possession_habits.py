@@ -7,12 +7,13 @@ from triple_triple.class_player import create_player_class_instance
 from triple_triple.startup_data import (
     get_df_play_by_play,
     get_df_raw_position_data,
-    get_df_raw_position_region(),
+    get_df_raw_position_region,
     get_game_info_dict,
     get_game_player_dict
 )
 
 df_raw_position_data = get_df_raw_position_data()
+df_raw_position_region = get_df_raw_position_region()
 game_info_dict = get_game_info_dict()
 game_player_dict = get_game_player_dict()
 df_play_by_play = get_df_play_by_play()
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     df_possession = pph.add_regions_to_df(df_possession, initial_shooting_side)
 
     game_id_list = [21500568]
-    player_id_list = [2547, 2548, 203110, 201939]
+    player_id_list = [2547, 2548]
 
     player_class_dict = create_player_class_instance(
         player_list=player_id_list,
@@ -46,3 +47,15 @@ if __name__ == '__main__':
             df_possession=df_possession,
             df_game_stats=df_game_stats
         )
+
+    defender_team_id = pph.get_defender_team_id(
+        players_dict=player_class_dict,
+        initial_shooting_side=initial_shooting_side
+    )
+
+    df_possession_defender = pph.get_df_possession_defender(
+        players_dict=player_class_dict,
+        df_possession_region=df_possession,
+        df_raw_position_region=df_raw_position_region,
+        defender_team_id=defender_team_id
+    )

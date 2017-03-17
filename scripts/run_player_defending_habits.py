@@ -1,5 +1,5 @@
 import triple_triple.player_possession_habits as pph
-import triple_triple.nbastats_game_data as ngd
+import triple_triple.data_generators.nbastats_game_data as ngd
 
 from triple_triple.startup_data import (
     get_df_raw_position_region,
@@ -12,7 +12,7 @@ game_player_dict = get_game_player_dict()
 game_info_dict = get_game_info_dict()
 
 if __name__ == '__main__':
-    game_id_list = [21500568]
+    game_id_list = ['0021500568']
     
     base_url_box_score = 'http://stats.nba.com/stats/boxscoreplayertrackv2'
     params_box_score = {

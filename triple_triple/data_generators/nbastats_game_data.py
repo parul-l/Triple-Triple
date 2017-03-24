@@ -79,5 +79,11 @@ def box_score_df(base_url_box_score, params_box_score):
         box_score_data['resultSets'][0]['rowSet'],
         columns=box_score_data['resultSets'][0]['headers']
     ).drop_duplicates()
-    df_box_score['MIN'] = pd.to_datetime(df_box_score['MIN'], format='%M:%S')
+    df_box_score.MIN = pd.to_datetime(
+        df_box_score.MIN, format='%M:%S'
+    )
+    df_box_score.MIN = df_box_score.MIN.map(
+        lambda x: (x.minute) * 60 + x.second
+    )
+
     return df_box_score

@@ -8,6 +8,7 @@ df_game_info = get_df_all_game_info()
 
 # January 11, 2016, MIA @ GSW play by play data
 game_id = '0021500568'
+season = '2015-16'
 hometeam_id, awayteam_id = ngd.teams_playing(game_id, df_game_info)
 
 base_url_game = "http://stats.nba.com/stats/leaguegamelog"
@@ -18,7 +19,7 @@ params_game = {
     'Direction': 'DESC',
     'LeagueID': '00',
     'PlayerOrTeam': 'T',
-    'Season': '2015-16',
+    'Season': season,
     'SeasonType': 'Regular Season',
     'Sorter': 'PTS'
 }
@@ -29,7 +30,7 @@ params_play = {
     'EndRange': '55800',    # not sure what this is
     'GameID': game_id,
     'RangeType': '2',       # not sure what this is
-    'Season': '2015-16',
+    'Season': season,
     'SeasonType': 'Regular Season',
     'StartPeriod': '1',     # acceptable values: 1, 2, 3, 4
     'StartRange': '0',      # not sure what this is

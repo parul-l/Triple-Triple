@@ -22,7 +22,7 @@ class Player(object):
                                   corresponding to the entry's index
 
             possession_prob: Proability of having possession of the ball
-                             when on team is on offense (float)
+                             when team is on offense (float)
 
             shot_attempts: An integer of the number of shots taken in a play
 
@@ -35,7 +35,14 @@ class Player(object):
             passes: An integer of the total passes
 
             has_possession: A boolean to indicate if player has possession of ball
+            
+            poss_result_on_defense: An array that gives the probability of offense player's outcome when player is defending him.
+            array = [0, 1, 2], where 0 - pass, 1 - shoot, 2 - turnover
 
+            poss_result_on_defense_reg: A 6 x 3 matrix that gives defensive player's region (row) and offensive player's possession outcome (column)
+            
+            def_off_region_matrix: A 6 x 6 matrix that gives defense player (row) vs. offense player region (col)
+            
             court_region: Int between 0 and 5
                         reg_to_num = {
                             'back court': 0,
@@ -66,6 +73,8 @@ class Player(object):
         self.turnovers = 0
         self.passes = 0
         self.has_possession = False
+        self.poss_result_on_defense = None
+        self.poss_result_on_defense_reg = None
         self.court_region = None
         self.court_coord = None
 

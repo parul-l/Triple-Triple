@@ -154,7 +154,7 @@ def update_possession_prob(
         df_possession = df_possession.query('game_id==@game_id')
 
     df_team_possession = df_possession\
-        .query('team_id==@player_class.team_id and possession=="end"')
+        .query('team_id==@player_class.team_id and possession_end')
     df_player_possession = df_team_possession\
         .query('player_id==@player_class.player_id')
 
@@ -176,9 +176,9 @@ def relative_player_possession_prob(players_offense_dict):
 
 
 def get_action_prob_matrix(player_class, df_possession):
-    query_params = 'player_id==@player_class.player_id and possession=="end"'
+    query_params = 'player_id==@player_class.player_id and possession_end'
 
-    imp_columns = ['player_name', 'action', 'region', 'possession']
+    imp_columns = ['player_name', 'action', 'region', 'possession_start', 'possession_end']
     df_player = df_possession.query(query_params)[imp_columns]
 
     # rows = region, columns = action [0, 1, 2] <--> [pass, shoot, turnover]

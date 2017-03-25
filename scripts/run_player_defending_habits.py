@@ -11,14 +11,16 @@ import triple_triple.player_possession_habits as pph
 from triple_triple.players_in_game import get_players_in_game
 
 
-df_raw_position_region = get_df_raw_position_region()
 game_player_dict = get_game_player_dict()
 game_info_dict = get_game_info_dict()
+
+df_raw_position_region = get_df_raw_position_region()
 df_possession_region = pph.get_possession_df(
     dataframe=df_raw_position_region,
     has_ball_dist=2.0,
     len_poss=15
 )
+
 df_play_by_play = get_df_play_by_play()
 df_game_stats = parse_df_play_by_play(df_play_by_play)
 

@@ -7,6 +7,9 @@ from triple_triple.class_player import (
     player_class_reset
 )
 
+from triple_triple.data_generators.player_bio_nbastats_data import (
+    get_player_bio_df
+)
 from triple_triple.startup_data import (
     get_df_raw_position_region,
     get_game_player_dict,
@@ -14,44 +17,58 @@ from triple_triple.startup_data import (
 )
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
 
+
 df_raw_position_region = get_df_raw_position_region()
+df_possession_region = pph.get_possession_df(
+    dataframe=df_raw_position_region,
+    has_ball_dist=2.0,
+    len_poss=15
+)
+
 game_player_dict = get_game_player_dict()
 df_play_by_play = get_df_play_by_play()
 df_game_stats = parse_df_play_by_play(df_play_by_play)
 
+reg_to_num = {
+    'back court': 0,
+    'mid-range': 1,
+    'key': 2,
+    'out of bounds': 3,
+    'paint': 4,
+    'perimeter': 5
+}
+
 
 if __name__ == '__main__':
-    player_id_list = [2547, 2548, 2736, 1626159, 201609]
+    team1_id_list = [203110, 202691, 201939, 101106, 201575]
+    team2_id_list = [2547, 2548, 2736, 2617, 2405]
     game_id_list = [21500568]
+
+    df_player_bio = get_player_bio_df(
+        player_id_list=(team1_id_list + team2_id_list)
+    )
 
     # this is weird since this will only have one element
     ball_class_dict = create_player_class_instance(
         player_list=[-1],
         game_player_dict=game_player_dict,
+        df_player_bio=None
     )
 
     ball_class = ball_class_dict['_-1']
 
-    df_possession = pph.get_possession_df(
-        dataframe=df_raw_position_region,
-        len_poss=10
-    )
-
-    reg_to_num = {
-        'back court': 0,
-        'mid-range': 1,
-        'key': 2,
-        'out of bounds': 3,
-        'paint': 4,
-        'perimeter': 5
-    }
-
-    players_offense_dict = create_player_class_instance(
-        player_list=player_id_list,
+    team1_class_dict = create_player_class_instance(
+        player_list=team1_id_list,
         game_player_dict=game_player_dict,
+        df_player_bio=df_player_bio
+    )
+    team2_class_dict = create_player_class_instance(
+        player_list=team2_id_list,
+        game_player_dict=game_player_dict,
+        df_player_bio=df_player_bio
     )
 
-    for player_class in players_offense_dict.values():
+    for player_class in team1_class_dict.values():
         # update region probability
         ppp.update_region_prob_matrix(
             player_class=player_class,
@@ -68,7 +85,7 @@ if __name__ == '__main__':
         df_possession = pph.characterize_player_possessions(
             game_id=game_id_list[0],
             player_class=player_class,
-            df_possession=df_possession,
+            df_possession=df_possession_region,
             df_game_stats=df_game_stats
         )
 
@@ -104,7 +121,7 @@ if __name__ == '__main__':
 
     for i in range(100):
         player_action, start_play, score = spp.sim_offense_play(
-            players_offense_dict=players_offense_dict,
+            players_offense_dict=team1_id_dict,
             shooting_side=shooting_side,
             start_play=start_play,
             player_action=player_action,
@@ -115,7 +132,7 @@ if __name__ == '__main__':
         print 'action: ', player_action
         print 'score: ', score
 
-        for player_class in players_offense_dict.values():
+        for player_class in team1_id_dict.values():
             print player_class.name
             print 'region', player_class.court_region
             print 'possession', player_class.has_possession
@@ -127,12 +144,12 @@ if __name__ == '__main__':
             print ""
 
     sim_coord_dict = spp.create_sim_coord_dict(
-        players_offense_dict=players_offense_dict,
+        players_offense_dict=team1_id_dict,
         num_sim=100)
 
     players_no_ball_dict = spp.get_player_dict_no_ball(
-        players_offense_dict=players_offense_dict
+        players_offense_dict=team1_id_dict
     )
 
     # to re-do the simulation we reset the parameters
-    player_class_reset(players_offense_dict)
+    # player_class_reset(team1_id_dict)

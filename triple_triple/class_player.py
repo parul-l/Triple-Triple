@@ -6,6 +6,8 @@ class Player(object):
             teamid: A string representing player's current teamid
             jersey: A string representing player's current jersey number
             position: A string representing the player's position
+            height: An integer representing player's height in inches
+            weight: An integer representing player's weight in pounds
 
             region_prob_matrix: A 6 x 6 matrix where
                                 row = start region, column = end region
@@ -58,12 +60,14 @@ class Player(object):
 
     """
 
-    def __init__(self, name, player_id, team_id, jersey, position):
+    def __init__(self, name, player_id, team_id, jersey, position, height, weight):
         self.name = name
         self.player_id = player_id
         self.team_id = team_id
         self.jersey = jersey
         self.position = position
+        self.height = height
+        self.weight = weight
         self.region_prob_matrix = None
         self.action_prob_matrix = None
         self.shooting_prob = None
@@ -87,17 +91,41 @@ def playerid_from_name(player_name, game_player_dict):
             return playerid
 
 
-def create_player_class_instance(player_list, game_player_dict):
+def create_player_class_instance(
+    player_list,
+    game_player_dict,
+    df_player_bio=None
+):
     player_class_dict = {}
     for player_id in player_list:
+        info_list = game_player_dict[str(player_id)]
+
+        name = info_list[0]
+        team_id = int(info_list[2])
+        jersey = info_list[1]
+        position = info_list[3]
+
+        if df_player_bio is None:
+            height = 0
+            weight = 0
+        else:
+            height = df_player_bio\
+                .query('player_id==@player_id')\
+                .height.iloc[0]
+            weight = df_player_bio\
+                .query('player_id==@player_id')\
+                .weight.iloc[0]
+
         player_class_dict['_' + str(player_id)] = \
             Player(
-                name=game_player_dict[str(player_id)][0],           # name
-                player_id=player_id,                                # player_id
-                team_id=int(game_player_dict[str(player_id)][2]),   # team_id
-                jersey=game_player_dict[str(player_id)][1],         # jersey
-                position=game_player_dict[str(player_id)][3]        # position
-        )
+                name=name,
+                player_id=player_id,
+                team_id=team_id,
+                jersey=jersey,
+                position=position,
+                height=height,
+                weight=weight
+            )
 
     return player_class_dict
 

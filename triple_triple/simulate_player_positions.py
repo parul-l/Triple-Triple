@@ -17,7 +17,7 @@ ball_class_dict = create_player_class_instance(
     game_player_dict=game_player_dict,
 )
 
-ball_class = ball_class_dict['_-1']
+ball_class = ball_class_dict[-1]
 
 # TODO: in sim_offense_play, keep track of made/missed shots,
 # TODO: Fix score in sim_offense_play. It's too redundant

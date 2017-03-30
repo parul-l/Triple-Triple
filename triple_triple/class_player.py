@@ -116,7 +116,7 @@ def create_player_class_instance(
                 .query('player_id==@player_id')\
                 .weight.iloc[0]
 
-        player_class_dict['_' + str(player_id)] = \
+        player_class_dict[player_id] = \
             Player(
                 name=name,
                 player_id=player_id,

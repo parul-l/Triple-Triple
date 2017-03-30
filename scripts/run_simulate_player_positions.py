@@ -1,3 +1,4 @@
+import copy
 import triple_triple.prob_player_possessions as ppp
 import triple_triple.simulate_player_positions as spp
 import triple_triple.player_possession_habits as pph
@@ -55,7 +56,7 @@ if __name__ == '__main__':
         df_player_bio=None
     )
 
-    ball_class = ball_class_dict['_-1']
+    ball_class = ball_class_dict[-1]
 
     team1_class_dict = create_player_class_instance(
         player_list=team1_id_list,
@@ -68,7 +69,11 @@ if __name__ == '__main__':
         df_player_bio=df_player_bio
     )
 
-    for player_class in team1_class_dict.values():
+    # combine dictionaries to update both dictionaries together
+    combined_players_dict = copy.copy(team1_class_dict)
+    combined_players_dict.update(team2_class_dict)
+
+    for player_class in combined_players_dict.values():
         # update region probability
         ppp.update_region_prob_matrix(
             player_class=player_class,
@@ -121,7 +126,7 @@ if __name__ == '__main__':
 
     for i in range(100):
         player_action, start_play, score = spp.sim_offense_play(
-            players_offense_dict=team1_id_dict,
+            players_offense_dict=team1_class_dict,
             shooting_side=shooting_side,
             start_play=start_play,
             player_action=player_action,
@@ -132,7 +137,7 @@ if __name__ == '__main__':
         print 'action: ', player_action
         print 'score: ', score
 
-        for player_class in team1_id_dict.values():
+        for player_class in team1_class_dict.values():
             print player_class.name
             print 'region', player_class.court_region
             print 'possession', player_class.has_possession
@@ -144,11 +149,11 @@ if __name__ == '__main__':
             print ""
 
     sim_coord_dict = spp.create_sim_coord_dict(
-        players_offense_dict=team1_id_dict,
+        players_offense_dict=team1_class_dict,
         num_sim=100)
 
     players_no_ball_dict = spp.get_player_dict_no_ball(
-        players_offense_dict=team1_id_dict
+        players_offense_dict=team1_class_dict
     )
 
     # to re-do the simulation we reset the parameters

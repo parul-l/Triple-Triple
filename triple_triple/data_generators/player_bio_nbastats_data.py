@@ -36,14 +36,39 @@ def get_player_bio_df(base_url, params, player_ids):
             bad_keys.append(key)
 
     bio_headers = [
-        'Player_ID',
-        'Player_Name',
-        'From',
-        'To',
-        'Position',
-        'Height',
-        'Weight',
-        'Birthdate'
+        'player_id',
+        'player_name',
+        'from',
+        'to',
+        'position',
+        'height',
+        'weight',
+        'birthdate'
+    ]
+
+    return pd.DataFrame(player_bio_info, columns=bio_headers)
+
+
+# Get active player info only
+def get_active_player_bio_df(url):
+    data = gd.get_data(url, {})
+    player_bio_info = []
+
+    for player_dict in data:
+        player_bio_info.append([
+            int(player_dict['personId']),
+            player_dict['displayName'],
+            player_dict['pos'],
+            int(player_dict['heightFeet']) * 12 + int(player_dict['heightInches']),
+            int(player_dict['weightPounds'])
+        ])
+
+    bio_headers = [
+        'player_id',
+        'player_name',
+        'position',
+        'height',
+        'weight',
     ]
 
     return pd.DataFrame(player_bio_info, columns=bio_headers)

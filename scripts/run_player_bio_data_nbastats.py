@@ -27,5 +27,10 @@ if __name__ == '__main__':
 
     df_player_bio_nbastats = pbd_nba.get_player_bio_df(base_url, params, player_ids)
 
+    # active player bios
+    url = 'http://www.nba.com/players/active_players.json'
+
+    df_active_player_bio_info = pbd_nba.get_active_player_bio_df(url)
+
     # Save file
     # df_player_bio.to_csv('triple_triple/data/player_bio_info_nbastats.csv')

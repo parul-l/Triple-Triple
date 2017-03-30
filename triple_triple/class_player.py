@@ -5,6 +5,7 @@ class Player(object):
             playerid: A string representing the player's id
             teamid: A string representing player's current teamid
             jersey: A string representing player's current jersey number
+            position: A string representing the player's position
 
             region_prob_matrix: A 6 x 6 matrix where
                                 row = start region, column = end region
@@ -40,9 +41,9 @@ class Player(object):
             array = [0, 1, 2], where 0 - pass, 1 - shoot, 2 - turnover
 
             poss_result_on_defense_reg: A 6 x 3 matrix that gives defensive player's region (row) and offensive player's possession outcome (column)
-            
+
             def_off_region_matrix: A 6 x 6 matrix that gives defense player (row) vs. offense player region (col)
-            
+
             court_region: Int between 0 and 5
                         reg_to_num = {
                             'back court': 0,
@@ -57,11 +58,12 @@ class Player(object):
 
     """
 
-    def __init__(self, name, player_id, team_id, jersey):
+    def __init__(self, name, player_id, team_id, jersey, position):
         self.name = name
         self.player_id = player_id
         self.team_id = team_id
         self.jersey = jersey
+        self.position = position
         self.region_prob_matrix = None
         self.action_prob_matrix = None
         self.shooting_prob = None
@@ -93,7 +95,8 @@ def create_player_class_instance(player_list, game_player_dict):
                 name=game_player_dict[str(player_id)][0],           # name
                 player_id=player_id,                                # player_id
                 team_id=int(game_player_dict[str(player_id)][2]),   # team_id
-                jersey=game_player_dict[str(player_id)][1]          # jersey
+                jersey=game_player_dict[str(player_id)][1],         # jersey
+                position=game_player_dict[str(player_id)][3]        # position
         )
 
     return player_class_dict

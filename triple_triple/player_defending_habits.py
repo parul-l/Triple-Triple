@@ -77,14 +77,22 @@ def poss_result_on_defense(
         .values
     )
 
-    action_array = np.array([
-        action_dict['pass'],
-        action_dict['missed_shot'] + action_dict['shot'],
-        action_dict['turnover'],
-    ], dtype=float)
+    total_action = float(sum(action_dict.values()))
 
-    # [pass, shoot, turnover]
-    defender_class.poss_result_on_defense = action_array / np.sum(action_array)
+    action_prob_dict = {
+        'pass': action_dict['pass'] / total_action,
+        'shoot': (action_dict['missed_shot'] + action_dict['shot']) / total_action,
+        'turnover': action_dict['turnover'] / total_action
+    }
+
+    # action_array = np.array([
+    #     action_dict['pass'],
+    #     action_dict['missed_shot'] + action_dict['shot'],
+    #     action_dict['turnover'],
+    # ], dtype=float)
+    #
+    # # [pass, shoot, turnover]
+    defender_class.poss_result_on_defense = action_prob_dict
 
 
 def poss_result_on_defense_reg(

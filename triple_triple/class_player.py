@@ -38,9 +38,9 @@ class Player(object):
             passes: An integer of the total passes
 
             has_possession: A boolean to indicate if player has possession of ball
-            
-            poss_result_on_defense: An array that gives the probability of offense player's outcome when player is defending him.
-            array = [0, 1, 2], where 0 - pass, 1 - shoot, 2 - turnover
+
+            poss_result_on_defense: A dict that gives the probability of offense player's outcome when player is defending him.
+            pass, shoot, turnover
 
             poss_result_on_defense_reg: A 6 x 3 matrix that gives defensive player's region (row) and offensive player's possession outcome (column)
 

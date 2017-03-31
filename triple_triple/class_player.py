@@ -39,7 +39,10 @@ class Player(object):
 
             steals: Avg steals per game for specified season
             blocks: Avg blocks per game for specified season
-
+            off_rebounds: Avg off_rebounds per game for specified season
+            def_rebounds: Avg def_rebounds per game for specified season
+            free_throw_pct: Avg free throw percentage for specified season
+            personal_fouls: Avg personal_fouls per game for specified season
             has_possession: A boolean to indicate if player has possession of ball
 
             poss_result_on_defense: A dict that gives the probability of offense player's outcome when player is defending him.
@@ -83,6 +86,10 @@ class Player(object):
         self.passes = 0
         self.steals = 0
         self.blocks = 0
+        self.off_rebounds = 0
+        self.def_rebounds = 0
+        self.free_throw_pct = 0
+        self.personal_fouls = 0
         self.has_possession = False
         self.poss_result_on_defense = None
         self.poss_result_on_defense_reg = None

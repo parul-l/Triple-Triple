@@ -1,7 +1,9 @@
 import copy
+import triple_triple.player_defending_habits as pdh
+import triple_triple.player_possession_habits as pph
 import triple_triple.prob_player_possessions as ppp
 import triple_triple.simulate_player_positions as spp
-import triple_triple.player_possession_habits as pph
+
 
 from triple_triple.class_player import (
     create_player_class_instance,
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     team1_id_list = [203110, 202691, 201939, 101106, 201575]
     team2_id_list = [2547, 2548, 2736, 2617, 2405]
     game_id_list = [21500568]
-
+        
     df_player_bio = get_player_bio_df(
         player_id_list=(team1_id_list + team2_id_list)
     )
@@ -68,6 +70,9 @@ if __name__ == '__main__':
         game_player_dict=game_player_dict,
         df_player_bio=df_player_bio
     )
+
+    team1_id = team1_class_dict[team1_id_list[0]].team_id
+    team2_id = team2_class_dict[team2_id_list[0]].team_id
 
     # combine dictionaries to update both dictionaries together
     combined_players_dict = copy.copy(team1_class_dict)
@@ -117,6 +122,67 @@ if __name__ == '__main__':
         ppp.get_regional_shooting_prob(
             player_class=player_class,
             df_possession=df_possession
+        )
+
+        # update season steals/blocks per game
+        pdh.update_traditional_nba_stats(
+            player_class=player_class,
+            season='2015-16',
+            season_type='Regular Season'
+        )
+
+    df_possession_defender_team1 = pdh.get_df_possession_defender(
+        offense_players_dict=team2_class_dict,
+        df_possession_region=df_possession_region,
+        df_raw_position_region=df_raw_position_region,
+        defender_team_id=team1_id
+    )
+    df_possession_defender_team2 = pdh.get_df_possession_defender(
+        offense_players_dict=team1_class_dict,
+        df_possession_region=df_possession_region,
+        df_raw_position_region=df_raw_position_region,
+        defender_team_id=team2_id
+    )
+
+    # Update team1 defence data
+    for player_class in team1_class_dict.values():
+        # update possession outcome when defending
+        pdh.poss_result_on_defense(
+            defender_class=player_class,
+            df_possession_defender=df_possession_defender_team1,
+            game_id=None
+        )
+
+        pdh.poss_result_on_defense_reg(
+            defender_class=player_class,
+            df_possession_defender=df_possession_defender_team1,
+            game_id=None
+        )
+
+        pdh.get_def_off_region_matrix(
+            defender_class=player_class,
+            df_possession_defender=df_possession_defender_team1,
+            game_id=None,
+        )
+    # Update team2 defense data
+    for player_class in team2_class_dict.values():
+        # update possession outcome when defending
+        pdh.poss_result_on_defense(
+            defender_class=player_class,
+            df_possession_defender=df_possession_defender_team2,
+            game_id=None
+        )
+
+        pdh.poss_result_on_defense_reg(
+            defender_class=player_class,
+            df_possession_defender=df_possession_defender_team2,
+            game_id=None
+        )
+
+        pdh.get_def_off_region_matrix(
+            defender_class=player_class,
+            df_possession_defender=df_possession_defender_team2,
+            game_id=None,
         )
 
     start_play = True

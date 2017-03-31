@@ -11,7 +11,7 @@ from triple_triple.prob_player_possessions import (
 # pd.options.display.width = 100
 
 
-def update_nba_stats(
+def update_traditional_nba_stats(
         player_class,
         season='2015-16',
         season_type='Regular Season'
@@ -23,7 +23,11 @@ def update_nba_stats(
     player_id = player_class.player_id
     player_stats = df_player_stats.query('player_id==@player_id').iloc[0]
     player_class.steals = player_stats.steals
-    player_class.blocks = player_stats.blocks
+    player_class.blocks = player_stats.blks
+    player_class.off_rebounds = player_stats.off_rebounds
+    player_class.def_rebounds = player_stats.def_rebounds
+    player_class.free_throw_pct = player_stats.free_throw_pct
+    player_class.personal_fouls = player_stats.personal_fouls
 
 
 def get_df_possession_defender(

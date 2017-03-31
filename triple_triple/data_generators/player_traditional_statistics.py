@@ -50,11 +50,11 @@ def get_player_stats_df(
     # update params if need be
     params['Season'] = season
     params['SeasonType'] = season_type
-    
+
     data = get_data(base_url=base_url, params=params)
     info_list = data['resultSets'][0]['rowSet']
     player_stats = []
-    
+
     for player_info in info_list:
         player_stats.append([
             player_info[0],     # player_id
@@ -63,15 +63,24 @@ def get_player_stats_df(
             player_info[5],     # games played
             player_info[24],    # steals
             player_info[25],    # blocks
+            player_info[19],    # off_rebounds
+            player_info[20],    # def_rebounds
+            player_info[18],    # free_throw_pct
+            player_info[27],    # personal_fouls
+
         ])
-    
+
     headers = [
         'player_id',
         'player_name',
         'team_id',
         'games_played',
         'steals',
-        'blocks'
+        'blks',
+        'off_rebounds',
+        'def_rebounds',
+        'free_throw_pct',
+        'personal_fouls',
     ]
 
     return pd.DataFrame(data=player_stats, columns=headers)

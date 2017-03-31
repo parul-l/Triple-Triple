@@ -62,13 +62,14 @@ if __name__ == '__main__':
     )
 
     for player_class in away_player_class_dict.values():
-        # update possession outcome when defending
-        pdh.update_nba_stats(
+        # update season steas/block per game
+        pdh.update_traditional_nba_stats(
             player_class=player_class,
             season='2015-16',
             season_type='Regular Season'
         )
 
+        # update possession outcome when defending
         pdh.poss_result_on_defense(
             defender_class=player_class,
             df_possession_defender=df_possession_defender,

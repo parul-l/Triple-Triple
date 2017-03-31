@@ -37,6 +37,9 @@ class Player(object):
 
             passes: An integer of the total passes
 
+            steals: Avg steals per game for specified season
+            blocks: Avg blocks per game for specified season
+
             has_possession: A boolean to indicate if player has possession of ball
 
             poss_result_on_defense: A dict that gives the probability of offense player's outcome when player is defending him.
@@ -78,6 +81,8 @@ class Player(object):
         self.total_points = 0
         self.turnovers = 0
         self.passes = 0
+        self.steals = 0
+        self.blocks = 0
         self.has_possession = False
         self.poss_result_on_defense = None
         self.poss_result_on_defense_reg = None

@@ -1,5 +1,6 @@
 from collections import Counter
 import numpy as np
+from triple_triple.data_generators.player_traditional_statistics import get_player_stats_df
 from triple_triple.prob_player_possessions import (
     get_reg_to_num,
     get_action_to_num,
@@ -8,6 +9,21 @@ from triple_triple.prob_player_possessions import (
 
 # show columns along one line
 # pd.options.display.width = 100
+
+
+def update_nba_stats(
+        player_class,
+        season='2015-16',
+        season_type='Regular Season'
+    ):
+    df_player_stats = get_player_stats_df(
+        season=season,
+        season_type=season_type
+    )
+    player_id = player_class.player_id
+    player_stats = df_player_stats.query('player_id==@player_id').iloc[0]
+    player_class.steals = player_stats.steals
+    player_class.blocks = player_stats.blocks
 
 
 def get_df_possession_defender(

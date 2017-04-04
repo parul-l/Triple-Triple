@@ -36,7 +36,10 @@ def get_simulated_coord(player_sim_reg, shooting_side):
 
 def who_has_possession(players_offense_dict):
     has_ball_list = filter(
-        lambda player: players_offense_dict[player].has_possession is True, players_offense_dict.keys()
+        lambda player:
+        players_offense_dict[player]
+        .has_possession is True, players_offense_dict
+        .keys()
     )
     if len(has_ball_list) == 1:
         return has_ball_list[0]

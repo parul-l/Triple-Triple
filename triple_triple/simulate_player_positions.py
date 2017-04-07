@@ -96,7 +96,106 @@ def update_ball_position(
     ball_class.court_coord = coord
 
 
-def initiate_player_positions(players_offense_dict, shooting_side, num_reg=6):
+def match_players_random(players_defense_dict, players_offense_dict, unmatched_players=None):
+    if unmatched_players is None:
+        players_defense_dict_copy = copy.deepcopy(players_defense_dict)
+        players_offense_dict_copy = copy.deepcopy(players_offense_dict)
+    else:
+        players_defense_dict_copy = unmatched_players[0]
+        players_offense_dict_copy = unmatched_players[1]
+
+    off_players_list = list(players_offense_dict.values())
+
+    for defender in players_defense_dict.values():
+        off_player = off_players_list[0]
+        players_defense_dict[defender.player_id].court_region = \
+            players_offense_dict[off_player.player_id].court_region
+        players_defense_dict[defender.player_id].court_coord = \
+            players_offense_dict[off_player.player_id].court_coord
+
+        off_players_list.pop(0)
+        del players_defense_dict_copy[defender.player_id]
+        del players_offense_dict_copy[off_player.player_id]
+
+    return players_defense_dict_copy, players_offense_dict_copy
+
+
+def closest_height_to_defender(defender_class, players_offense_dict):
+    players = list(players_offense_dict.values())
+    height_from_defender = [
+        player.height - defender_class.height for player in players
+    ]
+    idx_closest_player = np.abs(np.array(height_from_defender)).argmin()
+
+    return players[idx_closest_player].player_id
+
+
+def match_players_height(
+    players_defense_dict,
+    players_offense_dict,
+    unmatched_players=None
+):
+    if unmatched_players is None:
+        players_defense_dict_copy = copy.deepcopy(players_defense_dict)
+        players_offense_dict_copy = copy.deepcopy(players_offense_dict)
+    else:
+        players_defense_dict_copy = unmatched_players[0]
+        players_offense_dict_copy = unmatched_players[1]
+
+    for defender in players_defense_dict.values():
+        closest_off_player_id = closest_height_to_defender(
+            defender_class=defender, players_offense_dict=players_offense_dict_copy
+        )
+        players_defense_dict[defender.player_id].court_region = \
+            players_offense_dict[closest_off_player_id].court_region
+        players_defense_dict[defender.player_id].court_coord = \
+            players_offense_dict[closest_off_player_id].court_coord
+
+        del players_defense_dict_copy[defender.player_id]
+        del players_offense_dict_copy[closest_off_player_id]
+
+    return players_defense_dict_copy, players_offense_dict_copy
+
+
+def match_players_same_position(
+    players_defense_dict,
+    players_offense_dict,
+    unmatched_players=None
+):
+    if unmatched_players is None:
+        players_defense_dict_copy = copy.deepcopy(players_defense_dict)
+        players_offense_dict_copy = copy.deepcopy(players_offense_dict)
+    else:
+        players_defense_dict_copy = unmatched_players[0]
+        players_offense_dict_copy = unmatched_players[1]
+    
+    # match players using position
+    for defender in players_defense_dict.values():
+        defender_id = defender.player_id
+        # break up position in to list for cases such as 'F-G'
+        defender_position = list(defender.position)
+        try:
+            match_player_id = next(
+                player_class.player_id
+                for player_class
+                in players_offense_dict_copy.values()
+                if not set(
+                    list(player_class.position).isdisjoint(defender_position)
+                )
+            players_defense_dict[defender_id].court_region = \
+                players_offense_dict[match_player_id].court_region
+            players_defense_dict[defender_id].court_coord = \
+                players_offense_dict[match_player_id].court_coord
+
+            del players_offense_dict_copy[match_player_id]
+            del players_defense_dict_copy[defender_id]
+        except:
+            continue
+            
+    return players_defense_dict_copy, players_offense_dict_copy
+
+
+def initiate_offense_player_positions(players_offense_dict, shooting_side, num_reg=6):
     # update everyone's position
     update_player_positions(
         players_offense_dict=players_offense_dict,
@@ -115,6 +214,16 @@ def initiate_player_positions(players_offense_dict, shooting_side, num_reg=6):
         shooting_side=shooting_side
     )
 
+
+def update_defense_player_positions(players_defense_dict, players_offense_dict):
+    # match players by position and collect unmatched players
+    players_defense_dict_copy, players_offense_dict_copy = match_players_same_position(
+        players_defense_dict,
+        players_offense_dict
+    )
+    # match players on height
+    
+    
 
 def update_has_possession(players_offense_dict, ball_class=ball_class):
     old_has_ball = who_has_possession(players_offense_dict)
@@ -213,7 +322,7 @@ def sim_offense_play(
     if start_play:
         start_play = False
         initiate_player_has_possession(players_offense_dict)
-        initiate_player_positions(
+        initiate_offense_player_positions(
             players_offense_dict=players_offense_dict,
             shooting_side='right',
             num_reg=6

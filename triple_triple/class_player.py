@@ -2,7 +2,7 @@ class Player(object):
     """ Any player in the NBA at any time period.
         Attributes:
             name: A string representing the player's name
-            playerid: A string representing the player's id
+            playerid: An int representing the player's id
             teamid: A string representing player's current teamid
             jersey: A string representing player's current jersey number
             position: A string representing the player's position
@@ -38,12 +38,26 @@ class Player(object):
             passes: An integer of the total passes
 
             steals: Avg steals per game for specified season
+
             blocks: Avg blocks per game for specified season
+
             off_rebounds: Avg off_rebounds per game for specified season
+
             def_rebounds: Avg def_rebounds per game for specified season
+
             free_throw_pct: Avg free throw percentage for specified season
+
             personal_fouls: Avg personal_fouls per game for specified season
+
             has_possession: A boolean to indicate if player has possession of ball
+
+            on_defense: A boolean to indicate if player is on defense
+
+            defending_who: An int of the player_id of who the defender is defending
+
+            on_offense: A boolean to indicate if player is on offense
+
+            defender: An int of the player_id of who the player is being defended by
 
             poss_result_on_defense: A dict that gives the probability of offense player's outcome when player is defending him.
             pass, shoot, turnover
@@ -91,6 +105,10 @@ class Player(object):
         self.free_throw_pct = 0
         self.personal_fouls = 0
         self.has_possession = False
+        self.on_defense = False
+        self.defending_who = None
+        self.on_offense = False
+        self.defender = None
         self.poss_result_on_defense = None
         self.poss_result_on_defense_reg = None
         self.court_region = None
@@ -150,5 +168,9 @@ def player_class_reset(player_class_dict):
         player_class.turnovers = 0
         player_class.passes = 0
         player_class.has_possession = False
+        player_class.on_defense = False
+        player_class.defending_who = None
+        player_class.on_offense = False
+        player_class.defender = None
         player_class.court_region = None
         player_class.court_coord = None

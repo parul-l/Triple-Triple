@@ -51,6 +51,7 @@ def initiate_player_has_possession(players_offense_dict):
     # make sure everyone's possession is set to False
     for player_class in players_offense_dict.values():
         player_class.has_possession = False
+        player_class.on_offense[0] = True
 
     # choose player with possession
     player_list, prob = relative_player_possession_prob(players_offense_dict)
@@ -224,7 +225,7 @@ def initiate_defense_player_positions(players_defense_dict, players_offense_dict
             players_offense_dict=players_offense_dict,
             unmatched_players=None
         )
-    
+
     # match remaining players by height
     unmatched_players = \
         match_players_height(

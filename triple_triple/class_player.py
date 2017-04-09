@@ -53,11 +53,11 @@ class Player(object):
 
             on_defense: A boolean to indicate if player is on defense
 
-            defending_who: An int of the player_id of who the defender is defending
+            defending_who: An int of the player_id of who the defended_by is defending
 
             on_offense: A boolean to indicate if player is on offense
 
-            defender: An int of the player_id of who the player is being defended by
+            defended_by: An int of the player_id of who the player is being defended by
 
             poss_result_on_defense: A dict that gives the probability of offense player's outcome when player is defending him.
             pass, shoot, turnover
@@ -108,7 +108,7 @@ class Player(object):
         self.on_defense = False
         self.defending_who = None
         self.on_offense = False
-        self.defender = None
+        self.defended_by = None
         self.poss_result_on_defense = None
         self.poss_result_on_defense_reg = None
         self.court_region = None
@@ -171,6 +171,6 @@ def player_class_reset(player_class_dict):
         player_class.on_defense = False
         player_class.defending_who = None
         player_class.on_offense = False
-        player_class.defender = None
+        player_class.defended_by = None
         player_class.court_region = None
         player_class.court_coord = None

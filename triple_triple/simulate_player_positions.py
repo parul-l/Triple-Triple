@@ -51,7 +51,7 @@ def initiate_player_has_possession(players_offense_dict):
     # make sure everyone's possession is set to False
     for player_class in players_offense_dict.values():
         player_class.has_possession = False
-        player_class.on_offense[0] = True
+        player_class.on_offense = True
 
     # choose player with possession
     player_list, prob = relative_player_possession_prob(players_offense_dict)
@@ -97,7 +97,17 @@ def update_ball_position(
     ball_class.court_coord = coord
 
 
-def match_players_random(players_defense_dict, players_offense_dict, unmatched_players=None):
+def update_defense_params(offense_class, defender_class):
+    defender_class.on_defense = True
+    defender_class.defending_who = offense_class.player_id
+    offense_class.defended_by = defender_class.player_id
+
+
+def match_players_random(
+    players_defense_dict,
+    players_offense_dict,
+    unmatched_players=None
+):
     if unmatched_players is None:
         players_defense_dict_copy = copy.deepcopy(players_defense_dict)
         players_offense_dict_copy = copy.deepcopy(players_offense_dict)
@@ -114,6 +124,13 @@ def match_players_random(players_defense_dict, players_offense_dict, unmatched_p
         players_defense_dict[defender.player_id].court_coord = \
             players_offense_dict[off_player.player_id].court_coord
 
+        # update on_defense and defender status
+        update_defense_params(
+            offense_class=off_player,
+            defender_class=defender
+        )
+
+        # remove the matched players
         off_players_list.pop(0)
         del players_defense_dict_copy[defender.player_id]
         del players_offense_dict_copy[off_player.player_id]
@@ -151,7 +168,14 @@ def match_players_height(
             players_offense_dict[closest_off_player_id].court_region
         players_defense_dict[defender.player_id].court_coord = \
             players_offense_dict[closest_off_player_id].court_coord
+        
+        # update on_defense and defender status
+        update_defense_params(
+            offense_class=players_offense_dict[closest_off_player_id],
+            defender_class=defender
+        )
 
+        # remove the matched players
         del players_defense_dict_copy[defender.player_id]
         del players_offense_dict_copy[closest_off_player_id]
 
@@ -188,6 +212,12 @@ def match_players_same_position(
             players_defense_dict[defender_id].court_coord = \
                 players_offense_dict[match_player_id].court_coord
 
+            # update on_defense and defender status
+            update_defense_params(
+                offense_class=players_offense_dict[match_player_id],
+                defender_class=defender
+            )
+            # remove the matched players
             del players_offense_dict_copy[match_player_id]
             del players_defense_dict_copy[defender_id]
         except:
@@ -216,7 +246,10 @@ def initiate_offense_player_positions(players_offense_dict, shooting_side, num_r
     )
 
 
-def initiate_defense_player_positions(players_defense_dict, players_offense_dict):
+def initiate_defense_player_positions(
+    players_defense_dict,
+    players_offense_dict
+):
     # match players by position
     # unmatched_players = [players_defense_dict_copy, players_offense_dict_copy]
     unmatched_players = \
@@ -272,6 +305,8 @@ def update_player_positions(
 ):
 
     for player_class in players_offense_dict.values():
+        # update on_offense status
+        player_class.on_offense = True
         current_region = player_class.court_region
 
         if current_region is None:

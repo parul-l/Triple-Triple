@@ -378,6 +378,7 @@ def shot_outcome(player_class):
 
 def sim_offense_play(
     players_offense_dict,
+    players_defense_dict,
     shooting_side,
     start_play,
     player_action,
@@ -388,10 +389,13 @@ def sim_offense_play(
         initiate_player_has_possession(players_offense_dict)
         initiate_offense_player_positions(
             players_offense_dict=players_offense_dict,
-            shooting_side='right',
+            shooting_side=shooting_side,
             num_reg=6
         )
-
+        update_defense_player_positions(
+            players_defense_dict=players_defense_dict,
+            players_offense_dict=players_offense_dict
+        )
         update_ball_position(
             players_offense_dict=players_offense_dict,
             ball_class=ball_class,
@@ -409,9 +413,13 @@ def sim_offense_play(
             start_play = False
             update_has_possession(players_offense_dict)
             update_offense_player_positions(
-                players_offense_dict,
-                shooting_side,
+                players_offense_dict=players_offense_dict,
+                shooting_side=shooting_side,
                 num_reg=6
+            )
+            update_defense_player_positions(
+                players_defense_dict=players_defense_dict,
+                players_offense_dict=players_offense_dict
             )
             update_ball_position(
                 players_offense_dict=players_offense_dict,
@@ -428,6 +436,10 @@ def sim_offense_play(
                 players_offense_dict=players_offense_dict,
                 action=player_action,
                 shooting_side=shooting_side
+            )
+            update_defense_player_positions(
+                players_defense_dict=players_defense_dict,
+                players_offense_dict=players_offense_dict
             )
 
             # change player's possession to False

@@ -22,7 +22,8 @@ ball_class = ball_class_dict[-1]
 # TODO: in sim_offense_play, keep track of made/missed shots,
 # TODO: Fix score in sim_offense_play. It's too redundant
 # TODO:  who gets rebound after missed shot
-# TODO: Perhaps change update_player_positions so that player positions are unique
+# TODO: Figure out if I need deepcopy or shallow copy
+# TODO: Perhaps change update_offense_player_positions so that player positions are unique
 # TODO: Incorporate shot clock to force shot
 # TODO: This is messier than it needs to be
 
@@ -126,8 +127,8 @@ def match_players_random(
 
         # update on_defense and defender status
         update_defense_params(
-            offense_class=off_player,
-            defender_class=defender
+            offense_class=players_offense_dict[off_player.player_id],
+            defender_class=players_defense_dict[defender.player_id]
         )
 
         # remove the matched players
@@ -168,11 +169,11 @@ def match_players_height(
             players_offense_dict[closest_off_player_id].court_region
         players_defense_dict[defender.player_id].court_coord = \
             players_offense_dict[closest_off_player_id].court_coord
-        
+    
         # update on_defense and defender status
         update_defense_params(
             offense_class=players_offense_dict[closest_off_player_id],
-            defender_class=defender
+            defender_class=players_defense_dict[defender.player_id]
         )
 
         # remove the matched players
@@ -215,7 +216,7 @@ def match_players_same_position(
             # update on_defense and defender status
             update_defense_params(
                 offense_class=players_offense_dict[match_player_id],
-                defender_class=defender
+                defender_class=players_defense_dict[defender.player_id]
             )
             # remove the matched players
             del players_offense_dict_copy[match_player_id]
@@ -228,7 +229,7 @@ def match_players_same_position(
 
 def initiate_offense_player_positions(players_offense_dict, shooting_side, num_reg=6):
     # update everyone's position
-    update_player_positions(
+    update_offense_player_positions(
         players_offense_dict=players_offense_dict,
         shooting_side=shooting_side,
         num_reg=6
@@ -298,7 +299,7 @@ def update_has_possession(players_offense_dict, ball_class=ball_class):
     update_ball_position(players_offense_dict, ball_class=ball_class)
 
 
-def update_player_positions(
+def update_offense_player_positions(
     players_offense_dict,
     shooting_side,
     num_reg=6
@@ -323,6 +324,16 @@ def update_player_positions(
             pos_num=player_class.court_region,
             shooting_side=shooting_side
         )
+
+
+def update_defense_player_positions(
+    players_defense_dict,
+    players_offense_dict
+):
+    for defender in players_defense_dict.values():
+        off_player_id = defender.defending_who
+        defender.court_region = players_offense_dict[off_player_id].court_region
+        defender.court_coord = players_offense_dict[off_player_id].court_coord
 
 
 def choose_player_action(has_ball_player_class, num_actions=3):
@@ -397,7 +408,7 @@ def sim_offense_play(
             players_offense_dict[has_ball].passes += 1
             start_play = False
             update_has_possession(players_offense_dict)
-            update_player_positions(
+            update_offense_player_positions(
                 players_offense_dict,
                 shooting_side,
                 num_reg=6

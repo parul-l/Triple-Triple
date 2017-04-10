@@ -189,9 +189,10 @@ if __name__ == '__main__':
     shooting_side = 'right'
     score = 0
 
-    for i in range(100):
+    for i in range(10):
         player_action, start_play, score = spp.sim_offense_play(
             players_offense_dict=team1_class_dict,
+            players_defense_dict=team2_class_dict,
             shooting_side=shooting_side,
             start_play=start_play,
             player_action=player_action,

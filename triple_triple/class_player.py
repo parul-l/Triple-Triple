@@ -27,7 +27,13 @@ class Player(object):
             possession_prob: Proability of having possession of the ball
                              when team is on offense (float)
 
-            shot_attempts: An integer of the number of shots taken in a play
+            two_pt_shot_attempts: An integer of the number of 2pt shots taken
+            
+            two_pt_shots_made: An integer of the number of 2pt shots made
+            
+            three_pt_shot_attempts: An integer of the number of 3pt shots taken
+            
+            three_pt_shots_made: An integer of the number of 3pt shots made
 
             shots_made: An integer of the total number of shots made
 
@@ -93,8 +99,10 @@ class Player(object):
         self.shooting_prob = None
         self.region_shooting_prob = None
         self.possession_prob = 0
-        self.shot_attempts = 0
-        self.shots_made = 0
+        self.two_pt_shot_attempts = 0
+        self.two_pt_shots_made = 0
+        self.three_pt_shot_attempts = 0
+        self.three_pt_shots_made = 0
         self.total_points = 0
         self.turnovers = 0
         self.passes = 0
@@ -163,8 +171,10 @@ def create_player_class_instance(
 def player_class_reset(player_class_dict):
     for player_class in player_class_dict.values():
         player_class.shot_attempts = 0
-        player_class.shots_made = 0
-        player_class.total_points = 0
+        player_class.two_pt_shot_attempts = 0
+        player_class.two_pt_shots_made = 0
+        player_class.three_pt_shot_attempts = 0
+        player_class.three_pt_shots_made = 0
         player_class.turnovers = 0
         player_class.passes = 0
         player_class.has_possession = False

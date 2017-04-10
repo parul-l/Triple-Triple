@@ -1,4 +1,5 @@
 import copy
+import triple_triple.class_game as class_game
 import triple_triple.player_defending_habits as pdh
 import triple_triple.player_possession_habits as pph
 import triple_triple.prob_player_possessions as ppp
@@ -49,6 +50,11 @@ if __name__ == '__main__':
     df_player_bio = get_player_bio_df(
         player_id_list=(team1_id_list + team2_id_list)
     )
+    
+    hometeam_id = 1610612744
+    awayteam_id = 1610612748
+    # game class
+    game = class_game.Game(hometeam_id=hometeam_id, awayteam_id=awayteam_id)
 
     # this is weird since this will only have one element
     ball_class_dict = create_player_class_instance(

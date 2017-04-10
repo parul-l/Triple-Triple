@@ -19,20 +19,21 @@ ball_class_dict = create_player_class_instance(
 
 ball_class = ball_class_dict[-1]
 
-# TODO: in sim_offense_play, keep track of made/missed shots,
+
 # TODO: Fix score in sim_offense_play. It's too redundant
-# TODO:  who gets rebound after missed shot
+# TODO: who gets rebound after missed shot
+# TODO: incorporate steals, blocks
 # TODO: Figure out if I need deepcopy or shallow copy
 # TODO: Perhaps change update_offense_player_positions so that player positions are unique
 # TODO: Incorporate shot clock to force shot
 # TODO: This is messier than it needs to be
 
 
-def get_simulated_coord(player_sim_reg, shooting_side):
-    coord = []
-    for i in range(len(player_sim_reg)):
-        coord.append(generate_rand_positions(player_sim_reg[i], shooting_side))
-    return coord
+# def get_simulated_coord(player_sim_reg, shooting_side):
+#     coord = []
+#     for i in range(len(player_sim_reg)):
+#         coord.append(generate_rand_positions(player_sim_reg[i], shooting_side))
+#     return coord
 
 
 def who_has_possession(players_offense_dict):
@@ -228,6 +229,10 @@ def match_players_same_position(
 
 
 def initiate_offense_player_positions(players_offense_dict, shooting_side, num_reg=6):
+    # update on_offense status
+    for player_class in players_offense_dict.values():
+        player_class.on_offense = True
+
     # update everyone's position
     update_offense_player_positions(
         players_offense_dict=players_offense_dict,
@@ -304,10 +309,7 @@ def update_offense_player_positions(
     shooting_side,
     num_reg=6
 ):
-
     for player_class in players_offense_dict.values():
-        # update on_offense status
-        player_class.on_offense = True
         current_region = player_class.court_region
 
         if current_region is None:
@@ -346,43 +348,54 @@ def choose_player_action(has_ball_player_class, num_actions=3):
     )
 
 
-def shot_outcome(player_class):
-    shooting_region = player_class.court_region
-    if shooting_region == 5:
-        add_score = 3
-    else:
-        add_score = 2
-
+def shot_outcome(has_ball_player_class, game_class):
+    shooting_region = has_ball_player_class.court_region
     # determine if shot made or miss
     # 0 = miss, 1 = make
     prob_array = [
-        1 - player_class.region_shooting_prob[shooting_region],
-        player_class.region_shooting_prob[shooting_region]
+        1 - has_ball_player_class.region_shooting_prob[shooting_region],
+        has_ball_player_class.region_shooting_prob[shooting_region]
     ]
-
     outcome = np.random.choice(
         a=np.arange(2),
         p=prob_array
     )
 
-    if outcome == 0:
-        add_score = 0
+    check_3pt = shooting_region in \
+        [get_reg_to_num('perimeter'), get_reg_to_num('back court')]
+
+    return check_3pt, outcome
+
+
+def update_shot_outcome(has_ball_player_class, game_class, check_3pt, outcome):
+    if check_3pt:
+        has_ball_player_class.three_pt_shot_attempts += 1
+        game_class.three_pt_shot_attempts += 1
+
+        if outcome == 1:
+            has_ball_player_class.three_pt_shots_made += 1
+            game_class.three_pt_shots_made += 1
+            has_ball_player_class.total_points += 3
+            game_class.score += 3
+
     else:
-        player_class.shots_made += 1
+        has_ball_player_class.two_pt_shot_attempts += 1
+        game_class.two_pt_shot_attempts += 1
 
-    player_class.shot_attempts += 1
-    player_class.total_points += add_score
-
-    return add_score
+        if outcome == 1:
+            has_ball_player_class.two_pt_shots_made += 1
+            game_class.two_pt_shots_made += 1
+            has_ball_player_class.total_points += 2
+            game_class.score += 2
 
 
 def sim_offense_play(
     players_offense_dict,
     players_defense_dict,
+    game_class,
     shooting_side,
     start_play,
     player_action,
-    score
 ):
     if start_play:
         start_play = False
@@ -409,6 +422,7 @@ def sim_offense_play(
         player_action = choose_player_action(players_offense_dict[has_ball])
         # pass
         if player_action == 0:
+            game_class.passes += 1
             players_offense_dict[has_ball].passes += 1
             start_play = False
             update_has_possession(players_offense_dict)
@@ -429,7 +443,13 @@ def sim_offense_play(
 
         # shoot
         elif player_action == 1:
-            score += shot_outcome(players_offense_dict[has_ball])
+            check_3pt, outcome += shot_outcome(players_offense_dict[has_ball])
+            update_shot_outcome(
+                has_ball_player_class=has_ball_player_class, 
+                game_class=game_class, 
+                check_3pt=check_3pt, 
+                outcome=outcome
+            )
             start_play = True
             # update ball tp rim
             update_ball_position(
@@ -447,6 +467,7 @@ def sim_offense_play(
 
         # turnover
         elif player_action == 2:
+            game_class.turnovers += 1
             players_offense_dict[has_ball].turnovers += 1
             start_play = True
             # update out of bounds
@@ -459,7 +480,7 @@ def sim_offense_play(
             # change player's possession to False
             players_offense_dict[has_ball].has_possession = False
 
-    return player_action, start_play, score
+    return player_action, start_play
 
 
 def add_sim_coord_to_dict(players_dict, sim_coord_dict):

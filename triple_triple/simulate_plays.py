@@ -417,6 +417,9 @@ def sim_offense_play(
         )
 
     else:
+        # update play number
+        game_class.num_plays += 1
+        # determine who has ball
         has_ball = who_has_possession(players_offense_dict)
         # determine his action
         player_action = choose_player_action(players_offense_dict[has_ball])
@@ -492,7 +495,7 @@ def add_sim_coord_to_dict(players_dict, sim_coord_dict):
     return sim_coord_dict
 
 
-def create_sim_coord_dict(players_offense_dict, num_sim):
+def create_sim_coord_dict(players_offense_dict, game_class, num_sim):
     # simulate the play
     start_play = True
     player_action = None
@@ -502,6 +505,7 @@ def create_sim_coord_dict(players_offense_dict, num_sim):
     for i in range(num_sim):
         player_action, start_play, score = sim_offense_play(
             players_offense_dict=players_offense_dict,
+            game_class=game_class,
             shooting_side='right',
             start_play=start_play,
             player_action=player_action

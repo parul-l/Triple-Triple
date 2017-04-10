@@ -35,8 +35,6 @@ class Player(object):
             
             three_pt_shots_made: An integer of the number of 3pt shots made
 
-            shots_made: An integer of the total number of shots made
-
             total_points: An integer of the number of points scored
 
             turnovers: An integer of the total turnovers made
@@ -170,11 +168,11 @@ def create_player_class_instance(
 
 def player_class_reset(player_class_dict):
     for player_class in player_class_dict.values():
-        player_class.shot_attempts = 0
         player_class.two_pt_shot_attempts = 0
         player_class.two_pt_shots_made = 0
         player_class.three_pt_shot_attempts = 0
         player_class.three_pt_shots_made = 0
+        player_class.total_points = 0
         player_class.turnovers = 0
         player_class.passes = 0
         player_class.has_possession = False

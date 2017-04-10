@@ -46,11 +46,11 @@ if __name__ == '__main__':
     team1_id_list = [203110, 202691, 201939, 101106, 201575]
     team2_id_list = [2547, 2548, 2736, 2617, 2405]
     game_id_list = [21500568]
-        
+
     df_player_bio = get_player_bio_df(
         player_id_list=(team1_id_list + team2_id_list)
     )
-    
+
     hometeam_id = 1610612744
     awayteam_id = 1610612748
     # game class
@@ -203,8 +203,8 @@ if __name__ == '__main__':
             start_play=start_play,
             player_action=player_action,
         )
-    
-    # print outcome
+
+    # print player's outcome
     for player_class in team1_class_dict.values():
         print player_class.name
         print 'region', player_class.court_region
@@ -219,13 +219,24 @@ if __name__ == '__main__':
         print 'total_points', player_class.total_points
         print ""
 
+    # print game outcome
+    print 'score', game_class.score
+    print 'num_plays', game_class.num_plays
+    print 'two_pt_shot_attempts', game_class.two_pt_shot_attempts
+    print 'two_pt_shots_made', game_class.two_pt_shots_made
+    print 'three_pt_shot_attempts', game_class.three_pt_shot_attempts
+    print 'three_pt_shots_made', game_class.three_pt_shots_made
+    print 'rebounds', game_class.rebounds
+    print 'off_rebounds', game_class.off_rebounds
+    print 'def_rebounds', game_class.def_rebounds
+    print 'steals', game_class.steals
+    print 'blocks', game_class.blocks
+    print 'turnovers', game_class.turnovers
+    print 'passes', game_class.passes
+
     sim_coord_dict = spp.create_sim_coord_dict(
         players_offense_dict=team1_class_dict,
         num_sim=100)
-
-    players_no_ball_dict = spp.get_player_dict_no_ball(
-        players_offense_dict=team1_class_dict
-    )
 
     # to re-do the simulation we reset the parameters
     # player_class_reset(team1_class_dict)

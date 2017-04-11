@@ -3,6 +3,7 @@ import numpy as np
 
 # TODO: Change out of bounds to 0
 # TODO: Change shooting probability to incorporate regions
+# TODO: Determine average length of a possession (in seconds?)
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 

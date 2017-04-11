@@ -236,7 +236,7 @@ if __name__ == '__main__':
 
     sim_coord_dict = spp.create_sim_coord_dict(
         players_offense_dict=team1_class_dict,
-        num_sim=100)
+        num_sim=144)
 
     # to re-do the simulation we reset the parameters
     # player_class_reset(team1_class_dict)

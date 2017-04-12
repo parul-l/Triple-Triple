@@ -1,13 +1,33 @@
 import numpy as np
 
+
+def check_pts_make_triangle(p1, p2, p3):
+    if (p1[0] == p2[0] and p2[0] == p3[0]) \
+    or (p1[1] == p2[1] and p2[1] == p3[1]):
+        return False
+    else:
+        return True
+
+
+def centroid_triangle(p1, p2, p3):
+    if check_pts_make_triangle(p1, p2, p3):
+        x_coord = (p1[0] + p2[0] + p3[0]) / 3.0
+        y_coord = (p1[1] + p2[1] + p3[1]) / 3.0
+
+        return [x_coord, y_coord]
+
+    else:
+        raise ValueError('Points do not form a triangle')
+        
+    
 # Use midpoint of the region as the simulated coordinate
-
-
 def generate_back_court(shooting_side):
     if shooting_side == 'left':
         return [70.5, 25]
     elif shooting_side == 'right':
         return [23.5, 25]
+    else:
+        raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
 def generate_mid_range(shooting_side):
@@ -81,20 +101,20 @@ def generate_perimeter(shooting_side):
             return [89, 48.5]
 
     if component == 2:
-        # centroid of triangle (14, 0), (47, 0), (47, 25)
+        # centroid of triangle [36, 8.33]
         if shooting_side == 'left':
-            return [36, 8.33]
-        # centroid of triangle (80, 0), (47, 0), (47, 25)
+            return centroid_triangle(p1=[14, 0], p2=[47, 0], p3=[47, 25])
+        # centroid of triangle [58, 8.33]
         elif shooting_side == 'right':
-            return [58, 8.33]
+            return centroid_triangle(p1=[80, 0], p2=[47, 0], p3=[47, 25])
 
     if component == 3:
-        # centroid of triangle (14, 50), (47, 25), (47, 50)
+        # centroid of triangle [36, 41.67]
         if shooting_side == 'left':
-            return [36, 41.67]
-        # centroid of triangle (80, 50), (47, 25), (47, 50)
+            return centroid_triangle(p1=[14, 50], p2=[47, 50], p3=[47, 25])
+        # centroid of triangle [58, 41.67]
         elif shooting_side == 'right':
-            return [58, 41.67]
+            return centroid_triangle(p1=[80, 50], p2=[47, 50], p3=[47, 25])
 
 
 def generate_rand_positions(pos_num, shooting_side):

@@ -134,7 +134,7 @@ def create_player_class_instance(
 ):
     player_class_dict = {}
     for player_id in player_list:
-        info_list = game_player_dict[str(player_id)]
+        info_list = game_player_dict[player_id]
 
         name = info_list[0]
         team_id = int(info_list[2])

@@ -3,7 +3,7 @@ import triple_triple.class_game as class_game
 import triple_triple.player_defending_habits as pdh
 import triple_triple.player_possession_habits as pph
 import triple_triple.prob_player_possessions as ppp
-import triple_triple.simulate_player_positions as spp
+import triple_triple.simulate_plays as sp
 
 from triple_triple.class_player import (
     create_player_class_instance,
@@ -195,7 +195,7 @@ if __name__ == '__main__':
     shooting_side = 'right'
 
     for i in range(100):
-        player_action, start_play = spp.sim_offense_play(
+        player_action, start_play = sp.sim_offense_play(
             players_offense_dict=team1_class_dict,
             players_defense_dict=team2_class_dict,
             game_class=game_class,
@@ -234,9 +234,13 @@ if __name__ == '__main__':
     print 'turnovers', game_class.turnovers
     print 'passes', game_class.passes
 
-    sim_coord_dict = spp.create_sim_coord_dict(
+    sim_coord_dict = sp.create_sim_coord_dict(
         players_offense_dict=team1_class_dict,
+        players_defense_dict=team2_class_dict,
+        game_class=game_class,
+        shooting_side=shooting_side,
         num_sim=144)
 
     # to re-do the simulation we reset the parameters
     # player_class_reset(team1_class_dict)
+    # class_game.game_class_reset(game_class)

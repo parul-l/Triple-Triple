@@ -25,6 +25,7 @@ from triple_triple.play_animation import (
     plot_points,
 )
 
+# TODO: DELETE THIS FILE?????
 
 def sim_animation(player_sim_coord):
     fig = plt.figure(figsize=(15, 9))

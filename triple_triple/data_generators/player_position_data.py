@@ -30,22 +30,22 @@ def get_game_player_dict(data):
     visitorteam_id = data['events'][0]['visitor']['teamid']
 
     for item in data['events'][0]['home']['players']:
-        game_player_dict[str(item['playerid'])] = [
+        game_player_dict[item['playerid']] = [
             item['firstname'] + ' ' + item['lastname'],
-            str(item['jersey']),
-            str(hometeam_id),
+            item['jersey'],
+            hometeam_id,
             item['position']
         ]
 
     for item in data['events'][0]['visitor']['players']:
-        game_player_dict[str(item['playerid'])] = [
+        game_player_dict[item['playerid']] = [
             item['firstname'] + ' ' + item['lastname'],
-            str(item['jersey']),
-            str(visitorteam_id), item['position']
+            item['jersey'],
+            visitorteam_id, item['position']
         ]
 
     # give the ball an id == -1
-    game_player_dict['-1'] = ['ball', -1, -1, -1]
+    game_player_dict[-1] = ['ball', -1, -1, -1]
 
     return game_player_dict
 
@@ -108,7 +108,7 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict, has_ball_di
                 additional_info +
                 location_list[j] +
                 [dist_to_ball[j]] +
-                [closest_to_ball[j]] 
+                [closest_to_ball[j]]
             ) for j in range(len(location_list))]
 
     headers_raw_pos_data = [
@@ -133,12 +133,12 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict, has_ball_di
 
     # add player_name to dataframe
     df_raw_position_data['player_name'] = df_raw_position_data.player_id.map(
-        lambda x: game_player_dict[str(x)][0]
+        lambda x: game_player_dict[x][0]
     )
 
     # add jersey_number to dataframe
     df_raw_position_data['player_jersey'] = df_raw_position_data.player_id.map(
-        lambda x: game_player_dict[str(x)][1]
+        lambda x: game_player_dict[x][1]
     )
 
     return df_raw_position_data.drop_duplicates().reset_index(drop=True)

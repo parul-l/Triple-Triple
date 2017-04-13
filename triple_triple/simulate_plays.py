@@ -3,7 +3,7 @@ import numpy as np
 
 from triple_triple.class_player import create_player_class_instance
 
-from triple_triple.court_region_coord import generate_rand_positions
+from triple_triple.court_region_coord import generate_rand_regions
 from triple_triple.startup_data import get_game_player_dict
 from triple_triple.prob_player_possessions import (
     relative_player_possession_prob,
@@ -32,7 +32,7 @@ ball_class = ball_class_dict[-1]
 # def get_simulated_coord(player_sim_reg, shooting_side):
 #     coord = []
 #     for i in range(len(player_sim_reg)):
-#         coord.append(generate_rand_positions(player_sim_reg[i], shooting_side))
+#         coord.append(generate_rand_regions(player_sim_reg[i], shooting_side))
 #     return coord
 
 
@@ -246,7 +246,7 @@ def initiate_offense_player_positions(players_offense_dict, shooting_side, num_r
     players_offense_dict[has_ball]\
         .court_region = get_reg_to_num('out of bounds')
     players_offense_dict[has_ball]\
-        .court_coord = generate_rand_positions(
+        .court_coord = generate_rand_regions(
         pos_num=players_offense_dict[has_ball].court_region,
         shooting_side=shooting_side
     )
@@ -322,7 +322,7 @@ def update_offense_player_positions(
             p=player_class.region_prob_matrix[current_region],
         )
 
-        player_class.court_coord = generate_rand_positions(
+        player_class.court_coord = generate_rand_regions(
             pos_num=player_class.court_region,
             shooting_side=shooting_side
         )

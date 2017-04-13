@@ -18,9 +18,10 @@ def centroid_triangle(p1, p2, p3):
 
     else:
         raise ValueError('Points do not form a triangle')
-        
-    
+
 # Use midpoint of the region as the simulated coordinate
+
+
 def generate_back_court(shooting_side):
     if shooting_side == 'left':
         return [70.5, 25]
@@ -30,30 +31,34 @@ def generate_back_court(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
+# def generate_mid_range(*args, **kwargs):
+#     number = np.random.uniform()
+#     import pdb; pdb.set_trace()
+#     return 1 if number > 0.5 else 0
+
 def generate_mid_range(shooting_side):
     # break down the region in to 3 components
     # randomly choose one of the components
     # generate coordinates in that component
     # approximate with rectangles and triangles
-
     component = np.random.choice(np.arange(3))
-    if component == 0:
-        if shooting_side == 'left':
+    if shooting_side == 'left':
+        if component == 0:
             return [9.5, 11]
-        elif shooting_side == 'right':
-            return [84.5, 11]
-
-    if component == 1:
-        if shooting_side == 'left':
+        elif component == 1:
             return [9.5, 39]
-        elif shooting_side == 'right':
-            return [84.5, 39]
-
-    if component == 2:
-        if shooting_side == 'left':
+        elif component == 2:
             return [27.5, 25]
-        elif shooting_side == 'right':
+
+    elif shooting_side == 'right':
+        if component == 0:
+            return [84.5, 11]
+        elif component == 1:
+            return [84.5, 39]
+        elif component == 2:
             return [67, 25]
+    else:
+        raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
 def generate_key(shooting_side):
@@ -63,6 +68,8 @@ def generate_key(shooting_side):
         return [22, 25]
     elif shooting_side == 'right':
         return [72, 25]
+    else:
+        raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
 def generate_paint(shooting_side):
@@ -70,15 +77,18 @@ def generate_paint(shooting_side):
         return [9.5, 25]
     elif shooting_side == 'right':
         return [84.5, 25]
+    else:
+        raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
 def generate_out_of_bounds(shooting_side):
     # use behind the rim
     if shooting_side == 'left':
         return [-2, 25]
-
     elif shooting_side == 'right':
         return [96, 25]
+    else:
+        raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
 def generate_perimeter(shooting_side):
@@ -86,58 +96,72 @@ def generate_perimeter(shooting_side):
     # randomly choose one of the components
     # generate coordinates in that component
     # approximate with rectangles and triangles
-
     component = np.random.choice(np.arange(4))
-    if component == 0:
-        if shooting_side == 'left':
+    if shooting_side == 'left':
+        if component == 0:
             return [7, 1.5]
-        elif shooting_side == 'right':
-            return [89, 1.5]
-
-    if component == 1:
-        if shooting_side == 'left':
+        elif component == 1:
             return [7, 48.5]
-        elif shooting_side == 'right':
+        elif component == 2:
+            # centroid of triangle: [36, 8.33]
+            return centroid_triangle(
+                p1=[14, 0],
+                p2=[47, 0],
+                p3=[47, 25]
+            )
+        elif component == 3:
+            # centroid of triangle [36, 41.67]
+            return centroid_triangle(
+                p1=[14, 50],
+                p2=[47, 50],
+                p3=[47, 25]
+            )
+
+    elif shooting_side == 'right':
+        if component == 0:
+            return [89, 1.5]
+        elif component == 1:
             return [89, 48.5]
+        elif component == 2:
+            # centroid of triangle: [58, 8.33]
+            return centroid_triangle(
+                p1=[80, 0],
+                p2=[47, 0],
+                p3=[47, 25]
+            )
+        elif component == 3:
+            # centroid of triangle [58, 41.67]
+            return centroid_triangle(
+                p1=[80, 50],
+                p2=[47, 50],
+                p3=[47, 25]
+            )
 
-    if component == 2:
-        # centroid of triangle [36, 8.33]
-        if shooting_side == 'left':
-            return centroid_triangle(p1=[14, 0], p2=[47, 0], p3=[47, 25])
-        # centroid of triangle [58, 8.33]
-        elif shooting_side == 'right':
-            return centroid_triangle(p1=[80, 0], p2=[47, 0], p3=[47, 25])
-
-    if component == 3:
-        # centroid of triangle [36, 41.67]
-        if shooting_side == 'left':
-            return centroid_triangle(p1=[14, 50], p2=[47, 50], p3=[47, 25])
-        # centroid of triangle [58, 41.67]
-        elif shooting_side == 'right':
-            return centroid_triangle(p1=[80, 50], p2=[47, 50], p3=[47, 25])
+    else:
+        raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_rand_positions(pos_num, shooting_side):
-    # back court
-    if pos_num == 0:
+def generate_rand_regions(court_region, shooting_side):
+    if court_region == 'back_court':
         return generate_back_court(shooting_side)
 
-    # mid-range
-    elif pos_num == 1:
+    elif court_region == 'mid_range':
         return generate_mid_range(shooting_side)
 
-    # key
-    elif pos_num == 2:
+    elif court_region == 'key':
         return generate_key(shooting_side)
 
-    # out of bounds
-    elif pos_num == 3:
+    elif court_region == 'out_of_bounds':
         return generate_out_of_bounds(shooting_side)
 
-    # paint
-    elif pos_num == 4:
+    elif court_region == 'paint':
         return generate_paint(shooting_side)
 
-    # perimeter
-    elif pos_num == 5:
+    elif court_region == 'perimeter':
         return generate_perimeter(shooting_side)
+
+    else:
+        raise ValueError(
+            "Court region: {'back_court','mid_range','key','out_of_bounds','paint','perimeter'}\
+            Shooting side: {'left','right'}"
+        )

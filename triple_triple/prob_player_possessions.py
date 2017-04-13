@@ -1,7 +1,7 @@
 from collections import Counter
 import numpy as np
 
-# TODO: Change out of bounds to 0
+# TODO: Change out_of_bounds to 0
 # TODO: Change shooting probability to incorporate regions
 # TODO: Determine average length of a possession (in seconds?)
 
@@ -9,13 +9,13 @@ np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
 
 def get_reg_to_num(reg):
-    if reg == 'back court':
+    if reg == 'back_court':
         return 0
-    if reg == 'mid-range':
+    if reg == 'mid_range':
         return 1
     if reg == 'key':
         return 2
-    if reg == 'out of bounds':
+    if reg == 'out_of_bounds':
         return 3
     if reg == 'paint':
         return 4
@@ -25,13 +25,13 @@ def get_reg_to_num(reg):
 
 def court_region_from_number(num):
     if num == 0:
-        return 'back court'
+        return 'back_court'
     if num == 1:
-        return 'mid-range'
+        return 'mid_range'
     if num == 2:
         return 'key'
     if num == 3:
-        return 'out of bounds'
+        return 'out_of_bounds'
     if num == 4:
         return 'paint'
     if num == 5:
@@ -112,7 +112,7 @@ def update_region_prob_matrix(
     df_game = df_raw_position_region.query('game_id==@game_id')
 
     if half_court is True:
-        df_game = df_game.query('region != "back court"')
+        df_game = df_game.query('region != "back_court"')
 
     # get times when player has possession
     keep_period = df_game.query(query_params).period.values

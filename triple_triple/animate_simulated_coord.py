@@ -17,7 +17,7 @@ from triple_triple.generate_player_positions import (
     # generate_out_of_bounds,
     # generate_paint,
     # generate_perimeter,
-    # generate_rand_positions,
+    # generate_rand_regions,
     get_simulated_coord,
 )
 from triple_triple.play_animation import (

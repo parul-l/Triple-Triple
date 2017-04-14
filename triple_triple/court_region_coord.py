@@ -1,5 +1,5 @@
 import numpy as np
-
+# See Triple-Triple/img/full_court_approx_region_block.png for a break down of the regions
 
 def check_pts_make_triangle(p1, p2, p3):
     if (p1[0] == p2[0] and p2[0] == p3[0]) \
@@ -22,6 +22,12 @@ def centroid_triangle(p1, p2, p3):
 # Use midpoint of the region as the simulated coordinate
 
 
+def generate_random(*args, **kwargs):
+    number = np.random.uniform()
+    import pdb; pdb.set_trace()
+    return 1 if number > 0.5 else 0
+
+
 def generate_back_court(shooting_side):
     if shooting_side == 'left':
         return [70.5, 25]
@@ -30,11 +36,6 @@ def generate_back_court(shooting_side):
     else:
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
-
-# def generate_mid_range(*args, **kwargs):
-#     number = np.random.uniform()
-#     import pdb; pdb.set_trace()
-#     return 1 if number > 0.5 else 0
 
 def generate_mid_range(shooting_side):
     # break down the region in to 3 components
@@ -146,6 +147,7 @@ def generate_rand_regions(court_region, shooting_side):
         return generate_back_court(shooting_side)
 
     elif court_region == 'mid_range':
+        # import ipdb; ipdb.set_trace()
         return generate_mid_range(shooting_side)
 
     elif court_region == 'key':

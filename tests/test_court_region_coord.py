@@ -215,5 +215,78 @@ class TestCourtRegionCoord(unittest.TestCase):
             second=[58, 125 / 3.]
         )
 
+    def test_generate_rand_regions_back_court_ss_left(self):
+            shooting_side = 'left'
+            self.assertEqual(
+                first=crc.generate_rand_regions('back_court', shooting_side),
+                second=crc.generate_back_court(shooting_side)
+            )
+
+    def test_generate_rand_regions_back_court(self):
+        generate_back_court_mock = mock.Mock()
+        method_to_mock = ('triple_triple.court_region_coord'
+                          '.generate_back_court')
+        with mock.patch(method_to_mock, generate_back_court_mock):
+            crc.generate_rand_regions('back_court', 'left/right')
+            generate_back_court_mock.assert_called_once_with('left/right')
+
+    def test_generate_rand_regions_mid_range(self):
+        generate_mid_range_mock = mock.Mock()
+        method_to_mock = ('triple_triple.court_region_coord'
+                          '.generate_mid_range')
+
+        with mock.patch(method_to_mock, generate_mid_range_mock):
+            crc.generate_rand_regions('mid_range', 'left/right')
+            generate_mid_range_mock.assert_called_once_with('left/right')
+
+    def test_generate_rand_regions_key(self):
+        generate_key_mock = mock.Mock()
+        method_to_mock = ('triple_triple.court_region_coord'
+                          '.generate_key')
+
+        with mock.patch(method_to_mock, generate_key_mock):
+            crc.generate_rand_regions('key', 'left/right')
+            generate_key_mock.assert_called_once_with('left/right')
+
+    def test_generate_rand_regions_out_of_bounds(self):
+        generate_out_of_bounds_mock = mock.Mock()
+        method_to_mock = ('triple_triple.court_region_coord'
+                          '.generate_out_of_bounds')
+
+        with mock.patch(method_to_mock, generate_out_of_bounds_mock):
+            crc.generate_rand_regions('out_of_bounds', 'left/right')
+            generate_out_of_bounds_mock.assert_called_once_with('left/right')
+
+    def test_generate_rand_regions_paint(self):
+        generate_paint_mock = mock.Mock()
+        method_to_mock = ('triple_triple.court_region_coord'
+                          '.generate_paint')
+
+        with mock.patch(method_to_mock, generate_paint_mock):
+            crc.generate_rand_regions('paint', 'left/right')
+            generate_paint_mock.assert_called_once_with('left/right')
+
+    def test_generate_rand_regions_perimeter(self):
+        generate_perimeter_mock = mock.Mock()
+        method_to_mock = ('triple_triple.court_region_coord'
+                          '.generate_perimeter')
+
+        with mock.patch(method_to_mock, generate_perimeter_mock):
+            crc.generate_rand_regions('perimeter', 'left/right')
+            generate_perimeter_mock.assert_called_once_with('left/right')
+
+    # def test_generate_rand_regions_mid_range(self):
+    #     generate_mid_range_mock = mock.Mock()
+    #     generate_mid_range_mock.return_value = [9.5, 11]
+    #     method_to_mock = ('triple_triple.court_region_coord'
+    #                       '.generate_mid_range')
+    #
+    #     with mock.patch(method_to_mock, generate_mid_range_mock):
+    #         resp = crc.generate_rand_regions('mid_range', 'blarg')
+    #
+    #     generate_mid_range_mock.assert_called_once_with('blarg')
+    #     self.assertEqual(resp, [9.5, 11])
+
+
 if __name__ == '__main__':
     unittest.main()

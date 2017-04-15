@@ -275,6 +275,12 @@ class TestCourtRegionCoord(unittest.TestCase):
             crc.generate_rand_regions('perimeter', 'left/right')
             generate_perimeter_mock.assert_called_once_with('left/right')
 
+    def test_generate_rand_region_bad_input(self):
+        with self.assertRaises(ValueError):
+            self.assertRaises(
+                crc.generate_rand_regions('bad_input', 'bad_input')
+            )
+
     # def test_generate_rand_regions_mid_range(self):
     #     generate_mid_range_mock = mock.Mock()
     #     generate_mid_range_mock.return_value = [9.5, 11]

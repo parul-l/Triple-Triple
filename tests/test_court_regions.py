@@ -1,4 +1,3 @@
-import mock
 import unittest
 import triple_triple.court_regions as cr
 
@@ -39,10 +38,9 @@ class TestCourtRegions(unittest.TestCase):
 
     def test_get_region_out_of_bounds_left_ss(self):
         self.assertEqual(
-            first=cr.get_region(x=18, y=50, shooting_side='left'),
+            first=cr.get_region(x=18, y=51, shooting_side='left'),
             second='out_of_bounds'
         )
-
 
     # right shooting_side
     def test_get_region_paint_right_ss(self):
@@ -81,9 +79,27 @@ class TestCourtRegions(unittest.TestCase):
             second='out_of_bounds'
         )
 
-    def test_get_region_bad_input(self):
+    # endpoint cases
+    def test_get_region_out_bounds_boundary_x(self):
+        self.assertEqual(
+            first=cr.get_region(x=0, y=5, shooting_side='right'),
+            second='out_of_bounds'
+        )
+    
+    
+    
+    # value error
+    def test_get_region_bad_input_x(self):
         with self.assertRaises(ValueError):
-            self.assertRaises(cr.get_region('bad_input', 'bad_input', 'bad_input'))
+            self.assertRaises(cr.get_region('bad_input', 4, 'left'))
 
+    def test_get_region_bad_input_y(self):
+        with self.assertRaises(ValueError):
+            self.assertRaises(cr.get_region(3, 'bad_input', 'left'))
+
+    def test_get_region_bad_input_ss(self):
+        with self.assertRaises(ValueError):
+            self.assertRaises(cr.get_region(3, 10, 'bad_input'))
+    
 if __name__ == '__main__':
     unittest.main()

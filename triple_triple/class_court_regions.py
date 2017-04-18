@@ -132,3 +132,36 @@ out_of_bounds = {
     'ybounds': None,
     'polygon': get_polygon_out_of_bounds()
 }
+
+if __name__ == '__main__':
+    shooting_side = 'right'
+    PERIMETER = CourtRegions(
+        xbounds=perimeter[shooting_side]['xbounds'],
+        ybounds=perimeter[shooting_side]['ybounds'],
+        polygon_region=perimeter[shooting_side]['polygon']
+    )
+    MID_RANGE = CourtRegions(
+        xbounds=mid_range[shooting_side]['xbounds'],
+        ybounds=mid_range[shooting_side]['ybounds'],
+        polygon_region=mid_range[shooting_side]['polygon']
+    )
+    KEY = CourtRegions(
+        xbounds=key[shooting_side]['xbounds'],
+        ybounds=key[shooting_side]['ybounds'],
+        polygon_region=key[shooting_side]['polygon']
+    )
+    PAINT = CourtRegions(
+        xbounds=paint[shooting_side]['xbounds'],
+        ybounds=paint[shooting_side]['ybounds'],
+        polygon_region=paint[shooting_side]['polygon']
+    )
+    BACK_COURT = CourtRegions(
+        xbounds=back_court[shooting_side]['xbounds'],
+        ybounds=back_court[shooting_side]['ybounds'],
+        polygon_region=back_court[shooting_side]['polygon']
+    )
+    OUT_OF_BOUNDS = CourtRegions(
+        xbounds=out_of_bounds['xbounds'],
+        ybounds=out_of_bounds['ybounds'],
+        polygon_region=out_of_bounds['polygon']
+    )

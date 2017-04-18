@@ -51,6 +51,8 @@ def get_region(x, y, shooting_side):
         return 'back_court'
     elif [x, y] in OUT_OF_BOUNDS:
         return 'out_of_bounds'
+    else:
+        raise ValueError('check x, y, shooting_side inputs')
 
     # # make sure entries are correct types:
     # if (

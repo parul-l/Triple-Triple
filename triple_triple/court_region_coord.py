@@ -21,13 +21,6 @@ def centroid_triangle(p1, p2, p3):
 
 # Use midpoint of the region as the simulated coordinate
 
-
-def generate_random(*args, **kwargs):
-    number = np.random.uniform()
-    import pdb; pdb.set_trace()
-    return 1 if number > 0.5 else 0
-
-
 def generate_back_court(shooting_side):
     if shooting_side == 'left':
         return [70.5, 25]

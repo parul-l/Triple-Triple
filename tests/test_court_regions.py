@@ -20,6 +20,10 @@ class TestCourtRegions(unittest.TestCase):
                 second=(PERIMETER, MID_RANGE, KEY, PAINT, BACK_COURT, OUT_OF_BOUNDS)
             )
 
+    def test_region_bounds_bad_input(self):
+        with self.assertRaises(ValueError):
+            cr.get_region_bounds('bad_input')
+
     def test_get_region_perimeter_left_ss(self):
         self.assertEqual(
             first=cr.get_region(29, 6, shooting_side='left'),
@@ -32,99 +36,81 @@ class TestCourtRegions(unittest.TestCase):
             second='perimeter'
         )
 
-    # # left shooting_side
-    # def test_get_region_paint_left_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=4, y=20, shooting_side='left'),
-    #         second='paint'
-    #     )
-    #
-    # def test_get_region_key_left_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=20, y=26, shooting_side='left'),
-    #         second='key'
-    #     )
-    #
-    # def test_get_region_mid_range_left_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=15, y=44, shooting_side='left'),
-    #         second='mid_range'
-    #     )
-    #
-    # def test_get_region_perimeter_left_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=38, y=25, shooting_side='left'),
-    #         second='perimeter'
-    #     )
-    #
-    # def test_get_region_back_court_left_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=50, y=45, shooting_side='left'),
-    #         second='back_court'
-    #     )
-    #
-    # def test_get_region_out_of_bounds_left_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=18, y=51, shooting_side='left'),
-    #         second='out_of_bounds'
-    #     )
-    #
-    # # right shooting_side
-    # def test_get_region_paint_right_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=75, y=25, shooting_side='right'),
-    #         second='paint'
-    #     )
-    #
-    # def test_get_region_key_right_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=73, y=30, shooting_side='right'),
-    #         second='key'
-    #     )
-    #
-    # def test_get_region_mid_range_right_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=74, y=43, shooting_side='right'),
-    #         second='mid_range'
-    #     )
-    #
-    # def test_get_region_perimeter_right_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=65, y=2.5, shooting_side='right'),
-    #         second='perimeter'
-    #     )
-    #
-    # def test_get_region_back_court_right_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=5, y=15, shooting_side='right'),
-    #         second='back_court'
-    #     )
-    #
-    # def test_get_region_out_of_bounds_right_ss(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=-2, y=5, shooting_side='right'),
-    #         second='out_of_bounds'
-    #     )
-    #
-    # # endpoint cases
-    # def test_get_region_out_bounds_boundary_x(self):
-    #     self.assertEqual(
-    #         first=cr.get_region(x=0, y=5, shooting_side='right'),
-    #         second='out_of_bounds'
-    #     )
-    #
-    # # value error
-    # def test_get_region_bad_input_x(self):
-    #     with self.assertRaises(ValueError):
-    #         self.assertRaises(cr.get_region('bad_input', 4, 'left'))
-    #
-    # def test_get_region_bad_input_y(self):
-    #     with self.assertRaises(ValueError):
-    #         self.assertRaises(cr.get_region(3, 'bad_input', 'left'))
-    #
-    # def test_get_region_bad_input_ss(self):
-    #     with self.assertRaises(ValueError):
-    #         self.assertRaises(cr.get_region(3, 10, 'bad_input'))
+    def test_get_region_midrange_left_ss(self):
+        self.assertEqual(
+            first=cr.get_region(17.5, 36.36, shooting_side='left'),
+            second='mid_range'
+        )
+
+    def test_get_region_midrange_right_ss(self):
+        self.assertEqual(
+            first=cr.get_region(72.15, 13.97, shooting_side='right'),
+            second='mid_range'
+        )
+
+    def test_get_region_key_left_ss(self):
+        self.assertEqual(
+            first=cr.get_region(22.35, 25.31, shooting_side='left'),
+            second='key'
+        )
+
+    def test_get_region_key_right_ss(self):
+        self.assertEqual(
+            first=cr.get_region(72.15, 29.97, shooting_side='right'),
+            second='key'
+        )
+
+    def test_get_region_paint_left_ss(self):
+        self.assertEqual(
+            first=cr.get_region(5.19, 29.39, shooting_side='left'),
+            second='paint'
+        )
+
+    def test_get_region_paint_right_ss(self):
+        self.assertEqual(
+            first=cr.get_region(86.43, 25.97, shooting_side='right'),
+            second='paint'
+        )
+
+    def test_get_region_back_court_left_ss(self):
+        self.assertEqual(
+            first=cr.get_region(64.23, 43.39, shooting_side='left'),
+            second='back_court'
+        )
+
+    def test_get_region_back_court_right_ss(self):
+        self.assertEqual(
+            first=cr.get_region(3.17, 10.18, shooting_side='right'),
+            second='back_court'
+        )
+
+    def test_get_region_out_of_bounds_left(self):
+        self.assertEqual(
+            first=cr.get_region(-2.45, 34.45, shooting_side='left'),
+            second='out_of_bounds'
+        )
+
+    def test_get_region_out_of_bounds_top(self):
+        self.assertEqual(
+            first=cr.get_region(3.17, 51.48, shooting_side='right'),
+            second='out_of_bounds'
+        )
+
+    def test_get_region_out_of_bounds_right(self):
+        self.assertEqual(
+            first=cr.get_region(96.45, 34, shooting_side='left'),
+            second='out_of_bounds'
+        )
+
+    def test_get_region_out_of_bounds_bottom(self):
+        self.assertEqual(
+            first=cr.get_region(3.17, -2, shooting_side='right'),
+            second='out_of_bounds'
+        )
+
+    def test_get_region_bad_input(self):
+        with self.assertRaises(ValueError):
+            cr.get_region('bad_input', 'bad_input', 'bad_input')
 
 if __name__ == '__main__':
     unittest.main()

@@ -13,8 +13,8 @@ def get_fixedtime_df(
 ):
 
     return dataframe.query(
-        '@time_end <= game_clock <= @time_start and \
-         period == @period')
+        '@time_end <= game_clock <= @time_start and '
+        'period == @period')
 
 
 def team_coord(team_id, df_grouped_value):

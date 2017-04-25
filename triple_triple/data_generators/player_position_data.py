@@ -6,7 +6,8 @@ from datetime import datetime
 
 
 def open_json(file_name):
-    json_data = open(file_name).read()
+    with open(file_name, 'r') as f:
+        json_data = f.read()
     return json.loads(json_data)
 
 

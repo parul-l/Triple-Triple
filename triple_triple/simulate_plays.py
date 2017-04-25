@@ -170,7 +170,7 @@ def match_players_height(
             players_offense_dict[closest_off_player_id].court_region
         players_defense_dict[defender.player_id].court_coord = \
             players_offense_dict[closest_off_player_id].court_coord
-    
+
         # update on_defense and defender status
         update_defense_params(
             offense_class=players_offense_dict[closest_off_player_id],

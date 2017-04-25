@@ -22,12 +22,13 @@ def update_traditional_nba_stats(
     )
     player_id = player_class.player_id
     player_stats = df_player_stats.query('player_id==@player_id').iloc[0]
-    player_class.steals = player_stats.steals
-    player_class.blocks = player_stats.blks
-    player_class.off_rebounds = player_stats.off_rebounds
-    player_class.def_rebounds = player_stats.def_rebounds
-    player_class.free_throw_pct = player_stats.free_throw_pct
-    player_class.personal_fouls = player_stats.personal_fouls
+    player_class.steals_game = player_stats.steals
+    player_class.blocks_game = player_stats.blks
+    player_class.off_rebounds_game = player_stats.off_rebounds
+    player_class.def_rebounds_game = player_stats.def_rebounds
+    player_class.personal_fouls_game = player_stats.personal_fouls
+    player_class.free_throw_pct_game = player_stats.free_throw_pct
+    
 
 
 def get_df_possession_defender(
@@ -81,6 +82,34 @@ def get_df_possession_defender(
     return df_possession_defender
 
 
+def get_num_possessions_defended(defender_id, df_possession_defender):
+    shift_col = df_possession_defender.defender_id.shift(1) != \
+                df_possession_defender.defender_id
+
+    df_possession_defender['block'] = (shift_col).astype(int).cumsum()
+    defender_poss = df_possession_defender.query('defender_id==@defender_id')
+
+    return float(len(defender_poss.block.unique()))
+
+
+def get_stats_per_possession(
+    defender_class,
+    df_possession_defender,
+    game_id=None
+):
+    if game_id is not None:
+        df_possession_defender = df_possession_defender.query('game_id==@game_id')
+
+    num_poss_defended = get_num_possessions_defended(
+        defender_id=defender_class.player_id, df_possession_defender=df_possession_defender
+    )
+    defender_class.steals_poss = defender_class.steals_game / num_poss_defended
+    defender_class.blocks_poss = defender_class.blocks_game / num_poss_defended
+    defender_class.off_rebounds_poss = defender_class.off_rebounds_game / num_poss_defended
+    defender_class.def_rebounds_poss = defender_class.def_rebounds_game / num_poss_defended
+    defender_class.personal_fouls_poss = defender_class.personal_fouls_game / num_poss_defended
+
+
 def poss_result_on_defense(
     defender_class,
     df_possession_defender,
@@ -128,7 +157,8 @@ def poss_result_on_defense_reg(
     df_action_defender = df_possession_defender.query(query_params)
     reg = df_action_defender.defender_region.values
     action = df_action_defender.action.values
-
+    
+    # row = region, column = [pass, shoot, turnover]
     action_matrix = np.zeros((6, 3))
 
     for i in range(len(action)):

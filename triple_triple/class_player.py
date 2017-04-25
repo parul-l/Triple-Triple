@@ -28,11 +28,11 @@ class Player(object):
                              when team is on offense (float)
 
             two_pt_shot_attempts: An integer of the number of 2pt shots taken
-            
+
             two_pt_shots_made: An integer of the number of 2pt shots made
-            
+
             three_pt_shot_attempts: An integer of the number of 3pt shots taken
-            
+
             three_pt_shots_made: An integer of the number of 3pt shots made
 
             total_points: An integer of the number of points scored
@@ -41,17 +41,27 @@ class Player(object):
 
             passes: An integer of the total passes
 
-            steals: Avg steals per game for specified season
+            steals_game: Avg steals per game for specified season
 
-            blocks: Avg blocks per game for specified season
+            steals_poss: Avg steals per possession for specified season
 
-            off_rebounds: Avg off_rebounds per game for specified season
+            blocks_game: Avg blocks per game for specified season
 
-            def_rebounds: Avg def_rebounds per game for specified season
+            blocks_poss: Avg blocks per possession for specified season
+
+            off_rebounds_game: Avg off_rebounds per game for specified season
+
+            off_rebounds_poss: Avg off_rebounds per possession for specified season
+
+            def_rebounds_game: Avg def_rebounds per game for specified season
+
+            def_rebounds_poss: Avg def_rebounds per possession for specified season
+
+            personal_fouls_game: Avg personal_fouls per game for specified season
+
+            personal_fouls_poss: Avg personal_fouls per possession for specified season
 
             free_throw_pct: Avg free throw percentage for specified season
-
-            personal_fouls: Avg personal_fouls per game for specified season
 
             has_possession: A boolean to indicate if player has possession of ball
 
@@ -104,12 +114,17 @@ class Player(object):
         self.total_points = 0
         self.turnovers = 0
         self.passes = 0
-        self.steals = 0
-        self.blocks = 0
-        self.off_rebounds = 0
-        self.def_rebounds = 0
+        self.steals_game = 0
+        self.steals_poss = 0
+        self.blocks_game = 0
+        self.blocks_poss = 0
+        self.off_rebounds_game = 0
+        self.off_rebounds_poss = 0
+        self.def_rebounds_game = 0
+        self.def_rebounds_poss = 0
+        self.personal_fouls_game = 0
+        self.personal_fouls_poss = 0
         self.free_throw_pct = 0
-        self.personal_fouls = 0
         self.has_possession = False
         self.on_defense = False
         self.defending_who = None

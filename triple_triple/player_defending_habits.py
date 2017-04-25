@@ -101,8 +101,10 @@ def get_stats_per_possession(
         df_possession_defender = df_possession_defender.query('game_id==@game_id')
 
     num_poss_defended = get_num_possessions_defended(
-        defender_id=defender_class.player_id, df_possession_defender=df_possession_defender
+        defender_id=defender_class.player_id,
+        df_possession_defender=df_possession_defender
     )
+
     defender_class.steals_poss = defender_class.steals_game / num_poss_defended
     defender_class.blocks_poss = defender_class.blocks_game / num_poss_defended
     defender_class.off_rebounds_poss = defender_class.off_rebounds_game / num_poss_defended

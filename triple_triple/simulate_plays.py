@@ -19,7 +19,7 @@ ball_class_dict = create_player_class_instance(
 
 ball_class = ball_class_dict[-1]
 
-
+# TODO: FIX choose_player_action to make more sense -> steals and turnover probabilities are just added for turnover prob
 # TODO: Fix score in sim_offense_play. It's too redundant
 # TODO: who gets rebound after missed shot
 # TODO: incorporate steals, blocks
@@ -338,13 +338,24 @@ def update_defense_player_positions(
         defender.court_coord = players_offense_dict[off_player_id].court_coord
 
 
-def choose_player_action(has_ball_player_class, num_actions=3):
+def choose_player_action(
+    has_ball_player_class,
+    defender_class,
+    num_actions=3):``
     current_region = has_ball_player_class.court_region
-    prob = has_ball_player_class.action_prob_matrix[current_region]
+    action_prob = copy.deepcopy(
+        has_ball_player_class
+        .action_prob_matrix[current_region]
+    )
     # action in [0, 1, 2] <---> pass, shoot, turnover
+
+    action_prob[2] += defender_class.steals_poss
+    # find new action_prob array
+    new_action_prob = action_prob / action_prob.sum()
+
     return np.random.choice(
         a=np.arange(num_actions),
-        p=prob
+        p=new_action_prob
     )
 
 
@@ -421,8 +432,14 @@ def sim_offense_play(
         game_class.num_plays += 1
         # determine who has ball
         has_ball = who_has_possession(players_offense_dict)
+        # determine who he is defended by
+        defender_id = players_offense_dict[has_ball].defended_by
         # determine his action
-        player_action = choose_player_action(players_offense_dict[has_ball])
+        player_action = choose_player_action(
+            has_ball_player_class=players_offense_dict[has_ball],
+            defender_class=players_defense_dict[defender_id],
+            num_actions=3
+        )
         # pass
         if player_action == 0:
             game_class.passes += 1

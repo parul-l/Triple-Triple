@@ -163,13 +163,13 @@ if __name__ == '__main__':
             df_possession_defender=df_possession_defender_team1,
             game_id=None
         )
-        
+
         pdh.get_stats_per_possession(
             defender_class=player_class,
             df_possession_defender=df_possession_defender_team1,
             game_id=None
         )
-        
+
         pdh.get_def_off_region_matrix(
             defender_class=player_class,
             df_possession_defender=df_possession_defender_team1,

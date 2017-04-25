@@ -40,7 +40,15 @@ class Player(object):
             turnovers: An integer of the total turnovers made
 
             passes: An integer of the total passes
+            
+            steals: An integer of the total steals
+            
+            off_rebounds: An integer of the total number of offensive rebounds
+            
+            def_rebounds: An integer of the total number of defensive rebounds
 
+            blocks: An integer of the total number of blocks
+            
             steals_game: Avg steals per game for specified season
 
             steals_poss: Avg steals per possession for specified season
@@ -114,6 +122,10 @@ class Player(object):
         self.total_points = 0
         self.turnovers = 0
         self.passes = 0
+        self.steals = 0
+        self.off_rebounds = 0
+        self.def_rebounds = 0
+        self.blocks = 0
         self.steals_game = 0
         self.steals_poss = 0
         self.blocks_game = 0
@@ -190,6 +202,10 @@ def player_class_reset(player_class_dict):
         player_class.total_points = 0
         player_class.turnovers = 0
         player_class.passes = 0
+        player_class.steals = 0
+        player_class.off_rebounds = 0
+        player_class.def_rebounds = 0
+        player_class.blocks = 0
         player_class.has_possession = False
         player_class.on_defense = False
         player_class.defending_who = None

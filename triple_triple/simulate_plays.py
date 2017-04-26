@@ -20,6 +20,7 @@ ball_class_dict = create_player_class_instance(
 ball_class = ball_class_dict[-1]
 
 # TODO: FIX choose_player_action to make more sense -> steals and turnover probabilities are just added for turnover prob
+# TODO: FIX shot_outcome to make more sense -> prob_make = prob_make - defender's block probabilities
 # TODO: Fix score in sim_offense_play. It's too redundant
 # TODO: who gets rebound after missed shot
 # TODO: incorporate steals, blocks
@@ -244,10 +245,10 @@ def initiate_offense_player_positions(players_offense_dict, shooting_side, num_r
     has_ball = who_has_possession(players_offense_dict)
 
     players_offense_dict[has_ball]\
-        .court_region = get_reg_to_num('out of bounds')
+        .court_region = get_reg_to_num('out_of_bounds')
     players_offense_dict[has_ball]\
         .court_coord = generate_rand_regions(
-        pos_num=players_offense_dict[has_ball].court_region,
+        court_region_num=players_offense_dict[has_ball].court_region,
         shooting_side=shooting_side
     )
 
@@ -323,7 +324,7 @@ def update_offense_player_positions(
         )
 
         player_class.court_coord = generate_rand_regions(
-            pos_num=player_class.court_region,
+            court_region_num=player_class.court_region,
             shooting_side=shooting_side
         )
 
@@ -341,7 +342,8 @@ def update_defense_player_positions(
 def choose_player_action(
     has_ball_player_class,
     defender_class,
-    num_actions=3):``
+    num_actions=3
+):
     current_region = has_ball_player_class.court_region
     action_prob = copy.deepcopy(
         has_ball_player_class
@@ -359,17 +361,21 @@ def choose_player_action(
     )
 
 
-def shot_outcome(has_ball_player_class, game_class):
+def shot_outcome(
+    has_ball_player_class,
+    defender_class,
+    game_class
+):
     shooting_region = has_ball_player_class.court_region
     # determine if shot made or miss
     # 0 = miss, 1 = make
-    prob_array = [
-        1 - has_ball_player_class.region_shooting_prob[shooting_region],
-        has_ball_player_class.region_shooting_prob[shooting_region]
-    ]
+    # incorporate defender's block proability
+    prob_make = (has_ball_player_class.region_shooting_prob[shooting_region] -
+                 defender_class.blocks_poss)
+
     outcome = np.random.choice(
         a=np.arange(2),
-        p=prob_array
+        p=[1 - prob_make, prob_make]
     )
 
     check_3pt = shooting_region in \
@@ -464,7 +470,9 @@ def sim_offense_play(
         # shoot
         elif player_action == 1:
             check_3pt, outcome = shot_outcome(
-                has_ball_player_class=players_offense_dict[has_ball], game_class=game_class
+                has_ball_player_class=players_offense_dict[has_ball],
+                defender_class=players_defense_dict[defender_id],
+                game_class=game_class
             )
             update_shot_outcome(
                 has_ball_player_class=players_offense_dict[has_ball],

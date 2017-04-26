@@ -206,7 +206,7 @@ if __name__ == '__main__':
     player_action = None
     shooting_side = 'right'
 
-    for i in range(100):
+    for i in range(10):
         player_action, start_play = sp.sim_offense_play(
             players_offense_dict=team1_class_dict,
             players_defense_dict=team2_class_dict,
@@ -254,5 +254,5 @@ if __name__ == '__main__':
         num_sim=144)
 
     # to re-do the simulation we reset the parameters
-    # player_class_reset(team1_class_dict)
-    # class_game.game_class_reset(game_class)
+    player_class_reset(team1_class_dict)
+    class_game.game_class_reset(game_class)

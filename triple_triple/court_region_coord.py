@@ -1,6 +1,21 @@
 import numpy as np
 # See Triple-Triple/img/full_court_approx_region_block.png for a break down of the regions
 
+def court_region_from_number(num):
+    if num == 0:
+        return 'back_court'
+    if num == 1:
+        return 'mid_range'
+    if num == 2:
+        return 'key'
+    if num == 3:
+        return 'out_of_bounds'
+    if num == 4:
+        return 'paint'
+    if num == 5:
+        return 'perimeter'
+
+
 def check_pts_make_triangle(p1, p2, p3):
     if (p1[0] == p2[0] and p2[0] == p3[0]) \
     or (p1[1] == p2[1] and p2[1] == p3[1]):
@@ -135,12 +150,13 @@ def generate_perimeter(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_rand_regions(court_region, shooting_side):
+def generate_rand_regions(court_region_num, shooting_side):
+    court_region = court_region_from_number(court_region_num)
+    
     if court_region == 'back_court':
         return generate_back_court(shooting_side)
 
     elif court_region == 'mid_range':
-        # import ipdb; ipdb.set_trace()
         return generate_mid_range(shooting_side)
 
     elif court_region == 'key':

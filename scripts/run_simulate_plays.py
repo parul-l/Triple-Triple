@@ -206,7 +206,7 @@ if __name__ == '__main__':
     player_action = None
     shooting_side = 'right'
 
-    for i in range(10):
+    for i in range(3):
         player_action, start_play = sp.sim_offense_play(
             players_offense_dict=team1_class_dict,
             players_defense_dict=team2_class_dict,

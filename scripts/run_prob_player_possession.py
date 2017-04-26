@@ -23,15 +23,6 @@ if __name__ == '__main__':
         'turnover': 2
     }
 
-    reg_to_num = {
-        'back court': 0,
-        'mid-range': 1,
-        'key': 2,
-        'out of bounds': 3,
-        'paint': 4,
-        'perimeter': 5
-    }
-
     player_id_list = [2547, 2548, 2736, 1626159, 201609]
     game_id_list = [21500568]
 

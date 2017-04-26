@@ -90,7 +90,7 @@ def update_ball_position(
 
     # action is a turnover
     elif action == 2:
-        region = get_reg_to_num('out of bounds')
+        region = get_reg_to_num('out_of_bounds')
         if shooting_side == 'right':
             coord = [96, 25]
         elif shooting_side == 'left':
@@ -379,7 +379,7 @@ def shot_outcome(
     )
 
     check_3pt = shooting_region in \
-        [get_reg_to_num('perimeter'), get_reg_to_num('back court')]
+        [get_reg_to_num('perimeter'), get_reg_to_num('back_court')]
 
     return check_3pt, outcome
 
@@ -404,6 +404,14 @@ def update_shot_outcome(has_ball_player_class, game_class, check_3pt, outcome):
             game_class.two_pt_shots_made += 1
             has_ball_player_class.total_points += 2
             game_class.score += 2
+
+
+def determine_rebound(
+    players_offense_dict,
+    players_defense_dict,
+    game_class
+):
+
 
 
 def sim_offense_play(

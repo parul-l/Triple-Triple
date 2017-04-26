@@ -3,17 +3,17 @@ import numpy as np
 
 def court_region_from_number(num):
     if num == 0:
-        return 'back_court'
+        return 'paint'
     if num == 1:
         return 'mid_range'
     if num == 2:
         return 'key'
     if num == 3:
-        return 'out_of_bounds'
-    if num == 4:
-        return 'paint'
-    if num == 5:
         return 'perimeter'
+    if num == 4:
+        return 'back_court'
+    if num == 5:
+        return 'out_of_bounds'
 
 
 def check_pts_make_triangle(p1, p2, p3):
@@ -152,7 +152,7 @@ def generate_perimeter(shooting_side):
 
 def generate_rand_regions(court_region_num, shooting_side):
     court_region = court_region_from_number(court_region_num)
-    
+
     if court_region == 'back_court':
         return generate_back_court(shooting_side)
 

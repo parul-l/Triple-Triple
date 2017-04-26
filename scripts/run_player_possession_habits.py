@@ -1,3 +1,5 @@
+import os
+from triple_triple.config import DATASETS_DIR
 import triple_triple.player_possession_habits as pph
 
 from triple_triple.team_shooting_side import get_initial_shooting_sides
@@ -31,6 +33,12 @@ if __name__ == '__main__':
     )
 
     df_possession = pph.add_regions_to_df(df_possession, initial_shooting_side)
+
+    # df_raw_position_region = pph.add_regions_to_df(df_raw_position_data, initial_shooting_side)
+    # 
+    # filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
+    # df_raw_position_region.to_csv(filepath, index=False)
+
 
     game_id_list = [21500568]
     player_id_list = [2547, 2548]

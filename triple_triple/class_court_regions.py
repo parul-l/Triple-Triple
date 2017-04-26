@@ -17,10 +17,10 @@ class CourtRegions(object):
 def get_polygon_perimeter(shooting_side):
     if shooting_side == 'left':
         def polygon_perimeter(x, y):
-            return (14 <= x <= 47 and ((x - 5.25)**2 + (y - 25)**2 >= (23.75)**2))
+            return (14 <= x < 47 and ((x - 5.25)**2 + (y - 25)**2 > (23.75)**2))
     elif shooting_side == 'right':
         def polygon_perimeter(x, y):
-            return (47 <= x <= 80 and ((x - 88.75)**2 + (y - 25)**2 >= (23.75)**2))
+            return (47 < x <= 80 and ((x - 88.75)**2 + (y - 25)**2 > (23.75)**2))
     return polygon_perimeter
 
 
@@ -41,7 +41,7 @@ def get_polygon_mid_range(shooting_side):
                     (y <= 19 or y >= 31)) or
                 (69 <= x <= 75 and (x - 88.75)**2 + (y - 25)**2 <= (23.75)**2 and
                     (x - 75)**2 + (y - 25)**2 >= 6**2) or
-                (65 <= x <= 69 and (x - 88.755)**2 + (y - 25)**2 <= (23.75)**2)
+                (65 <= x <= 69 and (x - 88.75)**2 + (y - 25)**2 <= (23.75)**2)
             )
     return polygon_mid_range
 
@@ -69,7 +69,7 @@ perimeter = {
         'polygon': get_polygon_perimeter(shooting_side='left')
     },
     'right': {
-        'xbounds': [[90, 94], [80, 94]],
+        'xbounds': [[80, 94], [80, 94]],
         'ybounds': [[0, 3], [47, 50]],
         'polygon': get_polygon_perimeter(shooting_side='right')
     }
@@ -133,35 +133,36 @@ out_of_bounds = {
     'polygon': get_polygon_out_of_bounds()
 }
 
-if __name__ == '__main__':
-    shooting_side = 'right'
-    PERIMETER = CourtRegions(
-        xbounds=perimeter[shooting_side]['xbounds'],
-        ybounds=perimeter[shooting_side]['ybounds'],
-        polygon_region=perimeter[shooting_side]['polygon']
-    )
-    MID_RANGE = CourtRegions(
-        xbounds=mid_range[shooting_side]['xbounds'],
-        ybounds=mid_range[shooting_side]['ybounds'],
-        polygon_region=mid_range[shooting_side]['polygon']
-    )
-    KEY = CourtRegions(
-        xbounds=key[shooting_side]['xbounds'],
-        ybounds=key[shooting_side]['ybounds'],
-        polygon_region=key[shooting_side]['polygon']
-    )
-    PAINT = CourtRegions(
-        xbounds=paint[shooting_side]['xbounds'],
-        ybounds=paint[shooting_side]['ybounds'],
-        polygon_region=paint[shooting_side]['polygon']
-    )
-    BACK_COURT = CourtRegions(
-        xbounds=back_court[shooting_side]['xbounds'],
-        ybounds=back_court[shooting_side]['ybounds'],
-        polygon_region=back_court[shooting_side]['polygon']
-    )
-    OUT_OF_BOUNDS = CourtRegions(
-        xbounds=out_of_bounds['xbounds'],
-        ybounds=out_of_bounds['ybounds'],
-        polygon_region=out_of_bounds['polygon']
-    )
+
+# if __name__ == '__main__':
+#     shooting_side = 'right'
+#     PERIMETER = CourtRegions(
+#         xbounds=perimeter[shooting_side]['xbounds'],
+#         ybounds=perimeter[shooting_side]['ybounds'],
+#         polygon_region=perimeter[shooting_side]['polygon']
+#     )
+#     MID_RANGE = CourtRegions(
+#         xbounds=mid_range[shooting_side]['xbounds'],
+#         ybounds=mid_range[shooting_side]['ybounds'],
+#         polygon_region=mid_range[shooting_side]['polygon']
+#     )
+#     KEY = CourtRegions(
+#         xbounds=key[shooting_side]['xbounds'],
+#         ybounds=key[shooting_side]['ybounds'],
+#         polygon_region=key[shooting_side]['polygon']
+#     )
+#     PAINT = CourtRegions(
+#         xbounds=paint[shooting_side]['xbounds'],
+#         ybounds=paint[shooting_side]['ybounds'],
+#         polygon_region=paint[shooting_side]['polygon']
+#     )
+#     BACK_COURT = CourtRegions(
+#         xbounds=back_court[shooting_side]['xbounds'],
+#         ybounds=back_court[shooting_side]['ybounds'],
+#         polygon_region=back_court[shooting_side]['polygon']
+#     )
+#     OUT_OF_BOUNDS = CourtRegions(
+#         xbounds=out_of_bounds['xbounds'],
+#         ybounds=out_of_bounds['ybounds'],
+#         polygon_region=out_of_bounds['polygon']
+#     )

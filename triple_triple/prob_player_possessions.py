@@ -9,33 +9,33 @@ np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
 
 def get_reg_to_num(reg):
-    if reg == 'back_court':
+    if reg == 'paint':
         return 0
     if reg == 'mid_range':
         return 1
     if reg == 'key':
         return 2
-    if reg == 'out_of_bounds':
-        return 3
-    if reg == 'paint':
-        return 4
     if reg == 'perimeter':
+        return 3
+    if reg == 'back_court':
+        return 4
+    if reg == 'out_of_bounds':
         return 5
 
 
 def court_region_from_number(num):
     if num == 0:
-        return 'back_court'
+        return 'paint'
     if num == 1:
         return 'mid_range'
     if num == 2:
         return 'key'
     if num == 3:
-        return 'out_of_bounds'
-    if num == 4:
-        return 'paint'
-    if num == 5:
         return 'perimeter'
+    if num == 4:
+        return 'back_court'
+    if num == 5:
+        return 'out_of_bounds'
 
 
 def get_action_to_num(action):

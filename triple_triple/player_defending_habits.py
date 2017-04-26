@@ -28,7 +28,6 @@ def update_traditional_nba_stats(
     player_class.def_rebounds_game = player_stats.def_rebounds
     player_class.personal_fouls_game = player_stats.personal_fouls
     player_class.free_throw_pct_game = player_stats.free_throw_pct
-    
 
 
 def get_df_possession_defender(
@@ -83,8 +82,9 @@ def get_df_possession_defender(
 
 
 def get_num_possessions_defended(defender_id, df_possession_defender):
-    shift_col = df_possession_defender.defender_id.shift(1) != \
-                df_possession_defender.defender_id
+    shift_col = (
+        df_possession_defender.defender_id.shift(1) !=
+        df_possession_defender.defender_id)
 
     df_possession_defender['block'] = (shift_col).astype(int).cumsum()
     defender_poss = df_possession_defender.query('defender_id==@defender_id')
@@ -159,7 +159,7 @@ def poss_result_on_defense_reg(
     df_action_defender = df_possession_defender.query(query_params)
     reg = df_action_defender.defender_region.values
     action = df_action_defender.action.values
-    
+
     # row = region, column = [pass, shoot, turnover]
     action_matrix = np.zeros((6, 3))
 

@@ -42,14 +42,14 @@ def get_region_bounds(shooting_side):
 
 def get_region(x, y, shooting_side):
     PERIMETER, MID_RANGE, KEY, PAINT, BACK_COURT, OUT_OF_BOUNDS = get_region_bounds(shooting_side=shooting_side)
-    if [x, y] in PERIMETER:
+    if [x, y] in PAINT:
+        return 'paint'
+    elif [x, y] in PERIMETER:
         return 'perimeter'
     elif [x, y] in MID_RANGE:
         return 'mid_range'
     elif [x, y] in KEY:
         return 'key'
-    elif [x, y] in PAINT:
-        return 'paint'
     elif [x, y] in BACK_COURT:
         return 'back_court'
     elif [x, y] in OUT_OF_BOUNDS:

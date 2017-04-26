@@ -62,7 +62,7 @@ def get_possession_df(dataframe, has_ball_dist=2.0, len_poss=25):
 
 
 def get_court_region(dataframe_row, initial_shooting_side):
-    period, team_id, x, y = dataframe_row[0], dataframe_row[1], dataframe_row[2], dataframe_row[3]
+    period, team_id, x, y = dataframe_row[:4]
 
     if team_id != -1:
         if period == 1 or period == 3:
@@ -76,12 +76,11 @@ def get_court_region(dataframe_row, initial_shooting_side):
             return get_region(x, y, shooting_side)
 
 
-def add_regions_to_df(df_possession, initial_shooting_side):
-    df_select_cols = df_possession[['period', 'team_id', 'x_loc', 'y_loc']]
-    df_possession['region'] = df_select_cols.apply(
+def add_regions_to_df(dataframe, initial_shooting_side):
+    df_select_cols = dataframe[['period', 'team_id', 'x_loc', 'y_loc']]
+    dataframe['region'] = df_select_cols.apply(
         lambda row: get_court_region(row, initial_shooting_side), axis=1)
-
-    return df_possession
+    return dataframe
 
 
 def update_df_possession_action(end_poss_idx, action, df_possession_action):

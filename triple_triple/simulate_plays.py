@@ -23,9 +23,7 @@ ball_class = ball_class_dict[-1]
 # TODO: FIX shot_outcome to make more sense -> prob_make = prob_make - defender's block probabilities
 # TODO: Fix score in sim_offense_play. It's too redundant
 # TODO: who gets rebound after missed shot
-# TODO: incorporate steals, blocks
-# TODO: Figure out if I need deepcopy or shallow copy
-# TODO: Perhaps change update_offense_player_positions so that player positions are unique
+# TODO: Change update_offense_player_positions so that player positions are unique
 # TODO: Incorporate shot clock to force shot
 # TODO: This is messier than it needs to be
 
@@ -241,7 +239,7 @@ def initiate_offense_player_positions(players_offense_dict, shooting_side, num_r
         num_reg=6
     )
 
-    # update player with ball to 'out of bounds' <--> 3
+    # update player with ball to 'out of bounds' <--> 5
     has_ball = who_has_possession(players_offense_dict)
 
     players_offense_dict[has_ball]\
@@ -310,18 +308,31 @@ def update_offense_player_positions(
     shooting_side,
     num_reg=6
 ):
+    # initial has_ball puts player out of bounds
+    region_list = ['paint', 'mid_range', 'key', 'perimeter']
+    pos_available = map(get_reg_to_num, region_list)
+
     for player_class in players_offense_dict.values():
         current_region = player_class.court_region
 
         if current_region is None:
-            current_region = np.random.choice(a=np.arange(num_reg))
+            try:
+                reg = np.random.choice(pos_available)
+                pos_available.remove(reg)
+            except:
+                reg = np.random.choice(
+                    map(get_reg_to_num, region_list)
+                )
+            player_class.court_region = reg
+
         else:
             current_region = player_class.court_region
-        # update to new region
-        player_class.court_region = np.random.choice(
-            a=np.arange(num_reg),
-            p=player_class.region_prob_matrix[current_region],
-        )
+
+            # update to new region
+            player_class.court_region = np.random.choice(
+                a=np.arange(num_reg),
+                p=player_class.region_prob_matrix[current_region],
+            )
 
         player_class.court_coord = generate_rand_regions(
             court_region_num=player_class.court_region,
@@ -351,7 +362,12 @@ def choose_player_action(
     )
     # action in [0, 1, 2] <---> pass, shoot, turnover
 
+    # account for steals
     action_prob[2] += defender_class.steals_poss
+
+    # account for blocks
+    action_prob[1] -= defender_class.blocks_poss
+
     # find new action_prob array
     new_action_prob = action_prob / action_prob.sum()
 
@@ -404,14 +420,6 @@ def update_shot_outcome(has_ball_player_class, game_class, check_3pt, outcome):
             game_class.two_pt_shots_made += 1
             has_ball_player_class.total_points += 2
             game_class.score += 2
-
-
-def determine_rebound(
-    players_offense_dict,
-    players_defense_dict,
-    game_class
-):
-
 
 
 def sim_offense_play(

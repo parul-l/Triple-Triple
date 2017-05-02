@@ -13,12 +13,12 @@ poss_type_to_num = {
 }
 
 reg_to_num = {
-    'back court': 0,
-    'mid-range': 1,
+    'paint': 0,
+    'mid_range': 1,
     'key': 2,
-    'out of bounds': 3,
-    'paint': 4,
-    'perimeter': 5
+    'perimeter': 3,
+    'back_court': 4,
+    'out_of_bounds': 5
 }
 
 player_instances = os.path.join(DATASETS_DIR, 'player_instances.p')

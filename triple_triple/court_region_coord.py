@@ -1,6 +1,22 @@
 import numpy as np
 # See Triple-Triple/img/full_court_approx_region_block.png for a break down of the regions
 
+
+def get_reg_to_num(reg):
+    if reg == 'paint':
+        return 0
+    if reg == 'mid_range':
+        return 1
+    if reg == 'key':
+        return 2
+    if reg == 'perimeter':
+        return 3
+    if reg == 'back_court':
+        return 4
+    if reg == 'out_of_bounds':
+        return 5
+
+
 def court_region_from_number(num):
     if num == 0:
         return 'paint'

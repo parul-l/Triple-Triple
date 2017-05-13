@@ -99,6 +99,8 @@ class Player(object):
                         }
             court_coord: A tuple that reflects court region
 
+            game_idx: A boolean, 0 or 1, of which index to update in game_class
+
 
     """
 
@@ -146,6 +148,7 @@ class Player(object):
         self.poss_result_on_defense_reg = None
         self.court_region = None
         self.court_coord = None
+        self.game_idx = None
 
 
 def playerid_from_name(player_name, game_player_dict):
@@ -213,3 +216,4 @@ def player_class_reset(player_class_dict):
         player_class.defended_by = None
         player_class.court_region = None
         player_class.court_coord = None
+        player_class.game_idx = None

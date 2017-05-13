@@ -43,12 +43,12 @@ reg_to_num = {
 
 
 if __name__ == '__main__':
-    team1_id_list = [203110, 202691, 201939, 101106, 201575]
-    team2_id_list = [2547, 2548, 2736, 2617, 2405]
+    team0_id_list = [203110, 202691, 201939, 101106, 201575]
+    team1_id_list = [2547, 2548, 2736, 2617, 2405]
     game_id_list = [21500568]
 
     df_player_bio = get_player_bio_df(
-        player_id_list=(team1_id_list + team2_id_list)
+        player_id_list=(team0_id_list + team1_id_list)
     )
 
     hometeam_id = 1610612744
@@ -65,23 +65,25 @@ if __name__ == '__main__':
 
     ball_class = ball_class_dict[-1]
 
+    team0_class_dict = create_player_class_instance(
+        player_list=team0_id_list,
+        game_player_dict=game_player_dict,
+        df_player_bio=df_player_bio
+    )
     team1_class_dict = create_player_class_instance(
         player_list=team1_id_list,
         game_player_dict=game_player_dict,
         df_player_bio=df_player_bio
     )
-    team2_class_dict = create_player_class_instance(
-        player_list=team2_id_list,
-        game_player_dict=game_player_dict,
-        df_player_bio=df_player_bio
-    )
+    
+    teams_list = [team0_class_dict, team1_class_dict]
 
+    team0_id = team0_class_dict[team0_id_list[0]].team_id
     team1_id = team1_class_dict[team1_id_list[0]].team_id
-    team2_id = team2_class_dict[team2_id_list[0]].team_id
 
     # combine dictionaries to update both dictionaries together
-    combined_players_dict = copy.copy(team1_class_dict)
-    combined_players_dict.update(team2_class_dict)
+    combined_players_dict = copy.copy(team0_class_dict)
+    combined_players_dict.update(team1_class_dict)
 
     for player_class in combined_players_dict.values():
         # update region probability
@@ -136,88 +138,92 @@ if __name__ == '__main__':
             season_type='Regular Season'
         )
 
+    df_possession_defender_team0 = pdh.get_df_possession_defender(
+        offense_players_dict=team1_class_dict,
+        df_possession_region=df_possession_region,
+        df_raw_position_region=df_raw_position_region,
+        defender_team_id=team0_id
+    )
     df_possession_defender_team1 = pdh.get_df_possession_defender(
-        offense_players_dict=team2_class_dict,
+        offense_players_dict=team0_class_dict,
         df_possession_region=df_possession_region,
         df_raw_position_region=df_raw_position_region,
         defender_team_id=team1_id
     )
-    df_possession_defender_team2 = pdh.get_df_possession_defender(
-        offense_players_dict=team1_class_dict,
-        df_possession_region=df_possession_region,
-        df_raw_position_region=df_raw_position_region,
-        defender_team_id=team2_id
-    )
 
-    # Update team1 defence data
-    for player_class in team1_class_dict.values():
+    # Update team0
+    for player_class in team0_class_dict.values():
+        # update game_idx
+        player_class.game_idx = 0
         # update possession outcome when defending
         pdh.poss_result_on_defense(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
+            df_possession_defender=df_possession_defender_team0,
             game_id=None
         )
 
         pdh.poss_result_on_defense_reg(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
+            df_possession_defender=df_possession_defender_team0,
             game_id=None
         )
 
         pdh.get_stats_per_possession(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
+            df_possession_defender=df_possession_defender_team0,
             game_id=None
         )
 
         pdh.get_def_off_region_matrix(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
+            df_possession_defender=df_possession_defender_team0,
             game_id=None,
         )
-    # Update team2 defense data
-    for player_class in team2_class_dict.values():
+    # Update team1
+    for player_class in team1_class_dict.values():
+        # update game_idx
+        player_class.game_idx = 1
+
         # update possession outcome when defending
         pdh.poss_result_on_defense(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team2,
+            df_possession_defender=df_possession_defender_team1,
             game_id=None
         )
 
         pdh.get_stats_per_possession(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team2,
+            df_possession_defender=df_possession_defender_team1,
             game_id=None
         )
 
         pdh.poss_result_on_defense_reg(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team2,
+            df_possession_defender=df_possession_defender_team1,
             game_id=None
         )
 
         pdh.get_def_off_region_matrix(
             defender_class=player_class,
-            df_possession_defender=df_possession_defender_team2,
+            df_possession_defender=df_possession_defender_team1,
             game_id=None,
         )
 
     start_play = True
     player_action = None
-    shooting_side = 'right'
+    shooting_side_list = ['right', 'left']
 
-    for i in range(3):
+    for i in range(200):
         player_action, start_play = sp.sim_offense_play(
-            players_offense_dict=team1_class_dict,
-            players_defense_dict=team2_class_dict,
+            teams_list=teams_list,
             game_class=game_class,
-            shooting_side=shooting_side,
+            shooting_side_list=shooting_side_list,
             start_play=start_play,
             player_action=player_action,
         )
 
     # print player's outcome
-    for player_class in team1_class_dict.values():
+    for player_class in team0_class_dict.values():
         print player_class.name
         print 'region', player_class.court_region
         print 'possession', player_class.has_possession
@@ -247,12 +253,13 @@ if __name__ == '__main__':
     print 'passes', game_class.passes
 
     sim_coord_dict = sp.create_sim_coord_dict(
-        players_offense_dict=team1_class_dict,
-        players_defense_dict=team2_class_dict,
+        players_offense_dict=team0_class_dict,
+        players_defense_dict=team1_class_dict,
         game_class=game_class,
         shooting_side=shooting_side,
         num_sim=144)
 
     # to re-do the simulation we reset the parameters
+    player_class_reset(team0_class_dict)
     player_class_reset(team1_class_dict)
     class_game.game_class_reset(game_class)

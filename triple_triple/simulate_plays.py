@@ -62,35 +62,66 @@ def initiate_player_has_possession(players_offense_dict):
 
 
 def update_ball_position(
-    players_offense_dict,
     shooting_side,
-    ball_class=ball_class,
-    action=None
+    has_ball_player_class=None,
+    out_of_bounds=False,
+    ball_class=ball_class
 ):
-    # result of a pass
-    if action == 0 or action is None:
-        has_ball = who_has_possession(players_offense_dict)
-        region = players_offense_dict[has_ball].court_region
-        coord = players_offense_dict[has_ball].court_coord
-
-    # action is a shot
-    elif action == 1:
+    if out_of_bounds:
+        region = get_reg_to_num('out_of_bounds')
+        if shooting_side == 'right':
+            coord = [96, 25]
+        elif shooting_side == 'left':
+            coord = [-2, 25]    
+    
+    elif has_ball_player_class is None:
         region = get_reg_to_num('paint')
         if shooting_side == 'right':
             coord = [88.75, 25]
         elif shooting_side == 'left':
             coord = [5.25, 25]
-
-    # action is a turnover
-    elif action == 2:
-        region = get_reg_to_num('out_of_bounds')
-        if shooting_side == 'right':
-            coord = [96, 25]
-        elif shooting_side == 'left':
-            coord = [-2, 25]
+    
+    else:
+        region = has_ball_player_class.court_region
+        coord = has_ball_player_class.court_coord
 
     ball_class.court_region = region
     ball_class.court_coord = coord
+
+
+# def update_ball_position(
+#     players_offense_dict,
+#     shooting_side,
+#     ball_class=ball_class,
+#     action=None,
+#     block_outcome=None
+# ):
+#     # result of a pass
+#     if action == 0 or action is None:
+#         has_ball = who_has_possession(players_offense_dict)
+#         region = players_offense_dict[has_ball].court_region
+#         coord = players_offense_dict[has_ball].court_coord
+#
+#     # action is a shot
+#     elif action == 1:
+#         # block_outcome = 1 means not blocked, so ball goes to rim
+#         if block_outcome == 1:
+#             region = get_reg_to_num('paint')
+#             if shooting_side == 'right':
+#                 coord = [88.75, 25]
+#             elif shooting_side == 'left':
+#                 coord = [5.25, 25]
+#
+#     # action is a turnover
+#     elif action == 2:
+#         region = get_reg_to_num('out_of_bounds')
+#         if shooting_side == 'right':
+#             coord = [96, 25]
+#         elif shooting_side == 'left':
+#             coord = [-2, 25]
+#
+#     ball_class.court_region = region
+#     ball_class.court_coord = coord
 
 
 def update_defense_params(offense_class, defender_class):
@@ -222,7 +253,11 @@ def match_players_same_position(
     return [players_defense_dict_copy, players_offense_dict_copy]
 
 
-def initiate_offense_player_positions(players_offense_dict, shooting_side, num_reg=6):
+def initiate_offense_player_positions(
+    players_offense_dict,
+    shooting_side,
+    num_reg=6
+):
     # update on_offense status
     for player_class in players_offense_dict.values():
         player_class.on_offense = True
@@ -234,7 +269,7 @@ def initiate_offense_player_positions(players_offense_dict, shooting_side, num_r
         num_reg=6
     )
 
-    # update player with ball to 'out of bounds' <--> 5
+    # update player with ball to 'out of bounds'
     has_ball = who_has_possession(players_offense_dict)
 
     players_offense_dict[has_ball]\
@@ -243,6 +278,12 @@ def initiate_offense_player_positions(players_offense_dict, shooting_side, num_r
         .court_coord = generate_rand_regions(
         court_region_num=players_offense_dict[has_ball].court_region,
         shooting_side=shooting_side
+    )
+
+    # update ball position to out_of_bounds
+    update_ball_position(
+        shooting_side=shooting_side,
+        out_of_bounds=True
     )
 
 
@@ -270,7 +311,11 @@ def initiate_defense_player_positions(teams_list):
         )
 
 
-def update_has_possession(players_offense_dict, shooting_side_list, ball_class=ball_class):
+def update_has_possession_after_pass(
+    players_offense_dict,
+    shooting_side_list,
+    ball_class=ball_class
+):
     shooting_side = shooting_side_list[0]
     old_has_ball = who_has_possession(players_offense_dict)
 
@@ -291,7 +336,7 @@ def update_has_possession(players_offense_dict, shooting_side_list, ball_class=b
 
     # update ball region/coordinates
     update_ball_position(
-        players_offense_dict=players_offense_dict,
+        has_ball_player_class=players_offense_dict[new_has_ball],
         ball_class=ball_class,
         shooting_side=shooting_side
     )
@@ -445,11 +490,14 @@ def choose_player_action(
     )
 
 
-def shot_outcome(
+def get_shot_outcome(
     has_ball_player_class,
     defender_class,
     game_class,
 ):
+    # player no longer has possession
+    has_ball_player_class.has_possession = False
+
     shooting_region = has_ball_player_class.court_region
     # determine if blocked or not
     # 0 = blocked, 1 = not blocked
@@ -461,7 +509,7 @@ def shot_outcome(
 
     # if blocked, outcome = miss = 0
     if block_outcome == 0:
-        outcome = 0
+        shot_outcome = 0
         # update defender and game stats
         defender_class.blocks += 1
         game_class.blocks[defender_class.game_idx] += 1
@@ -474,7 +522,7 @@ def shot_outcome(
             blocks_prob=defender_class.blocks_poss
         )
 
-        outcome = np.random.choice(
+        shot_outcome = np.random.choice(
             a=np.arange(2),
             p=[1 - prob_make, prob_make]
         )
@@ -482,16 +530,16 @@ def shot_outcome(
     check_3pt = shooting_region in \
         [get_reg_to_num('perimeter'), get_reg_to_num('back_court')]
 
-    return check_3pt, outcome
+    return check_3pt, shot_outcome, block_outcome
 
 
-def update_shot_outcome(has_ball_player_class, game_class, check_3pt, outcome):
+def update_shot_outcome(has_ball_player_class, game_class, check_3pt, shot_outcome):
     has_ball_game_idx = has_ball_player_class.game_idx
     if check_3pt:
         has_ball_player_class.three_pt_shot_attempts += 1
         game_class.three_pt_shot_attempts[has_ball_game_idx] += 1
 
-        if outcome == 1:
+        if shot_outcome == 1:
             has_ball_player_class.three_pt_shots_made += 1
             game_class.three_pt_shots_made[has_ball_game_idx] += 1
             has_ball_player_class.total_points += 3
@@ -501,7 +549,7 @@ def update_shot_outcome(has_ball_player_class, game_class, check_3pt, outcome):
         has_ball_player_class.two_pt_shot_attempts += 1
         game_class.two_pt_shot_attempts[has_ball_game_idx] += 1
 
-        if outcome == 1:
+        if shot_outcome == 1:
             has_ball_player_class.two_pt_shots_made += 1
             game_class.two_pt_shots_made[has_ball_game_idx] += 1
             has_ball_player_class.total_points += 2
@@ -582,11 +630,12 @@ def sim_offense_play(
         initiate_defense_player_positions(
             teams_list=teams_list
         )
+
+        has_ball = who_has_possession(players_offense_dict)
         update_ball_position(
-            players_offense_dict=players_offense_dict,
-            ball_class=ball_class,
             shooting_side=shooting_side,
-            action=player_action
+            has_ball_player_class=players_offense_dict[has_ball],
+            ball_class=ball_class,
         )
 
     else:
@@ -609,7 +658,7 @@ def sim_offense_play(
 
             game_class.passes[game_class_idx] += 1
             players_offense_dict[has_ball].passes += 1
-            update_has_possession(
+            update_has_possession_after_pass(
                 players_offense_dict=players_offense_dict,
                 shooting_side_list=shooting_side_list
             )
@@ -619,16 +668,16 @@ def sim_offense_play(
                 num_reg=6
             )
             update_defense_player_positions(teams_list=teams_list)
+
+            has_ball = who_has_possession(players_offense_dict)
             update_ball_position(
-                players_offense_dict=players_offense_dict,
-                action=player_action,
-                shooting_side=shooting_side
+                shooting_side=shooting_side,
+                has_ball_player_class=players_offense_dict[has_ball]
             )
 
         # shoot
         elif player_action == 1:
-            start_play = True
-            check_3pt, outcome = shot_outcome(
+            check_3pt, shot_outcome, block_outcome = get_shot_outcome(
                 has_ball_player_class=players_offense_dict[has_ball],
                 defender_class=players_defense_dict[defender_id],
                 game_class=game_class
@@ -637,54 +686,67 @@ def sim_offense_play(
                 has_ball_player_class=players_offense_dict[has_ball],
                 game_class=game_class,
                 check_3pt=check_3pt,
-                outcome=outcome
+                shot_outcome=shot_outcome
             )
-
-            # update ball to rim
-            update_ball_position(
-                players_offense_dict=players_offense_dict,
-                action=player_action,
-                shooting_side=shooting_side
-            )
-            update_defense_player_positions(
-                teams_list=teams_list
-            )
-
-            # if shot is missed
-            if outcome == 0:
+            players_offense_dict[has_ball].has_possession = False
+            # if blocked, possession switched to defender
+            if block_outcome == 0:
                 start_play = False
-                # update rebound if shot is missed
-                rebounder_class = update_rebound(
-                    teams_list=teams_list,
-                    game_class=game_class
-                )
-                rebounder_id = rebounder_class.player_id
+                players_defense_dict[defender_id].has_possession = True
 
-                # change ball possessions
-                players_offense_dict[has_ball].has_possession = False
-                players_defense_dict[rebounder_id].has_possession = True
-
-                if rebounder_class.on_defense:
-                    # switch team possession
-                    teams_list = switch_possession(teams_list=teams_list)
-                    shooting_side_list = \
-                        switch_shooting_side(shooting_side_list=shooting_side_list)
-
-            # if shot is made
-            elif outcome == 1:
-                start_play = True
-                # change player's possession to False
-                # players_offense_dict[has_ball].has_possession = False
                 # switch possession
                 teams_list = switch_possession(teams_list=teams_list)
                 shooting_side_list = \
                     switch_shooting_side(shooting_side_list=shooting_side_list)
 
+            # if not blocked, update ball to rim
+            elif block_outcome == 1:
+                update_ball_position(
+                    shooting_side=shooting_side,
+                    has_ball_player_class=None
+                )
+
+                # if not blocked and shot is missed
+                if shot_outcome == 0:
+                    start_play = False
+                    # update rebound if shot is missed
+                    rebounder_class = update_rebound(
+                        teams_list=teams_list,
+                        game_class=game_class
+                    )
+                    rebounder_id = rebounder_class.player_id
+
+                    # change ball possession to rebounder
+                    players_defense_dict[rebounder_id].has_possession = True
+
+                    update_ball_position(
+                        shooting_side=shooting_side,
+                        has_ball_player_class=rebounder_class
+                    )
+
+                    if rebounder_class.on_defense:
+                        # switch team possession
+                        teams_list = switch_possession(teams_list=teams_list)
+                        shooting_side_list = \
+                            switch_shooting_side(shooting_side_list=shooting_side_list)
+
+                # if not blocked and shot is made
+                elif shot_outcome == 1:
+                    start_play = True
+                    # update ball to the rim
+                    update_ball_position(
+                        shooting_side=shooting_side,
+                        has_ball_player_class=None
+                    )
+                    # switch possession
+                    teams_list = switch_possession(teams_list=teams_list)
+                    shooting_side_list = \
+                        switch_shooting_side(shooting_side_list=shooting_side_list)
+
         # turnover
         elif player_action == 2:
             game_class.turnovers[game_class_idx] += 1
             players_offense_dict[has_ball].turnovers += 1
-
             players_offense_dict[has_ball].has_possession = False
 
             # check if steal
@@ -694,18 +756,20 @@ def sim_offense_play(
             )
 
             if turnover_steal:
-                players_defense_dict[defender_id].has_possession = True
                 start_play = False
+                players_defense_dict[defender_id].has_possession = True
+                update_ball_position(
+                    shooting_side=shooting_side,
+                    has_ball_player_class=players_defense_dict[defender_id]
+                )
 
             if not turnover_steal:
                 start_play = True
-                # # update out of bounds
-                # update_ball_position(
-                #     players_offense_dict=players_offense_dict,
-                #     action=player_action,
-                #     shooting_side=shooting_side
-                # )
-
+                # update ball out of bounds
+                update_ball_position(
+                    shooting_side=shooting_side,
+                    out_of_bounds=True
+                )
             # switch possession
             teams_list = switch_possession(teams_list=teams_list)
             shooting_side_list = \

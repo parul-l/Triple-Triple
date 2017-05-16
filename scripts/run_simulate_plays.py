@@ -76,8 +76,6 @@ if __name__ == '__main__':
         df_player_bio=df_player_bio
     )
     
-    teams_list = [team0_class_dict, team1_class_dict]
-
     team0_id = team0_class_dict[team0_id_list[0]].team_id
     team1_id = team1_class_dict[team1_id_list[0]].team_id
 
@@ -211,31 +209,49 @@ if __name__ == '__main__':
 
     start_play = True
     player_action = None
+    teams_list = [team0_class_dict, team1_class_dict]
     shooting_side_list = ['right', 'left']
 
-    for i in range(200):
-        player_action, start_play = sp.sim_offense_play(
+    for i in range(100):
+        start_play, teams_list, shooting_side_list = sp.sim_offense_play(
             teams_list=teams_list,
             game_class=game_class,
             shooting_side_list=shooting_side_list,
             start_play=start_play,
-            player_action=player_action,
         )
 
-    # print player's outcome
-    for player_class in team0_class_dict.values():
-        print player_class.name
-        print 'region', player_class.court_region
-        print 'possession', player_class.has_possession
-        print 'defender', player_class.defended_by
-        print 'passes', player_class.passes
-        print 'two_pt_shot_attempts', player_class.two_pt_shot_attempts
-        print 'two_pt_shots_made', player_class.two_pt_shots_made
-        print 'three_pt_shot_attempts', player_class.three_pt_shot_attempts
-        print 'three_pt_shots_made', player_class.three_pt_shots_made
-        print 'turnovers', player_class.turnovers
-        print 'total_points', player_class.total_points
-        print ""
+        # print player's outcome
+        for player_class in team0_class_dict.values():
+            print player_class.name
+            print 'region', player_class.court_region
+            print 'possession', player_class.has_possession
+            print 'defender', player_class.defended_by
+            print 'passes', player_class.passes
+            print 'two_pt_shot_attempts', player_class.two_pt_shot_attempts
+            print 'two_pt_shots_made', player_class.two_pt_shots_made
+            print 'three_pt_shot_attempts', player_class.three_pt_shot_attempts
+            print 'three_pt_shots_made', player_class.three_pt_shots_made
+            print 'turnovers', player_class.turnovers
+            print 'total_points', player_class.total_points
+            print ""
+
+
+        # print player's outcome
+        for player_class in team1_class_dict.values():
+            print player_class.name
+            print 'region', player_class.court_region
+            print 'possession', player_class.has_possession
+            print 'defender', player_class.defended_by
+            print 'passes', player_class.passes
+            print 'two_pt_shot_attempts', player_class.two_pt_shot_attempts
+            print 'two_pt_shots_made', player_class.two_pt_shots_made
+            print 'three_pt_shot_attempts', player_class.three_pt_shot_attempts
+            print 'three_pt_shots_made', player_class.three_pt_shots_made
+            print 'turnovers', player_class.turnovers
+            print 'total_points', player_class.total_points
+            print ""
+
+
 
     # print game outcome
     print 'score', game_class.score

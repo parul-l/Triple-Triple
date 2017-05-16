@@ -216,4 +216,3 @@ def player_class_reset(player_class_dict):
         player_class.defended_by = None
         player_class.court_region = None
         player_class.court_coord = None
-        player_class.game_idx = None

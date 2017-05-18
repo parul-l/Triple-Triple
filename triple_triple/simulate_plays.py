@@ -295,7 +295,9 @@ def update_has_possession_after_pass(
     players_offense_dict[old_has_ball].has_possession = False
     players_offense_dict[new_has_ball].has_possession = True
 
+    return new_has_ball
 
+    
 def update_offense_player_positions(
     players_offense_dict,
     shooting_side,
@@ -484,7 +486,9 @@ def get_shot_outcome(
     return check_3pt, shot_outcome, block_outcome
 
 
-def update_shot_outcome(has_ball_player_class, game_class, check_3pt, shot_outcome):
+def update_shot_outcome_params(has_ball_player_class, game_class, check_3pt, shot_outcome):
+    has_ball_player_class.has_possession = False
+    
     has_ball_game_idx = has_ball_player_class.game_idx
     if check_3pt:
         has_ball_player_class.three_pt_shot_attempts += 1
@@ -507,11 +511,13 @@ def update_shot_outcome(has_ball_player_class, game_class, check_3pt, shot_outco
             game_class.score[has_ball_game_idx] += 2
 
 
-def update_rebound(teams_list, game_class):
+def update_rebound_params(teams_list, game_class):
     rebounder_class = who_gets_rebound(
         teams_list=teams_list,
         ball_class=ball_class,
     )
+    
+    rebounder_class.has_possession = True
 
     if rebounder_class.on_defense:
         rebounder_class.def_rebounds += 1
@@ -542,7 +548,7 @@ def check_turnover_is_steal(
     return turnover_steal
 
 
-def switch_possession(teams_list):
+def switch_team_possession(teams_list):
     players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
     for player_class in players_offense_dict.values():
         player_class.has_possession = False
@@ -638,7 +644,7 @@ def sim_offense_play(
                 defender_class=players_defense_dict[defender_id],
                 game_class=game_class
             )
-            update_shot_outcome(
+            update_shot_outcome_params(
                 has_ball_player_class=players_offense_dict[has_ball],
                 game_class=game_class,
                 check_3pt=check_3pt,
@@ -654,7 +660,7 @@ def sim_offense_play(
                     has_ball_player_class=players_defense_dict[defender_id]
                 )
                 # switch possession
-                teams_list = switch_possession(teams_list=teams_list)
+                teams_list = switch_team_possession(teams_list=teams_list)
                 shooting_side_list = \
                     switch_shooting_side(shooting_side_list=shooting_side_list)
 
@@ -669,7 +675,7 @@ def sim_offense_play(
                 if shot_outcome == 0:
                     start_play = False
                     # update rebound if shot is missed
-                    rebounder_class = update_rebound(
+                    rebounder_class = update_rebound_params(
                         teams_list=teams_list,
                         game_class=game_class
                     )
@@ -679,7 +685,7 @@ def sim_offense_play(
                         # change ball possession to rebounder
                         players_defense_dict[rebounder_id].has_possession = True
                         # switch team possession
-                        teams_list = switch_possession(teams_list=teams_list)
+                        teams_list = switch_team_possession(teams_list=teams_list)
                         shooting_side_list = \
                             switch_shooting_side(shooting_side_list=shooting_side_list)
                     else:
@@ -700,7 +706,7 @@ def sim_offense_play(
                         has_ball_player_class=None
                     )
                     # switch possession
-                    teams_list = switch_possession(teams_list=teams_list)
+                    teams_list = switch_team_possession(teams_list=teams_list)
                     shooting_side_list = \
                         switch_shooting_side(shooting_side_list=shooting_side_list)
 
@@ -732,7 +738,7 @@ def sim_offense_play(
                     out_of_bounds=True
                 )
             # switch possession
-            teams_list = switch_possession(teams_list=teams_list)
+            teams_list = switch_team_possession(teams_list=teams_list)
             shooting_side_list = \
                 switch_shooting_side(shooting_side_list=shooting_side_list)
 

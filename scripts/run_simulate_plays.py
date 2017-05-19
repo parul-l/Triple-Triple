@@ -1,4 +1,5 @@
 import copy
+import pandas as pd
 import triple_triple.class_game as class_game
 import triple_triple.player_defending_habits as pdh
 import triple_triple.player_possession_habits as pph
@@ -75,7 +76,6 @@ if __name__ == '__main__':
         game_player_dict=game_player_dict,
         df_player_bio=df_player_bio
     )
-    
     team0_id = team0_class_dict[team0_id_list[0]].team_id
     team1_id = team1_class_dict[team1_id_list[0]].team_id
 
@@ -207,16 +207,29 @@ if __name__ == '__main__':
             game_id=None,
         )
 
+    column_headers = [
+        'start_play',
+        'has_ball_player_id',
+        'player_action',
+        'block_outcome',
+        'rebounder_id',
+        'shot_outcome',
+        'turnover_steal',
+    ]
+
+    df_data = pd.DataFrame(columns=column_headers)
+
     start_play = True
     teams_list = [team0_class_dict, team1_class_dict]
     shooting_side_list = ['right', 'left']
 
     for i in range(144):
-        start_play, teams_list, shooting_side_list = sp.sim_offense_play(
+        start_play, teams_list, shooting_side_list, df_data = sp.sim_offense_play(
             teams_list=teams_list,
             game_class=game_class,
             shooting_side_list=shooting_side_list,
             start_play=start_play,
+            df_data=df_data
         )
 
     # print player's outcome
@@ -234,7 +247,6 @@ if __name__ == '__main__':
         print 'total_points', player_class.total_points
         print ""
 
-
     # print player's outcome
     for player_class in team1_class_dict.values():
         print player_class.name
@@ -250,8 +262,6 @@ if __name__ == '__main__':
         print 'total_points', player_class.total_points
         print ""
 
-
-
     # print game outcome
     print 'score', game_class.score
     print 'num_plays', game_class.num_plays
@@ -266,12 +276,12 @@ if __name__ == '__main__':
     print 'turnovers', game_class.turnovers
     print 'passes', game_class.passes
 
-    sim_coord_dict = sp.create_sim_coord_dict(
-        players_offense_dict=team0_class_dict,
-        players_defense_dict=team1_class_dict,
-        game_class=game_class,
-        shooting_side=shooting_side,
-        num_sim=144)
+    # sim_coord_dict = sp.create_sim_coord_dict(
+    #     players_offense_dict=team0_class_dict,
+    #     players_defense_dict=team1_class_dict,
+    #     game_class=game_class,
+    #     shooting_side=shooting_side,
+    #     num_sim=144)
 
     # to re-do the simulation we reset the parameters
     player_class_reset(team0_class_dict)

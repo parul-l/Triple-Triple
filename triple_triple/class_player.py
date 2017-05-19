@@ -40,15 +40,15 @@ class Player(object):
             turnovers: An integer of the total turnovers made
 
             passes: An integer of the total passes
-            
+
             steals: An integer of the total steals
-            
+
             off_rebounds: An integer of the total number of offensive rebounds
-            
+
             def_rebounds: An integer of the total number of defensive rebounds
 
             blocks: An integer of the total number of blocks
-            
+
             steals_game: Avg steals per game for specified season
 
             steals_poss: Avg steals per possession for specified season
@@ -182,16 +182,15 @@ def create_player_class_instance(
                 .query('player_id==@player_id')\
                 .weight.iloc[0]
 
-        player_class_dict[player_id] = \
-            Player(
-                name=name,
-                player_id=player_id,
-                team_id=team_id,
-                jersey=jersey,
-                position=position,
-                height=height,
-                weight=weight
-            )
+        player_class_dict[player_id] = Player(
+            name=name,
+            player_id=player_id,
+            team_id=team_id,
+            jersey=jersey,
+            position=position,
+            height=height,
+            weight=weight
+        )
 
     return player_class_dict
 

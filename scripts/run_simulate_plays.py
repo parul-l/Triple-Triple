@@ -207,31 +207,12 @@ if __name__ == '__main__':
             game_id=None,
         )
 
-    column_headers = [
-        'start_play',
-        'has_ball_player_id',
-        'player_action',
-        'block_outcome',
-        'rebounder_id',
-        'shot_outcome',
-        'turnover_steal',
-    ]
-
-    df_data = pd.DataFrame(columns=column_headers)
-
-    start_play = True
-    teams_list = [team0_class_dict, team1_class_dict]
-    shooting_side_list = ['right', 'left']
-
-    for i in range(144):
-        start_play, teams_list, shooting_side_list, df_data = sp.sim_offense_play(
-            teams_list=teams_list,
-            game_class=game_class,
-            shooting_side_list=shooting_side_list,
-            start_play=start_play,
-            df_data=df_data
-        )
-
+    df_data = sp.sim_plays(
+        num_sim=144,
+        teams_list=[team0_class_dict, team1_class_dict],
+        game_class=game_class,
+    )
+        
     # print player's outcome
     for player_class in team0_class_dict.values():
         print player_class.name

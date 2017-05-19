@@ -1,4 +1,5 @@
 import copy
+import pandas as pd
 import numpy as np
 
 from triple_triple.class_player import create_player_class_instance
@@ -19,38 +20,10 @@ ball_class_dict = create_player_class_instance(
 
 ball_class = ball_class_dict[-1]
 
-# TODO: FIX simulate play after turnover and rebound to see which team starts the play - ie. fix back and forth business.
-# TODO: Fix possession scenario given defensive rebound versus offensive rebound
-# TODO: If shot is blocked, change ball position to remain where the player is
+
 # TODO: FIX choose_player_action to make more sense -> steals and turnover probabilities are just added for turnover prob
 # TODO: FIX shot_outcome to make more sense -> prob_make = prob_make - defender's block probabilities
 # TODO: Incorporate shot clock to force shot
-
-
-def update_data_df(
-    df_data,
-    start_play,
-    has_ball_player_id,
-    player_action,
-    block_outcome,
-    rebounder_id,
-    shot_outcome,
-    turnover_steal,
-):
-
-    data_list = [
-        start_play,
-        has_ball_player_id,
-        player_action,
-        block_outcome,
-        rebounder_id,
-        shot_outcome,
-        turnover_steal,
-    ]
-
-    df_data.loc[len(df_data)] = data_list
-
-    return df_data
 
 
 def update_play_number(game_class, off_game_idx):
@@ -695,12 +668,11 @@ def update_shot_outcome_params(has_ball_class, game_class, check_3pt, shot_outco
             game_class.score[has_ball_game_idx] += 2
 
 
-def sim_offense_play(
+def sim_action(
     teams_list,
     game_class,
     shooting_side_list,
-    start_play,
-    df_data,
+    start_play
 ):
     player_action = None
     block_outcome = None
@@ -843,20 +815,88 @@ def sim_offense_play(
                     shooting_side_list=shooting_side_list,
                 )
 
-    df_data = update_data_df(
-        df_data=df_data,
-        start_play=start_play,
-        has_ball_player_id=has_ball_class.player_id,
-        player_action=player_action,
-        block_outcome=block_outcome,
-        rebounder_id=rebounder_id,
-        shot_outcome=shot_outcome,
-        turnover_steal=turnover_steal,
+    return (
+        start_play,
+        teams_list,
+        shooting_side_list,
+        player_action,
+        block_outcome,
+        rebounder_id,
+        shot_outcome,
+        turnover_steal,
+        has_ball_class.player_id
     )
 
-    return start_play, teams_list, shooting_side_list, df_data
+
+def update_data_df(
+    df_data,
+    start_play,
+    has_ball_player_id,
+    player_action,
+    block_outcome,
+    rebounder_id,
+    shot_outcome,
+    turnover_steal,
+):
+
+    data_list = [
+        start_play,
+        has_ball_player_id,
+        player_action,
+        block_outcome,
+        rebounder_id,
+        shot_outcome,
+        turnover_steal,
+    ]
+
+    df_data.loc[len(df_data)] = data_list
+
+    return df_data
 
 
+def sim_plays(
+    num_sim,
+    teams_list,
+    game_class,
+):
+    # create dataframe to collet actions
+    column_headers = [
+        'start_play',
+        'has_ball_player_id',
+        'player_action',
+        'block_outcome',
+        'rebounder_id',
+        'shot_outcome',
+        'turnover_steal',
+    ]
+
+    df_data = pd.DataFrame(columns=column_headers)
+
+    start_play = True
+    shooting_side_list = ['right', 'left']
+
+    for i in range(num_sim):
+        start_play, teams_list, shooting_side_list, player_action, block_outcome, rebounder_id, shot_outcome, turnover_steal, has_ball_player_id = sim_action(
+            teams_list=teams_list,
+            game_class=game_class,
+            shooting_side_list=shooting_side_list,
+            start_play=start_play,
+        )
+
+        df_data = update_data_df(
+            df_data=df_data,
+            start_play=start_play,
+            has_ball_player_id=has_ball_player_id,
+            player_action=player_action,
+            block_outcome=block_outcome,
+            rebounder_id=rebounder_id,
+            shot_outcome=shot_outcome,
+            turnover_steal=turnover_steal,
+        )
+
+    return df_data
+
+    
 def add_sim_coord_to_dict(players_dict, sim_coord_dict):
     for player, player_class in players_dict.items():
         sim_coord_dict.setdefault(player, []).append(player_class.court_coord)

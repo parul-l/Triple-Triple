@@ -2,38 +2,44 @@ class Player(object):
     """ Any player in the NBA at any time period.
         Attributes:
             name: A string representing the player's name
-            playerid: An int representing the player's id
+                playerid: An int representing the player's id
             teamid: A string representing player's current teamid
-            jersey: A string representing player's current jersey number
+                jersey: A string representing player's current jersey number
             position: A string representing the player's position
-            height: An integer representing player's height in inches
-            weight: An integer representing player's weight in pounds
+            height: An integer representing player's height in
+                inches
+            weight: An integer representing player's weight in
+                pounds
 
             region_prob_matrix: A 6 x 6 matrix where
-                                row = start region, column = end region
-                                (row, column) = probability of going from start region to end region
+                row = start region, column = end region
+                (row, column) = probability of going from start region to end region
 
             action_prob_matrix: A 6 x 3 matrix where
-                                row = region, column = action [0, 1, 2]
-                                0 - pass, 1 - shoot, 2 - turnover
+                row = region, column = action [0, 1, 2]
+                0 - pass, 1 - shoot, 2 - turnover
 
             shooting_prob: A 1 x 2 matrix where
-                           0- prob of making 2 point, 1- prob of making 3pt
+                0- prob of making 2 point, 1- prob of making 3pt
 
-            region_shooting_prob: A 1 x 6 array where each entry is the
-                                  prob of making a shot in the region
-                                  corresponding to the entry's index
+            region_shooting_prob: A 1 x 6 array where each entry
+                is the prob of making a shot in the region
+                corresponding to the entry's index
 
-            possession_prob: Proability of having possession of the ball
-                             when team is on offense (float)
+            possession_prob: Proability of having possession of
+                the ball when team is on offense (float)
 
-            two_pt_shot_attempts: An integer of the number of 2pt shots taken
+            two_pt_shot_attempts: An integer of the number of 2pt
+                shots taken
 
-            two_pt_shots_made: An integer of the number of 2pt shots made
+            two_pt_shots_made: An integer of the number of 2pt
+                shots made
 
-            three_pt_shot_attempts: An integer of the number of 3pt shots taken
+            three_pt_shot_attempts: An integer of the number of
+                3pt shots taken
 
-            three_pt_shots_made: An integer of the number of 3pt shots made
+            three_pt_shots_made: An integer of the number of 3pt
+                shots made
 
             total_points: An integer of the number of points scored
 
@@ -43,63 +49,83 @@ class Player(object):
 
             steals: An integer of the total steals
 
-            off_rebounds: An integer of the total number of offensive rebounds
+            off_rebounds: An integer of the total number of
+                offensive rebounds
 
-            def_rebounds: An integer of the total number of defensive rebounds
+            def_rebounds: An integer of the total number of
+                defensive rebounds
 
             blocks: An integer of the total number of blocks
 
             steals_game: Avg steals per game for specified season
 
-            steals_poss: Avg steals per possession for specified season
+            steals_poss: Avg steals per possession for specified
+                season
 
             blocks_game: Avg blocks per game for specified season
 
-            blocks_poss: Avg blocks per possession for specified season
+            blocks_poss: Avg blocks per possession for specified
+                season
 
-            off_rebounds_game: Avg off_rebounds per game for specified season
+            off_rebounds_game: Avg off_rebounds per game for
+                specified season
 
-            off_rebounds_poss: Avg off_rebounds per possession for specified season
+            off_rebounds_poss: Avg off_rebounds per possession for
+                specified season
 
-            def_rebounds_game: Avg def_rebounds per game for specified season
+            def_rebounds_game: Avg def_rebounds per game for
+                specified season
 
-            def_rebounds_poss: Avg def_rebounds per possession for specified season
+            def_rebounds_poss: Avg def_rebounds per possession for
+                specified season
 
-            personal_fouls_game: Avg personal_fouls per game for specified season
+            personal_fouls_game: Avg personal_fouls per game for
+                specified season
 
-            personal_fouls_poss: Avg personal_fouls per possession for specified season
+            personal_fouls_poss: Avg personal_fouls per possession
+                for specified season
 
-            free_throw_pct: Avg free throw percentage for specified season
+            free_throw_pct: Avg free throw percentage for
+                specified season
 
-            has_possession: A boolean to indicate if player has possession of ball
+            has_possession: A boolean to indicate if player has
+                possession of ball
 
-            on_defense: A boolean to indicate if player is on defense
+            on_defense: A boolean to indicate if player is on
+                defense
 
-            defending_who: An int of the player_id of who the defended_by is defending
+            defending_who: An int of the player_id of who the
+                defended_by is defending
 
-            on_offense: A boolean to indicate if player is on offense
+            on_offense: A boolean to indicate if player is on
+                offense
 
-            defended_by: An int of the player_id of who the player is being defended by
+            defended_by: An int of the player_id of who the player
+                is being defended by
 
-            poss_result_on_defense: A dict that gives the probability of offense player's outcome when player is defending him.
-            pass, shoot, turnover
+            poss_result_on_defense: A dict that gives the
+                probability of offense player's outcome when player is defending him.
+                pass, shoot, turnover
 
-            poss_result_on_defense_reg: A 6 x 3 matrix that gives defensive player's region (row) and offensive player's possession outcome (column)
+            poss_result_on_defense_reg: A 6 x 3 matrix that gives
+                defensive player's region (row) and offensive player's possession outcome (column)
 
-            def_off_region_matrix: A 6 x 6 matrix that gives defense player (row) vs. offense player region (col)
+            def_off_region_matrix: A 6 x 6 matrix that gives
+                defense player (row) vs. offense player region (col)
 
             court_region: Int between 0 and 5
-                        reg_to_num = {
-                            'back court': 0,
-                            'mid-range': 1,
-                            'key': 2,
-                            'out of bounds': 3,
-                            'paint': 4,
-                            'perimeter': 5
-                        }
+                reg_to_num = {
+                    'back court': 0,
+                    'mid-range': 1,
+                    'key': 2,
+                    'out of bounds': 3,
+                    'paint': 4,
+                    'perimeter': 5
+                }
             court_coord: A tuple that reflects court region
 
-            game_idx: A boolean, 0 or 1, of which index to update in game_class
+            game_idx: A boolean, 0 or 1, of which index to update
+                in game_class
 
 
     """

@@ -1,5 +1,4 @@
 import copy
-import pandas as pd
 import triple_triple.class_game as class_game
 import triple_triple.player_defending_habits as pdh
 import triple_triple.player_possession_habits as pph

@@ -153,4 +153,11 @@ def initiate_defense_player_positions(teams_list):
             teams_list=teams_list,
             unmatched_players=unmatched_players
         )
-    
+
+
+def update_defense_player_positions(teams_list):
+    players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
+    for defender in players_defense_dict.values():
+        off_player_id = defender.defending_who
+        defender.court_region = players_offense_dict[off_player_id].court_region
+        defender.court_coord = players_offense_dict[off_player_id].court_coord

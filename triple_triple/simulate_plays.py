@@ -5,7 +5,10 @@ import numpy as np
 from triple_triple.class_player import create_player_class_instance
 
 from triple_triple.court_region_coord import generate_rand_regions
-from triple_triple.match_defenders_for_sim import initiate_defense_player_positions
+from triple_triple.match_defenders_for_sim import (
+    initiate_defense_player_positions,
+    update_defense_player_positions
+)
 
 from triple_triple.startup_data import get_game_player_dict
 from triple_triple.prob_player_possessions import (
@@ -217,12 +220,6 @@ def update_offense_player_positions(
         )
 
 
-def update_defense_player_positions(teams_list):
-    players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
-    for defender in players_defense_dict.values():
-        off_player_id = defender.defending_who
-        defender.court_region = players_offense_dict[off_player_id].court_region
-        defender.court_coord = players_offense_dict[off_player_id].court_coord
 
 
 def update_player_movement(teams_list, shooting_side):

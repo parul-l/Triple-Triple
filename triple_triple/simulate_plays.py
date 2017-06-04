@@ -29,6 +29,7 @@ ball_class = ball_class_dict[-1]
 # TODO: FIX choose_player_action to make more sense -> steals and turnover probabilities are just added for turnover prob
 # TODO: FIX shot_outcome to make more sense -> prob_make = prob_make - defender's block probabilities
 # TODO: Incorporate shot clock to force shot
+# TODO: Fix try/except in who_gets_rebound
 
 
 def update_play_number(game_class, off_game_idx):
@@ -218,8 +219,6 @@ def update_offense_player_positions(
             court_region_num=player_class.court_region,
             shooting_side=shooting_side
         )
-
-
 
 
 def update_player_movement(teams_list, shooting_side):

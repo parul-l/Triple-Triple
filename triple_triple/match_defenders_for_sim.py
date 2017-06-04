@@ -1,6 +1,11 @@
 import copy
 import numpy as np
 
+# TODO: Make a function to deepcopy
+# players_offense/defense_dicts
+# TODO: Randomize match_players_random
+# TODO: match functions should take in unmatched_players and match them
+
 
 def update_defense_params(offense_class, defender_class):
     defender_class.on_defense = True

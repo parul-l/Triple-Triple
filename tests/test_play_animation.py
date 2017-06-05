@@ -4,7 +4,7 @@ import mock
 import numpy as np
 import pandas as pd
 
-import triple_triple.play_animation as pa
+import triple_triple.plot.play_animation as pa
 
 
 class TestPlayAnimation(unittest.TestCase):

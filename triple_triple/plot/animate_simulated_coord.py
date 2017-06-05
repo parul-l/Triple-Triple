@@ -27,6 +27,7 @@ from triple_triple.plot.play_animation import (
 
 # TODO: DELETE THIS FILE?????
 
+
 def sim_animation(player_sim_coord):
     fig = plt.figure(figsize=(15, 9))
     ax = fig.gca()

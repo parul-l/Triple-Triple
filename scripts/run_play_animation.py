@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
+
 import triple_triple.play_animation as pa
-from triple_triple.full_court import draw_court
+from triple_triple.plot.full_court import draw_court
 from triple_triple.startup_data import (
     get_game_info_dict,
     get_df_raw_position_data,

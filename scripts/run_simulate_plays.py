@@ -3,7 +3,7 @@ import triple_triple.class_game as class_game
 import triple_triple.player_defending_habits as pdh
 import triple_triple.player_possession_habits as pph
 import triple_triple.prob_player_possessions as ppp
-import triple_triple.simulate_plays as sp
+import triple_triple.simulator.simulate_plays as sp
 
 from triple_triple.class_player import (
     create_player_class_instance,

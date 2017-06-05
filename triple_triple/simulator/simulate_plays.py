@@ -656,10 +656,10 @@ def sim_action(
                     out_of_bounds=True
                 )
             # switch possession
-                teams_list, shooting_side_list = switch_possession_params(
-                    teams_list=teams_list,
-                    shooting_side_list=shooting_side_list,
-                )
+            teams_list, shooting_side_list = switch_possession_params(
+                teams_list=teams_list,
+                shooting_side_list=shooting_side_list,
+            )
 
     return (
         start_play,

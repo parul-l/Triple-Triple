@@ -207,11 +207,11 @@ if __name__ == '__main__':
         )
 
     df_data = sp.sim_plays(
-        num_sim=144,
+        num_sim=10000,
         teams_list=[team0_class_dict, team1_class_dict],
         game_class=game_class,
     )
-        
+
     # print player's outcome
     for player_class in team0_class_dict.values():
         print player_class.name

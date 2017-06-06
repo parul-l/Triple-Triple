@@ -13,6 +13,8 @@ from triple_triple.simulator.blocks_affect_for_sim import (
     blocks_affect_on_taking_shot,
     blocks_affect_on_making_shot
 )
+from triple_triple.simulator.rebounds_for_sim import update_rebound_params
+
 
 from triple_triple.startup_data import get_game_player_dict
 from triple_triple.prob_player_possessions import (
@@ -262,45 +264,30 @@ def update_pass_params(game_class, off_game_idx, has_ball_class):
     has_ball_class.passes += 1
 
 
-def dist_two_points(point1, point2):
-    return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
-
-
-def get_closest_to_ball(players_dict, ball_class):
-    player_id_list = []
-    dist_to_ball = []
-
-    for player_class in players_dict.values():
-        player_id_list.append(player_class.player_id)
-        dist_to_ball.append(
-            dist_two_points(
-                point1=ball_class.court_coord,
-                point2=player_class.court_coord
-            )
-        )
-    dist_to_ball = np.array(dist_to_ball)
-    min_dist_idx = np.where(
-        dist_to_ball == dist_to_ball.min()
-    )[0]
-
-    return [player_id_list[i] for i in min_dist_idx]
-
-
-# def blocks_affect_on_taking_shot(shot_prob, blocks_prob):
-#     if shot_prob < blocks_prob:
-#         return shot_prob
-#     else:
-#         return shot_prob - blocks_prob
+# def dist_two_points(point1, point2):
+#     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 # 
 # 
-# def blocks_affect_on_making_shot(shot_prob, blocks_prob):
-#     if shot_prob < blocks_prob:
-#         # probably should be 0 or close to 0
-#         return shot_prob
-#     else:
-#         return shot_prob - blocks_prob
+# def get_closest_to_ball(players_dict, ball_class):
+#     player_id_list = []
+#     dist_to_ball = []
 # 
+#     for player_class in players_dict.values():
+#         player_id_list.append(player_class.player_id)
+#         dist_to_ball.append(
+#             dist_two_points(
+#                 point1=ball_class.court_coord,
+#                 point2=player_class.court_coord
+#             )
+#         )
+#     dist_to_ball = np.array(dist_to_ball)
+#     min_dist_idx = np.where(
+#         dist_to_ball == dist_to_ball.min()
+#     )[0]
 # 
+#     return [player_id_list[i] for i in min_dist_idx]
+
+
 def player_blocked_possession_switch(defender_class, teams_list, shooting_side_list):
     # switch team possession
     teams_list, shooting_side_list = switch_possession_params(
@@ -317,39 +304,40 @@ def player_blocked_possession_switch(defender_class, teams_list, shooting_side_l
     return defender_class.player_id, teams_list, shooting_side_list
 
 
-def who_gets_rebound(
-    teams_list,
-    ball_class
-):
-    players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
-    closest_off_players = get_closest_to_ball(
-        players_dict=players_offense_dict,
-        ball_class=ball_class
-    )
-    closest_def_players = get_closest_to_ball(
-        players_dict=players_defense_dict,
-        ball_class=ball_class
-    )
-    off_reb_prob = [players_offense_dict[player].off_rebounds_poss for player in closest_off_players]
-    def_reb_prob = [players_defense_dict[player].def_rebounds_poss for player in closest_def_players]
-
-    # scale combined probability array
-    prob_array = np.array(off_reb_prob + def_reb_prob) / sum(off_reb_prob + def_reb_prob)
-
-    rebounder_id = np.random.choice(
-        a=closest_off_players + closest_def_players,
-        p=prob_array
-    )
-    try:
-        return players_defense_dict[rebounder_id]
-    except:
-        return players_offense_dict[rebounder_id]
+# def who_gets_rebound(
+#     teams_list,
+#     ball_class
+# ):
+#     players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
+#     closest_off_players = get_closest_to_ball(
+#         players_dict=players_offense_dict,
+#         ball_class=ball_class
+#     )
+#     closest_def_players = get_closest_to_ball(
+#         players_dict=players_defense_dict,
+#         ball_class=ball_class
+#     )
+#     off_reb_prob = [players_offense_dict[player].off_rebounds_poss for player in closest_off_players]
+#     def_reb_prob = [players_defense_dict[player].def_rebounds_poss for player in closest_def_players]
+# 
+#     # scale combined probability array
+#     prob_array = np.array(off_reb_prob + def_reb_prob) / sum(off_reb_prob + def_reb_prob)
+# 
+#     rebounder_id = np.random.choice(
+#         a=closest_off_players + closest_def_players,
+#         p=prob_array
+#     )
+#     try:
+#         return players_defense_dict[rebounder_id]
+#     except:
+#         return players_offense_dict[rebounder_id]
 
 
 def update_rebound_missed_shot(teams_list, game_class, shooting_side_list):
     rebounder_class = update_rebound_params(
         teams_list=teams_list,
-        game_class=game_class
+        game_class=game_class,
+        ball_class=ball_class
     )
 
     if rebounder_class.on_defense:
@@ -367,23 +355,23 @@ def update_rebound_missed_shot(teams_list, game_class, shooting_side_list):
     return rebounder_class.player_id, teams_list, shooting_side_list
 
 
-def update_rebound_params(teams_list, game_class):
-    rebounder_class = who_gets_rebound(
-        teams_list=teams_list,
-        ball_class=ball_class,
-    )
-
-    rebounder_class.has_possession = True
-
-    if rebounder_class.on_defense:
-        rebounder_class.def_rebounds += 1
-        game_class.def_rebounds[rebounder_class.game_idx] += 1
-
-    else:
-        rebounder_class.off_rebounds += 1
-        game_class.off_rebounds[rebounder_class.game_idx] += 1
-
-    return rebounder_class
+# def update_rebound_params(teams_list, game_class):
+#     rebounder_class = who_gets_rebound(
+#         teams_list=teams_list,
+#         ball_class=ball_class,
+#     )
+# 
+#     rebounder_class.has_possession = True
+# 
+#     if rebounder_class.on_defense:
+#         rebounder_class.def_rebounds += 1
+#         game_class.def_rebounds[rebounder_class.game_idx] += 1
+# 
+#     else:
+#         rebounder_class.off_rebounds += 1
+#         game_class.off_rebounds[rebounder_class.game_idx] += 1
+# 
+#     return rebounder_class
 
 
 def steals_affect_on_turnover(turnover_prob, steals_prob):

@@ -9,6 +9,10 @@ from triple_triple.simulator.match_defenders_for_sim import (
     initiate_defense_player_positions,
     update_defense_player_positions
 )
+from triple_triple.simulator.blocks_affect_for_sim import (
+    blocks_affect_on_taking_shot,
+    blocks_affect_on_making_shot
+)
 
 from triple_triple.startup_data import get_game_player_dict
 from triple_triple.prob_player_possessions import (
@@ -30,6 +34,7 @@ ball_class = ball_class_dict[-1]
 # TODO: FIX shot_outcome to make more sense -> prob_make = prob_make - defender's block probabilities
 # TODO: Incorporate shot clock to force shot
 # TODO: Fix try/except in who_gets_rebound
+# TODO: Get player coord simulator working
 
 
 def update_play_number(game_class, off_game_idx):
@@ -281,21 +286,21 @@ def get_closest_to_ball(players_dict, ball_class):
     return [player_id_list[i] for i in min_dist_idx]
 
 
-def blocks_affect_on_taking_shot(shot_prob, blocks_prob):
-    if shot_prob < blocks_prob:
-        return shot_prob
-    else:
-        return shot_prob - blocks_prob
-
-
-def blocks_affect_on_making_shot(shot_prob, blocks_prob):
-    if shot_prob < blocks_prob:
-        # probably should be 0 or close to 0
-        return shot_prob
-    else:
-        return shot_prob - blocks_prob
-
-
+# def blocks_affect_on_taking_shot(shot_prob, blocks_prob):
+#     if shot_prob < blocks_prob:
+#         return shot_prob
+#     else:
+#         return shot_prob - blocks_prob
+# 
+# 
+# def blocks_affect_on_making_shot(shot_prob, blocks_prob):
+#     if shot_prob < blocks_prob:
+#         # probably should be 0 or close to 0
+#         return shot_prob
+#     else:
+#         return shot_prob - blocks_prob
+# 
+# 
 def player_blocked_possession_switch(defender_class, teams_list, shooting_side_list):
     # switch team possession
     teams_list, shooting_side_list = switch_possession_params(

@@ -207,7 +207,7 @@ if __name__ == '__main__':
         )
 
     df_data = sp.sim_plays(
-        num_sim=10000,
+        num_sim=1000,
         teams_list=[team0_class_dict, team1_class_dict],
         game_class=game_class,
     )

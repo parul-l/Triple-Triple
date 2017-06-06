@@ -1,10 +1,9 @@
 import copy
 import numpy as np
 
-# TODO: Make a function to deepcopy
-# players_offense/defense_dicts
-# TODO: Randomize match_players_random
-# TODO: match functions should take in unmatched_players and match them
+
+def make_dict_deep_copy(teams_list):
+    return copy.deepcopy(teams_list[0]), copy.deepcopy(teams_list[1])
 
 
 def update_defense_params(offense_class, defender_class):
@@ -15,15 +14,10 @@ def update_defense_params(offense_class, defender_class):
 
 def match_players_same_position(
     teams_list,
-    unmatched_players=None
+    unmatched_players_list
 ):
-    players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
-    if unmatched_players is None:
-        players_defense_dict_copy = copy.deepcopy(players_defense_dict)
-        players_offense_dict_copy = copy.deepcopy(players_offense_dict)
-    else:
-        players_defense_dict_copy = unmatched_players[0]
-        players_offense_dict_copy = unmatched_players[1]
+    players_offense_dict_copy, players_defense_dict_copy = \
+        make_dict_deep_copy(unmatched_players_list)
 
     # match players using position
     for defender in players_defense_dict_copy.values():
@@ -38,15 +32,15 @@ def match_players_same_position(
                 if not set(
                     list(player_class.position)).isdisjoint(defender_position)
                 )
-            players_defense_dict[defender_id].court_region = \
-                players_offense_dict[match_player_id].court_region
-            players_defense_dict[defender_id].court_coord = \
-                players_offense_dict[match_player_id].court_coord
+            teams_list[1][defender_id].court_region = \
+                teams_list[0][match_player_id].court_region
+            teams_list[1][defender_id].court_coord = \
+                teams_list[0][match_player_id].court_coord
 
             # update on_defense and defender status
             update_defense_params(
-                offense_class=players_offense_dict[match_player_id],
-                defender_class=players_defense_dict[defender.player_id]
+                offense_class=teams_list[0][match_player_id],
+                defender_class=teams_list[1][defender.player_id]
             )
             # remove the matched players
             del players_offense_dict_copy[match_player_id]
@@ -54,7 +48,8 @@ def match_players_same_position(
         except:
             continue
 
-    return [players_defense_dict_copy, players_offense_dict_copy]
+    # return unmatched players
+    return [players_offense_dict_copy, players_defense_dict_copy]
 
 
 def closest_height_to_defender(defender_class, players_offense_dict):
@@ -67,96 +62,84 @@ def closest_height_to_defender(defender_class, players_offense_dict):
     return players[idx_closest_player].player_id
 
 
-def match_players_height(
-    teams_list,
-    unmatched_players=None
-):
-    players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
-    if unmatched_players is None:
-        players_defense_dict_copy = copy.deepcopy(players_defense_dict)
-        players_offense_dict_copy = copy.deepcopy(players_offense_dict)
-    else:
-        players_defense_dict_copy = unmatched_players[0]
-        players_offense_dict_copy = unmatched_players[1]
+def match_players_height(teams_list, unmatched_players_list):
+    players_offense_dict_copy, players_defense_dict_copy = \
+        make_dict_deep_copy(unmatched_players_list)
 
     for defender in players_defense_dict_copy.values():
         closest_off_player_id = closest_height_to_defender(
             defender_class=defender, players_offense_dict=players_offense_dict_copy
         )
-        players_defense_dict[defender.player_id].court_region = \
-            players_offense_dict[closest_off_player_id].court_region
-        players_defense_dict[defender.player_id].court_coord = \
-            players_offense_dict[closest_off_player_id].court_coord
+        teams_list[1][defender.player_id].court_region = \
+            teams_list[0][closest_off_player_id].court_region
+        teams_list[1][defender.player_id].court_coord = \
+            teams_list[0][closest_off_player_id].court_coord
 
         # update on_defense and defender status
         update_defense_params(
-            offense_class=players_offense_dict[closest_off_player_id],
-            defender_class=players_defense_dict[defender.player_id]
+            offense_class=teams_list[0][closest_off_player_id],
+            defender_class=teams_list[1][defender.player_id]
         )
 
         # remove the matched players
         del players_defense_dict_copy[defender.player_id]
         del players_offense_dict_copy[closest_off_player_id]
 
-    return [players_defense_dict_copy, players_offense_dict_copy]
+    # return unmatched players
+    return [players_offense_dict_copy, players_defense_dict_copy]
 
 
-def match_players_random(
-    teams_list,
-    unmatched_players=None
-):
-    players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
-    if unmatched_players is None:
-        players_defense_dict_copy = copy.deepcopy(players_defense_dict)
-        players_offense_dict_copy = copy.deepcopy(players_offense_dict)
-    else:
-        players_defense_dict_copy = unmatched_players[0]
-        players_offense_dict_copy = unmatched_players[1]
+def match_players_random(teams_list, unmatched_players_list):
+    players_offense_dict_copy, players_defense_dict_copy = \
+        make_dict_deep_copy(unmatched_players_list)
 
-    off_players_list = list(players_offense_dict.values())
+    off_players_list = list(teams_list[0].values())
 
     for defender in players_defense_dict_copy.values():
-        off_player = off_players_list[0]
-        players_defense_dict[defender.player_id].court_region = \
-            players_offense_dict[off_player.player_id].court_region
-        players_defense_dict[defender.player_id].court_coord = \
-            players_offense_dict[off_player.player_id].court_coord
+        # choose random player
+        idx = np.random.randint(len(off_players_list))
+        off_player = off_players_list[idx]
+        teams_list[1][defender.player_id].court_region = \
+            teams_list[0][off_player.player_id].court_region
+        teams_list[1][defender.player_id].court_coord = \
+            teams_list[0][off_player.player_id].court_coord
 
         # update on_defense and defender status
         update_defense_params(
-            offense_class=players_offense_dict[off_player.player_id],
-            defender_class=players_defense_dict[defender.player_id]
+            offense_class=teams_list[0][off_player.player_id],
+            defender_class=teams_list[1][defender.player_id]
         )
 
         # remove the matched players
-        off_players_list.pop(0)
+        off_players_list.pop(idx)
         del players_defense_dict_copy[defender.player_id]
         del players_offense_dict_copy[off_player.player_id]
 
-    return [players_defense_dict_copy, players_offense_dict_copy]
+    # return unmatched players
+    return [players_offense_dict_copy, players_defense_dict_copy]
 
 
 def initiate_defense_player_positions(teams_list):
     # match players by position
     # unmatched_players = [players_defense_dict_copy, players_offense_dict_copy]
-    unmatched_players = \
+    unmatched_players_list = \
         match_players_same_position(
             teams_list=teams_list,
-            unmatched_players=None
+            unmatched_players_list=teams_list
         )
 
     # match remaining players by height
-    unmatched_players = \
+    unmatched_players_list = \
         match_players_height(
             teams_list=teams_list,
-            unmatched_players=unmatched_players
+            unmatched_players_list=unmatched_players_list
         )
 
     # match remaining players randomly
-    unmatched_players = \
+    unmatched_players_list = \
         match_players_random(
             teams_list=teams_list,
-            unmatched_players=unmatched_players
+            unmatched_players_list=unmatched_players_list
         )
 
 

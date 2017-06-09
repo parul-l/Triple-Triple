@@ -30,6 +30,7 @@ def who_gets_rebound(
     ball_class
 ):
     players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
+
     closest_off_players = get_closest_to_ball(
         players_dict=players_offense_dict,
         ball_class=ball_class

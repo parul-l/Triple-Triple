@@ -203,13 +203,14 @@ if __name__ == '__main__':
         pdh.get_def_off_region_matrix(
             defender_class=player_class,
             df_possession_defender=df_possession_defender_team1,
-            game_id=None,
+            game_id=None
         )
 
     df_data = sp.sim_plays(
-        num_sim=1000,
+        num_sim=30,
         teams_list=[team0_class_dict, team1_class_dict],
         game_class=game_class,
+        ball_class=ball_class
     )
 
     # print player's outcome

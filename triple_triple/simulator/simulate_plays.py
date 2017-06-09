@@ -42,6 +42,8 @@ ball_class = ball_class_dict[-1]
 # TODO: Incorporate shot clock to force shot
 # TODO: Fix try/except in who_gets_rebound
 # TODO: Get player coord simulator working
+# TODO: Fix update_ball_position: shooting side not needed when 
+# player has possession
 
 
 def update_play_number(game_class, off_game_idx):
@@ -304,7 +306,7 @@ def update_rebound_missed_shot(teams_list, game_class, shooting_side_list):
         has_ball_class=rebounder_class
     )
 
-    return rebounder_class.player_id, teams_list, shooting_side_list
+    return rebounder_class, teams_list, shooting_side_list
 
 
 def update_ball_stolen(defender_class, shooting_side):
@@ -434,6 +436,10 @@ def sim_action(
             shooting_side=shooting_side,
             ball_class=ball_class
         )
+        update_ball_position(
+            shooting_side=shooting_side,
+            has_ball_class=has_ball_class
+        )
 
     else:
         # determine who has ball and his defender
@@ -442,6 +448,12 @@ def sim_action(
 
         # update player positions
         update_player_movement(teams_list=teams_list, shooting_side=shooting_side)
+
+        # update ball position
+        update_ball_position(
+            shooting_side=shooting_side,
+            has_ball_class=has_ball_class,
+        )
 
         off_game_idx = has_ball_class.game_idx
         # update play number
@@ -641,39 +653,39 @@ def sim_plays(
     return df_data
 
 
-def add_sim_coord_to_dict(players_dict, sim_coord_dict):
-    for player, player_class in players_dict.items():
-        sim_coord_dict.setdefault(player, []).append(player_class.court_coord)
+# def add_sim_coord_to_dict(players_dict, sim_coord_dict):
+#     for player, player_class in players_dict.items():
+#         sim_coord_dict.setdefault(player, []).append(player_class.court_coord)
+# 
+#     return sim_coord_dict
 
-    return sim_coord_dict
 
-
-def create_sim_coord_dict(
-    players_offense_dict,
-    players_defense_dict,
-    game_class,
-    shooting_side,
-    num_sim
-):
-    # simulate the play
-    start_play = True
-    player_action = None
-    sim_coord_dict = {}
-
-    # get coordinates
-    for i in range(num_sim):
-        player_action, start_play = sim_offense_play(
-            players_offense_dict=players_offense_dict,
-            players_defense_dict=players_defense_dict,
-            game_class=game_class,
-            shooting_side=shooting_side,
-            start_play=start_play,
-            player_action=player_action,
-        )
-
-        sim_coord_dict = add_sim_coord_to_dict(
-            players_dict=players_offense_dict,
-            sim_coord_dict=sim_coord_dict
-        )
-
-    return sim_coord_dict
+# def create_sim_coord_dict(
+#     players_offense_dict,
+#     players_defense_dict,
+#     game_class,
+#     shooting_side,
+#     num_sim
+# ):
+#     # simulate the play
+#     start_play = True
+#     player_action = None
+#     sim_coord_dict = {}
+#
+#     # get coordinates
+#     for i in range(num_sim):
+#         player_action, start_play = sim_offense_play(
+#             players_offense_dict=players_offense_dict,
+#             players_defense_dict=players_defense_dict,
+#             game_class=game_class,
+#             shooting_side=shooting_side,
+#             start_play=start_play,
+#             player_action=player_action,
+#         )
+#
+#         sim_coord_dict = add_sim_coord_to_dict(
+#             players_dict=players_offense_dict,
+#             sim_coord_dict=sim_coord_dict
+#         )
+#
+#     return sim_coord_dict

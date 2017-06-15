@@ -1,4 +1,3 @@
-import mock
 import unittest
 import triple_triple.class_court_regions as ccr
 

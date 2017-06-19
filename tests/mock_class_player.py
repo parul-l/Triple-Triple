@@ -57,7 +57,7 @@ def create_player_instances_dict(off_or_def):
                 player_id=player,
                 position=positions[player],
             )
-            
+
             player_class_dict[player].on_offense = True
             player_class_dict[player].on_defense = False
             player_class_dict[player].defended_by = 'def' + str(player)
@@ -68,7 +68,7 @@ def create_player_instances_dict(off_or_def):
                 player_id=player,
                 position=positions[player],
             )
-            
+
             player_class_dict[player].on_offense = False
             player_class_dict[player].on_defense = True
             player_class_dict[player].defending_who = 'off' + str(player)

@@ -1,66 +1,69 @@
+import os
+from triple_triple.config import DATASETS_DIR
 import triple_triple.player_possession_habits as pph
-from triple_triple.team_shooting_side import initial_shooting_side
 
-from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
+from triple_triple.team_shooting_side import get_initial_shooting_sides
+from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
+from triple_triple.class_player import create_player_class_instance
+
 from triple_triple.startup_data import (
-    get_game_id_dict,
-    get_df_pos_dist,
-    get_df_pos_dist_trunc,
     get_df_play_by_play,
+    get_df_raw_position_data,
+    get_df_raw_position_region,
+    get_game_info_dict,
+    get_game_player_dict
 )
 
-
-reg_to_num = {
-    'back court': 0,
-    'mid-range': 1,
-    'key': 2,
-    'out of bounds': 3,
-    'paint': 4,
-    'perimeter': 5
-}
-
-game_id_dict = get_game_id_dict()
-
-df_pos_dist = get_df_pos_dist()
-df_pos_dist_trunc = get_df_pos_dist_trunc()
+df_raw_position_data = get_df_raw_position_data()
+df_raw_position_region = get_df_raw_position_region()
+game_info_dict = get_game_info_dict()
+game_player_dict = get_game_player_dict()
 df_play_by_play = get_df_play_by_play()
+df_game_stats = parse_df_play_by_play(df_play_by_play)
 
-df_pos_dist_reg = pph.get_player_court_region_df(
-    df_pos_dist,
-    initial_shooting_side,
-    hometeam_id,
-    awayteam_id
-)
-df_pos_dist_reg_trunc = pph.get_pos_trunc_df(df_pos_dist_reg)
+initial_shooting_side = get_initial_shooting_sides(df_play_by_play, df_raw_position_data, game_info_dict)
+
 
 if __name__ == '__main__':
 
-    player_list = [
-        'Chris Bosh',
-        'Luol Deng',
-        'Dwyane Wade'
-    ]
+    df_possession = pph.get_possession_df(
+        dataframe=df_raw_position_data,
+        has_ball_dist=2.0,
+        len_poss=15
+    )
 
-    num_players = len(player_list)
+    df_possession = pph.add_regions_to_df(df_possession, initial_shooting_side)
 
-    for i in range(num_players):
-        player_name = player_list[i]
-        player_number = str(i)
+    # df_raw_position_region = pph.add_regions_to_df(df_raw_position_data, initial_shooting_side)
+    # 
+    # filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
+    # df_raw_position_region.to_csv(filepath, index=False)
 
-        player_possession_dict = pph.create_player_poss_dict(
-            player_name,
-            game_id_dict,
-            df_pos_dist_trunc,
-            hometeam_id,
-            awayteam_id,
-            initial_shooting_side,
-            df_play_by_play,
-            df_pos_dist_reg,
-            t=10
+
+    game_id_list = [21500568]
+    player_id_list = [2547, 2548]
+
+    player_class_dict = create_player_class_instance(
+        player_list=player_id_list,
+        game_player_dict=game_player_dict,
+    )
+
+    for player_class in player_class_dict.values():
+        df_possession = pph.characterize_player_possessions(
+            game_id=game_id_list[0],
+            player_class=player_class,
+            df_possession=df_possession,
+            df_game_stats=df_game_stats
         )
 
-        # save file to use in run_simulate_player_positions
-        filename = 'player' + player_number + 'poss_dfs.json'
-        pph.save_player_poss_dict(filename, player_possession_dict)
+    defender_team_id = pph.get_defender_team_id(
+        players_dict=player_class_dict,
+        initial_shooting_side=initial_shooting_side
+    )
 
-    # plot_coord = plot_team_possession(df_pos_dist_trunc, 10,20, hometeam_id, awayteam_id)
+    df_possession_defender = pph.get_df_possession_defender(
+        players_dict=player_class_dict,
+        df_possession_region=df_possession,
+        df_raw_position_region=df_raw_position_region,
+        defender_team_id=defender_team_id
+    )

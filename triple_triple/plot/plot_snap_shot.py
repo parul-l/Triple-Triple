@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
 
-from triple_triple.play_animation import (
+from triple_triple.plot.play_animation import (
     annotate_points,
     fixedtime_df,
     team_coord
 )
-
-from triple_triple.full_court import draw_court
+from triple_triple.plot.full_court import draw_court
 
 
 # Plot ONE player during a fixed time range

@@ -101,7 +101,7 @@ def draw_court(ax=None, linewidth=2, color='black'):
                     linewidth=2),
         patches.Arc((88.75, 25), 47.5, 47.5, theta1=111.62, theta2=248.38,
                     linewidth=2),
-        # in the key
+        # restricted area
         patches.Arc((5.25, 25), 8, 8, theta1=270, theta2=90.0,
                     fill=False),
         patches.Arc((88.75, 25), 8, 8, theta1=90, theta2=270.0,

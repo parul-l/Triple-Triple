@@ -21,23 +21,23 @@ def all_games_info_df(all_games_stats_data):
 
     # remove the duplicate games
     df_game_info = df_game_info_raw[::2].reset_index(drop=True)
-    # use df_game_info_raw to get team_ids for both home and away team
+    # use df_game_info_raw to get team_ids for both home and visiting team
 
     hometeam_id = []
     hometeam_abbrev = []
-    awayteam_id = []
-    awayteam_abbrev = []
+    visitorteam_id = []
+    visitorteam_abbrev = []
 
     for idx in range(0, len(df_game_info)):
         match_up = df_game_info.match_up.iloc[idx].split()
         if match_up[1] == 'vs.':
             hometeam_id.append(df_game_info.team_id.iloc[idx])
             hometeam_abbrev.append(match_up[0])
-            awayteam_id.append(df_game_info_raw.team_id.iloc[2 * idx + 1])
-            awayteam_abbrev.append(match_up[2])
+            visitorteam_id.append(df_game_info_raw.team_id.iloc[2 * idx + 1])
+            visitorteam_abbrev.append(match_up[2])
         elif match_up[1] == '@':
-            awayteam_id.append(df_game_info.team_id.iloc[idx])
-            awayteam_abbrev.append(match_up[0])
+            visitorteam_id.append(df_game_info.team_id.iloc[idx])
+            visitorteam_abbrev.append(match_up[0])
             hometeam_id.append(df_game_info_raw.team_id.iloc[2 * idx + 1])
             hometeam_abbrev.append(match_up[2])
 
@@ -46,8 +46,8 @@ def all_games_info_df(all_games_stats_data):
     game_info_sorted_dict = {
         'hometeam_id': hometeam_id,
         'hometeam_abbrev': hometeam_abbrev,
-        'awayteam_id': awayteam_id,
-        'awayteam_abbrev': awayteam_abbrev
+        'visitorteam_id': visitorteam_id,
+        'visitorteam_abbrev': visitorteam_abbrev
     }
     df_game_info_sorted = pd.DataFrame(data=game_info_sorted_dict)
 

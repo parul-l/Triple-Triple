@@ -7,34 +7,37 @@ import pandas as pd
 from triple_triple.config import DATASETS_DIR
 
 
+def get_player_instances():
+    filepath = os.path.join(DATASETS_DIR, 'player_instances.p')
+    with open(filepath, 'rb') as json_file:
+        return pickle.load(json_file)
+
+
 def get_player_ids():
     filepath = os.path.join(DATASETS_DIR, 'player_ids.json')
     return json.load(open(filepath))
 
 
-def get_game_id_dict():
-    filepath = os.path.join(DATASETS_DIR, 'game_id_dict.json')
-    return json.load(open(filepath))
+def get_game_info_dict():
+    filepath = os.path.join(DATASETS_DIR, 'game_info_dict.json')
+    with open(filepath, 'rb') as json_file:
+        return pickle.load(json_file)
 
 
-def get_df_positions():
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
-    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-
-
-def get_df_pos_dist():
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
-    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-
-
-def get_df_pos_dist_trunc():
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
-    return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+def get_game_player_dict():
+    filepath = os.path.join(DATASETS_DIR, 'game_player_dict.json')
+    with open(filepath, 'rb') as json_file:
+        return pickle.load(json_file)
 
 
 def get_df_raw_position_data():
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition.csv')
-    return pd.read_csv(filepath)
+    return pd.read_csv(filepath, low_memory=False)
+
+
+def get_df_raw_position_region():
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
+    return pd.read_csv(filepath, low_memory=False)
 
 
 def get_df_play_by_play():
@@ -66,3 +69,19 @@ def get_df_all_game_info():
 def get_player_possession_dataframes(json_file_name):
     with open(os.path.join(DATASETS_DIR, json_file_name), 'rb') as json_file:
         return pickle.load(json_file)
+#
+#
+# def get_df_positions():
+#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
+#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+#
+#
+# def get_df_pos_dist():
+#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
+#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+#
+#
+# def get_df_pos_dist_trunc():
+#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
+#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
+#

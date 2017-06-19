@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-from triple_triple.full_court import draw_court
+from triple_triple.plot.full_court import draw_court
 from triple_triple.nbastats_game_data import hometeam_id, awayteam_id
 from triple_triple.startup_data import (
     get_game_id_dict,
@@ -17,13 +17,15 @@ from triple_triple.generate_player_positions import (
     # generate_out_of_bounds,
     # generate_paint,
     # generate_perimeter,
-    # generate_rand_positions,
+    # generate_rand_regions,
     get_simulated_coord,
 )
-from triple_triple.play_animation import (
+from triple_triple.plot.play_animation import (
     playerid_from_name,
     plot_points,
 )
+
+# TODO: DELETE THIS FILE?????
 
 
 def sim_animation(player_sim_coord):

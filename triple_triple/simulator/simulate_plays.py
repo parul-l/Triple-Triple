@@ -42,8 +42,7 @@ ball_class = ball_class_dict[-1]
 # TODO: Incorporate shot clock to force shot
 # TODO: Fix try/except in who_gets_rebound
 # TODO: Get player coord simulator working
-# TODO: Fix update_ball_position: shooting side not needed when 
-# player has possession
+# TODO: Fix update_ball_position: shooting side not needed when player has possession
 
 
 def update_play_number(game_class, off_game_idx):
@@ -94,13 +93,14 @@ def who_has_possession(players_offense_dict):
 
 
 def initiate_player_has_possession(players_offense_dict):
-    # make sure everyone's possession is set to False
+    # set everyone's possession to False
     for player_class in players_offense_dict.values():
         player_class.has_possession = False
         player_class.on_offense = True
 
     # choose player with possession
     player_list, prob = relative_player_possession_prob(players_offense_dict)
+
     has_poss = np.random.choice(
         a=np.arange(len(player_list)),
         p=prob

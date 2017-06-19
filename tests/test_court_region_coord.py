@@ -1,6 +1,5 @@
 import mock
 import unittest
-import numpy as np
 import triple_triple.court_region_coord as crc
 
 

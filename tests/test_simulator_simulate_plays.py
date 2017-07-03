@@ -104,27 +104,28 @@ class TestClassSimulatePlays(unittest.TestCase):
                 sp.who_has_possession(players_offense_dict=players_offense_dict)
             )
 
-    @unittest.skip
+    # @unittest.skip
     def test_initiate_player_has_possession(self):
         players_offense_dict = create_player_instances_dict('off')
         relative_player_possession_prob_mock = mock.Mock()
-        relative_player_possession_prob_mock.side_effect = [[0, 1], [0.0, 1.0]]
-        relative_player_possession_prob_mock()
-        relative_player_possession_prob_mock()
+        relative_player_possession_prob_mock.return_value = [2, 1], [0.0, 1.0]
         method_to_mock = ('triple_triple.prob_player_possessions'
                           '.relative_player_possession_prob')
 
         with mock.patch(method_to_mock, relative_player_possession_prob_mock):
             sp.initiate_player_has_possession(players_offense_dict)
-        #     
         # 
-        # 
+        # self.assertTrue(players_offense_dict[1].has_possession)
+
+        #
+        #
+        #
         # mock.Mock(return_value=[[0, 1], [0.0, 1.0]])
         # players_offense_dict = create_player_instances_dict('off')
         # sp.initiate_player_has_possession(players_offense_dict)
-        
-        # 
-        # self.assertTrue(players_offense_dict[1].has_possession)
+
+        #
+
 
 
 if __name__ == '__main__':

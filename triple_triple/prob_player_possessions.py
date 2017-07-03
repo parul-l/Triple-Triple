@@ -1,11 +1,21 @@
 from collections import Counter
 import numpy as np
 
-# TODO: Change out_of_bounds to 0
+# TODO: Define the dictionary get_reg_to_num and make sure nothing breaks!
 # TODO: Change shooting probability to incorporate regions
 # TODO: Determine average length of a possession (in seconds?)
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+
+
+get_reg_to_num = {
+    'paint': 0,
+    'mid-range': 1,
+    'key': 2,
+    'perimeter': 3,
+    'back_court': 4,
+    'out_of_bounds': 5
+}
 
 
 def get_reg_to_num(reg):

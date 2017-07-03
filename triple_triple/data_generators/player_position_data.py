@@ -123,7 +123,7 @@ def get_raw_position_data_df(data, game_player_dict, game_info_dict, has_ball_di
         'player_id',
         'x_loc',
         'y_loc',
-        'moment',               # height/radius of ball
+        'elevation',            # height/radius of ball
         'dist_to_ball',         # distance to ball
         'closest_to_ball',      # closest_to_ball if ball in play
     ]

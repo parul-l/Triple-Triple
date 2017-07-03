@@ -21,8 +21,8 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(15, 9))
     ax = fig.gca()
     ax = draw_court(ax)
-    # ax.set_xlim([0, 94])
-    # ax.set_ylim([0, 50])
+    ax.set_xlim([0, 94])
+    ax.set_ylim([0, 50])
 
     anim = pa.play_animation(
         period=period,

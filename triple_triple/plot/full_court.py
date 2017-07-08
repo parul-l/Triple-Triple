@@ -3,7 +3,7 @@ import matplotlib.patches as patches
 import matplotlib.collections as mc
 from bokeh.plotting import figure, output_file
 
-# There are two plots for the court: one using 
+# There are two plots for the court: one using
 # matplotlib and the other using bokeh
 
 

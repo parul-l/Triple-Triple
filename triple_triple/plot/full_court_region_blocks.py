@@ -1,11 +1,18 @@
+from bokeh.embed import components
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 from triple_triple.config import IMG_DIR
-from triple_triple.plot.full_court import draw_court
+from triple_triple.plot.full_court import (
+    draw_court,
+    draw_court_bokeh
+)
 
+# This file has two methods of colour blocking the court:
+# 1. Using mathplotlib
+# 2. Using Bokeh
 
 fig = plt.figure(figsize=(15, 9))
 ax = fig.gca()
@@ -134,7 +141,7 @@ def region_block_court(ax=ax):
     plt.legend(loc='upper left')
     filepath = os.path.join(IMG_DIR, 'full_court_region_block.png')
     fig.savefig(filepath)
-    
+
     plt.show()
     return ax
 
@@ -161,3 +168,171 @@ def label_court_prob(ax, prob_array):
     ax.text(53, 25, str(prob_array[5]) + '%', bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
 
     return ax
+
+#####################
+## USING BOKEH ##
+#####################
+# 3 point circle: (x - 88.75)**2 + (y - 25)**2 = 23.75**2
+# key circle: (x - 75)**2 + (y - 25)**2 = 6**2
+
+
+from bokeh.embed import components
+
+# 3 point circle: (x - 88.75)**2 + (y - 25)**2 = 23.75**2
+# key circle: (x - 75)**2 + (y - 25)**2 = 6**2
+
+def three_point_bottom_arc(x):
+    return - np.sqrt((23.75)**2 - (x - 88.75)**2) + 25
+
+
+def three_point_top_arc(x):
+    return np.sqrt((23.75)**2 - (x - 88.75)**2) + 25
+
+
+def key_bottom_arc(x):
+    return - np.sqrt(6**2 - (x - 75)**2) + 25
+
+
+def key_top_arc(x):
+    return np.sqrt(6**2 - (x - 75)**2) + 25
+
+
+def region_draw_court_bokeh(line_width=2):
+    plot = draw_court_bokeh()
+
+    # PAINT
+    plot.quad(
+        left=[75], right=[94], bottom=[19], top=[31],
+        fill_color='#1e9abe', alpha=0.4,
+        line_alpha=0,
+        legend='Paint'
+    )
+    
+    # BACK COURT
+    plot.quad(
+        left=[0], right=[47], bottom=[0], top=[50],
+        fill_color='#98FB98', alpha=0.6,
+        line_alpha=0,
+        legend='Back Court'
+    )
+
+    # TOP OF KEY
+    plot.wedge(
+        x=[75], y=[25],
+        radius=6, start_angle=90, end_angle=270, color='#FFA07A', alpha=0.6,
+        start_angle_units='deg',
+        end_angle_units='deg',
+        line_alpha=0,
+        legend='Top of Key'
+    )
+
+    # MID-RANGE
+    plot.quad(
+        left=[80], right=[94], bottom=[3], top=[19],
+        fill_color='#9370DB', alpha=0.4, line_alpha=0
+    )
+    plot.quad(
+        left=[80], right=[94], bottom=[31], top=[47],
+        fill_color='#9370DB', alpha=0.4, line_alpha=0,
+        legend='Mid-Range'
+    )
+    # BOTTOM1: three_point_bottom_arc
+    x_bottom = np.arange(75, 80, 0.01)
+    x_top = x_bottom[::-1]
+    yb_bottom = np.apply_along_axis(three_point_bottom_arc, axis=0, arr=x_bottom)
+    yb_top = np.tile(19, len(x_top))
+
+    plot.patch(
+        x=np.concatenate((x_bottom, x_top), axis=0),
+        y=np.concatenate((yb_bottom, yb_top), axis=0),
+        color='#9370DB', fill_alpha=0.4,
+        line_alpha=0
+    )
+    # TOP1: three_point_top_arc
+    yt_bottom = np.tile(31, len(x_top))
+    yt_top = np.apply_along_axis(three_point_top_arc, axis=0, arr=x_top)
+
+    
+    plot.patch(
+        x=np.concatenate((x_bottom, x_top), axis=0),
+        y=np.concatenate((yt_bottom, yt_top), axis=0),
+        color='#9370DB', fill_alpha=0.4,
+        line_alpha=0
+    )
+
+    # BOTTOM2:
+    x_bottom = np.arange(69, 75, 0.01)
+    x_top = x_bottom[::-1]
+    yb_bottom = np.apply_along_axis(three_point_bottom_arc, axis=0, arr=x_bottom)
+    yb_top = np.apply_along_axis(key_bottom_arc, axis=0, arr=x_top)
+
+    plot.patch(
+        x=np.concatenate((x_bottom, x_top), axis=0),
+        y=np.concatenate((yb_bottom, yb_top), axis=0),
+        color='#9370DB', fill_alpha=0.4,
+        line_alpha=0
+    )
+
+    # TOP2
+    yt_bottom = np.apply_along_axis(key_top_arc, axis=0, arr=x_bottom)
+    yt_top = np.apply_along_axis(three_point_top_arc, axis=0, arr=x_top)
+
+    plot.patch(
+        x=np.concatenate((x_bottom, x_top), axis=0),
+        y=np.concatenate((yt_bottom, yt_top), axis=0),
+        color='#9370DB', fill_alpha=0.4,
+        line_alpha=0
+    )
+
+    # LAST PIECE:
+    x_bottom = np.arange(65, 69, 0.01)
+    x_top = x_bottom[::-1]
+    yb_bottom = np.apply_along_axis(three_point_bottom_arc, axis=0, arr=x_bottom)
+    yb_top = np.apply_along_axis(three_point_top_arc, axis=0, arr=x_top)
+
+    plot.patch(
+        x=np.concatenate((x_bottom, x_top), axis=0),
+        y=np.concatenate((yb_bottom, yb_top), axis=0),
+        color='#9370DB', fill_alpha=0.4,
+        line_alpha=0
+    )
+
+    # PERIMETER
+    plot.quad(
+        left=[47, 80, 80], right=[65, 94, 94], bottom=[0, 0, 47], top=[50, 3, 50],
+        fill_color='#FFFF00', alpha=0.4,
+        line_alpha=0,
+        legend='Perimeter'
+    )
+    
+    # PERIMETER ARCS - BOTTOM
+    x_bottom = np.arange(65, 80, 0.01)
+    x_top = x_bottom[::-1]
+    yb_bottom = np.tile(0, len(x_bottom))
+    yb_top = np.apply_along_axis(three_point_bottom_arc, axis=0, arr=x_top)
+
+    plot.patch(
+        x=np.concatenate((x_bottom, x_top), axis=0),
+        y=np.concatenate((yb_bottom, yb_top), axis=0),
+        color='#FFFF00', fill_alpha=0.4,
+        line_alpha=0
+    )
+    # PERIMETER ARCS - TOP
+    x_bottom = np.arange(65, 80, 0.01)
+    x_top = x_bottom[::-1]
+    yt_bottom = np.apply_along_axis(three_point_top_arc, axis=0, arr=x_bottom)
+    yt_top = np.tile(50, len(x_top))
+
+    plot.patch(
+        x=np.concatenate((x_bottom, x_top), axis=0),
+        y=np.concatenate((yt_bottom, yt_top), axis=0),
+        color='#FFFF00', fill_alpha=0.4,
+        line_alpha=0
+    )
+
+    plot.legend.orientation = 'horizontal'
+    plot.legend.location = "bottom_center"
+    
+    script, div = components(plot)
+
+    return script, div

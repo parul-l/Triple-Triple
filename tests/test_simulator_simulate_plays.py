@@ -104,7 +104,7 @@ class TestClassSimulatePlays(unittest.TestCase):
                 sp.who_has_possession(players_offense_dict=players_offense_dict)
             )
 
-    # @unittest.skip
+    @unittest.skip
     def test_initiate_player_has_possession(self):
         players_offense_dict = create_player_instances_dict('off')
         relative_player_possession_prob_mock = mock.Mock()

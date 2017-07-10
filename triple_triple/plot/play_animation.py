@@ -26,8 +26,8 @@ def team_coord(team_id, df_grouped_value):
     return x_coord, y_coord, jersey
 
 
-def plot_points(ax, x_points, y_points, color):
-    return ax.scatter(x_points, y_points, color=color, s=400)
+def plot_points(ax, x_points, y_points, facecolor, s=400, hatch=None):
+    return ax.scatter(x_points, y_points, facecolor=facecolor, s=s, hatch=hatch)
 
 
 def annotate_points(ax, xx, yy, jersey):
@@ -68,25 +68,35 @@ def play_animation(
     df_grouped_value = grouped_fixedtime.get_group(instance_array[0])
     # get coordintates
     ax = fig.gca()
-    msg_game_clock = 'game clock: ' + str(instance_array[0][0])
-    msg_shot_clock = 'shot clock: ' + str(instance_array[0][1])
-    msg_ball_height = 'ball height: ' + str(df_grouped_value.moment.iloc[0])
 
-    game_clock_annotations = ax.text(-18, 25, msg_game_clock)
-    shot_clock_annotations = ax.text(-18, 20, msg_shot_clock)
-    ball_height_annotations = ax.text(-18, 15, msg_ball_height)
+    msg_shot_clock = str(instance_array[0][1])
+    msg_game_clock = 'Quarter: ' + str(period) + '    Time remaining: ' + str(instance_array[0][0]) + 's'
+
+    # font:
+    hfont = {'fontname': 'Impact'}
+    shot_clock_annotations = ax.text(
+        44, 46, msg_shot_clock, fontsize=24, color='red',
+        # bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10},
+        **hfont
+    )
+
+    game_clock_annotations = ax.text(
+        33, 1.2, msg_game_clock, fontsize=12, color='white',
+        bbox={'facecolor': 'black', 'alpha': 0.8, 'pad': 10},
+        **hfont
+    )
 
     # initialize the frame
     def init():
         game_clock_annotations.set_text('initial')
         shot_clock_annotations.set_text('initial')
-        ball_height_annotations.set_text('initial')
         scat_home.set_offsets([])
         scat_away.set_offsets([])
         scat_ball.set_offsets([])
+        scat_ball.set_sizes([])
 
         return scat_home, scat_away, scat_ball, game_clock_annotations, \
-            shot_clock_annotations, ball_height_annotations
+            shot_clock_annotations,
 
     # initial player coordinates
     hometeam_id = game_info_dict['hometeam_id']
@@ -108,9 +118,9 @@ def play_animation(
     )
 
     # plot the initial point
-    scat_home = plot_points(ax, x_home, y_home, color='blue')
-    scat_away = plot_points(ax, x_away, y_away, color='red')
-    scat_ball = plot_points(ax, x_ball, y_ball, color='black')
+    scat_home = plot_points(ax, x_home, y_home, facecolor='blue')
+    scat_away = plot_points(ax, x_away, y_away, facecolor='red')
+    scat_ball = plot_points(ax, x_ball, y_ball, s=400 + df_grouped_value.elevation.iloc[0], facecolor='orange', hatch='||||')
 
     # label the coordinates
     home_annotations = annotate_points(ax, x_home, y_home, jersey_home)
@@ -133,17 +143,19 @@ def play_animation(
         scat_home.set_offsets(data_home)
         scat_away.set_offsets(data_away)
         scat_ball.set_offsets((x_ball, y_ball))
+        scat_ball.set_sizes(100 * df_grouped_value.elevation + 400)
 
         update_annotations(home_annotations, x_home, y_home)
         update_annotations(away_annotations, x_away, y_away)
 
         # update game_clock and shot_clock:
         game_clock_annotations.set_text(
-            'game clock: ' + str(instance_array[frame_number][0]))
+            'Quarter: ' + str(period) + '    Time remaining: ' + str(instance_array[frame_number][0]) + 's'
+        )
+
         shot_clock_annotations.set_text(
-            'shot clock: ' + str(instance_array[frame_number][1]))
-        ball_height_annotations.set_text(
-            'ball height: ' + str(df_grouped_value.moment.iloc[0]))
+            str(instance_array[frame_number][1])
+        )
 
     # number of frames
     no_frame = len(instance_array)

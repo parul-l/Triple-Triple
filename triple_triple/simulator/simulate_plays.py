@@ -100,7 +100,7 @@ def initiate_player_has_possession(players_offense_dict):
 
     # choose player with possession
     player_list, prob = relative_player_possession_prob(players_offense_dict)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
 
     has_poss = np.random.choice(
         a=np.arange(len(player_list)),
@@ -419,19 +419,14 @@ def sim_action(
     teams_list,
     game_class,
     shooting_side_list,
-    start_play
+    start_play,
+    df_data
 ):
-    player_action = None
-    block_outcome = None
-    rebounder_id = None
-    shot_outcome = None
-    turnover_steal = None
 
     shooting_side = shooting_side_list[0]
     players_offense_dict, players_defense_dict = teams_list[0], teams_list[1]
 
     if start_play:
-        start_play = False
         has_ball_class = initiate_start_of_play(
             teams_list=teams_list,
             shooting_side=shooting_side,
@@ -441,7 +436,19 @@ def sim_action(
             shooting_side=shooting_side,
             has_ball_class=has_ball_class
         )
-
+        df_data = update_data_df(
+            df_data=df_data,
+            start_play=start_play,
+            has_ball_player_id=has_ball_class.player_id,
+            has_ball_coord=has_ball_class.court_coord,
+            ball_coord=ball_class.court_coord,
+            player_action=None,
+            block_outcome=None,
+            rebounder_id=None,
+            shot_outcome=None,
+            turnover_steal=None,
+        )
+        start_play = False
     else:
         # determine who has ball and his defender
         has_ball_class = who_has_possession(players_offense_dict)
@@ -449,12 +456,6 @@ def sim_action(
 
         # update player positions
         update_player_movement(teams_list=teams_list, shooting_side=shooting_side)
-
-        # update ball position
-        update_ball_position(
-            shooting_side=shooting_side,
-            has_ball_class=has_ball_class,
-        )
 
         off_game_idx = has_ball_class.game_idx
         # update play number
@@ -480,13 +481,27 @@ def sim_action(
                 has_ball_class=has_ball_class
             )
 
-            has_ball_class = update_has_possession_after_pass(
-                players_offense_dict=players_offense_dict
+            new_has_ball_class = update_has_possession_after_pass(
+                players_offense_dict=players_offense_dict,
+                ball_class=ball_class
             )
 
             update_ball_position(
                 shooting_side=shooting_side,
-                has_ball_class=has_ball_class
+                has_ball_class=new_has_ball_class
+            )
+
+            df_data = update_data_df(
+                df_data=df_data,
+                start_play=start_play,
+                has_ball_player_id=new_has_ball_class.player_id,
+                has_ball_coord=new_has_ball_class.court_coord,
+                ball_coord=ball_class.court_coord,
+                player_action=player_action,
+                block_outcome=None,
+                rebounder_id=None,
+                shot_outcome=None,
+                turnover_steal=None,
             )
 
         # shoot
@@ -503,6 +518,7 @@ def sim_action(
                 shot_outcome=shot_outcome
             )
 
+
             # if blocked, possession switched to defender
             if block_outcome == 0:
                 start_play = False
@@ -512,22 +528,49 @@ def sim_action(
                     teams_list=teams_list,
                     shooting_side_list=shooting_side_list)
 
+                df_data = update_data_df(
+                    df_data=df_data,
+                    start_play=start_play,
+                    has_ball_player_id=defender_class.player_id,
+                    has_ball_coord=defender_class.court_coord,
+                    ball_coord=ball_class.court_coord,
+                    player_action=player_action,
+                    block_outcome=block_outcome,
+                    rebounder_id=None,
+                    shot_outcome=None,
+                    turnover_steal=None,
+                )
+
+
             # if not blocked
             elif block_outcome == 1:
                 # update ball to rim
-                update_ball_position(
-                    shooting_side=shooting_side,
-                    has_ball_class=None
-                )
+                # update_ball_position(
+                #     shooting_side=shooting_side,
+                #     has_ball_class=None
+                # )
 
                 # if not blocked and shot is missed
                 if shot_outcome == 0:
                     start_play = False
                     # update rebound if shot is missed
-                    rebounder_id, teams_list, shooting_side_list = update_rebound_missed_shot(
+                    rebounder_class, teams_list, shooting_side_list = update_rebound_missed_shot(
                         teams_list=teams_list,
                         game_class=game_class,
                         shooting_side_list=shooting_side_list
+                    )
+
+                    df_data = update_data_df(
+                        df_data=df_data,
+                        start_play=start_play,
+                        has_ball_player_id=rebounder_class.player_id,
+                        has_ball_coord=defender_class.court_coord,
+                        ball_coord=ball_class.court_coord,
+                        player_action=player_action,
+                        block_outcome=block_outcome,
+                        rebounder_id=rebounder_class.player_id,
+                        shot_outcome=None,
+                        turnover_steal=None,
                     )
 
                 # if not blocked and shot is made
@@ -559,6 +602,19 @@ def sim_action(
                     shooting_side=shooting_side
                 )
 
+                df_data = update_data_df(
+                    df_data=df_data,
+                    start_play=start_play,
+                    has_ball_player_id=defender_class.player_id,
+                    has_ball_coord=defender_class.court_coord,
+                    ball_coord=ball_class.court_coord,
+                    player_action=player_action,
+                    turnover_steal=turnover_steal,
+                    block_outcome=None,
+                    rebounder_id=None,
+                    shot_outcome=None,
+                )
+
             if not turnover_steal:
                 start_play = True
                 # update ball out of bounds
@@ -576,12 +632,7 @@ def sim_action(
         start_play,
         teams_list,
         shooting_side_list,
-        player_action,
-        block_outcome,
-        rebounder_id,
-        shot_outcome,
-        turnover_steal,
-        has_ball_class.player_id
+        df_data
     )
 
 
@@ -589,11 +640,13 @@ def update_data_df(
     df_data,
     start_play,
     has_ball_player_id,
-    player_action,
-    block_outcome,
-    rebounder_id,
-    shot_outcome,
-    turnover_steal,
+    has_ball_coord,
+    ball_coord,
+    player_action=None,
+    block_outcome=None,
+    rebounder_id=None,
+    shot_outcome=None,
+    turnover_steal=None,
 ):
 
     data_list = [
@@ -604,6 +657,8 @@ def update_data_df(
         rebounder_id,
         shot_outcome,
         turnover_steal,
+        has_ball_coord,
+        ball_coord
     ]
 
     df_data.loc[len(df_data)] = data_list
@@ -615,6 +670,7 @@ def sim_plays(
     num_sim,
     teams_list,
     game_class,
+    ball_class
 ):
     # create dataframe to collet actions
     column_headers = [
@@ -625,6 +681,8 @@ def sim_plays(
         'rebounder_id',
         'shot_outcome',
         'turnover_steal',
+        'has_ball_coord',
+        'ball_coord'
     ]
 
     df_data = pd.DataFrame(columns=column_headers)
@@ -633,25 +691,15 @@ def sim_plays(
     shooting_side_list = ['right', 'left']
 
     for i in range(num_sim):
-        start_play, teams_list, shooting_side_list, player_action, block_outcome, rebounder_id, shot_outcome, turnover_steal, has_ball_player_id = sim_action(
+        start_play, teams_list, shooting_side_list, df_data = sim_action(
             teams_list=teams_list,
             game_class=game_class,
             shooting_side_list=shooting_side_list,
             start_play=start_play,
+            df_data=df_data
         )
-
-        df_data = update_data_df(
-            df_data=df_data,
-            start_play=start_play,
-            has_ball_player_id=has_ball_player_id,
-            player_action=player_action,
-            block_outcome=block_outcome,
-            rebounder_id=rebounder_id,
-            shot_outcome=shot_outcome,
-            turnover_steal=turnover_steal,
-        )
-
     return df_data
+
 
 
 # def add_sim_coord_to_dict(players_dict, sim_coord_dict):

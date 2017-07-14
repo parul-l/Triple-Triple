@@ -1,6 +1,7 @@
 import os
 from triple_triple.config import DATASETS_DIR
 import triple_triple.player_possession_habits as pph
+import triple_triple.player_defending_habits as pdh
 
 from triple_triple.team_shooting_side import get_initial_shooting_sides
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
@@ -41,7 +42,8 @@ if __name__ == '__main__':
 
 
     game_id_list = [21500568]
-    player_id_list = [2547, 2548]
+    
+    player_id_list = [201939, 203110]
 
     player_class_dict = create_player_class_instance(
         player_list=player_id_list,
@@ -61,8 +63,8 @@ if __name__ == '__main__':
         initial_shooting_side=initial_shooting_side
     )
 
-    df_possession_defender = pph.get_df_possession_defender(
-        players_dict=player_class_dict,
+    df_possession_defender = pdh.get_df_possession_defender(
+        offense_players_dict=player_class_dict,
         df_possession_region=df_possession,
         df_raw_position_region=df_raw_position_region,
         defender_team_id=defender_team_id

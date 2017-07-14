@@ -37,6 +37,7 @@ ball_class_dict = create_player_class_instance(
 ball_class = ball_class_dict[-1]
 
 
+#TODO: update_df_data is repeated way too much. Simplify where it is called
 # TODO: FIX choose_player_action to make more sense -> steals and turnover probabilities are just added for turnover prob
 # TODO: FIX shot_outcome to make more sense -> prob_make = prob_make - defender's block probabilities
 # TODO: Incorporate shot clock to force shot
@@ -440,8 +441,10 @@ def sim_action(
             df_data=df_data,
             start_play=start_play,
             has_ball_player_id=has_ball_class.player_id,
-            has_ball_coord=has_ball_class.court_coord,
-            ball_coord=ball_class.court_coord,
+            has_ball_coord_x=has_ball_class.court_coord[0],
+            has_ball_coord_y=has_ball_class.court_coord[1],
+            ball_coord_x=ball_class.court_coord[0],
+            ball_coord_y=ball_class.court_coord[1],
             player_action=None,
             block_outcome=None,
             rebounder_id=None,
@@ -495,8 +498,10 @@ def sim_action(
                 df_data=df_data,
                 start_play=start_play,
                 has_ball_player_id=new_has_ball_class.player_id,
-                has_ball_coord=new_has_ball_class.court_coord,
-                ball_coord=ball_class.court_coord,
+                has_ball_coord_x=new_has_ball_class.court_coord[0],
+                has_ball_coord_y=new_has_ball_class.court_coord[1],
+                ball_coord_x=ball_class.court_coord[0],
+                ball_coord_y=ball_class.court_coord[1],
                 player_action=player_action,
                 block_outcome=None,
                 rebounder_id=None,
@@ -531,8 +536,10 @@ def sim_action(
                     df_data=df_data,
                     start_play=start_play,
                     has_ball_player_id=defender_class.player_id,
-                    has_ball_coord=defender_class.court_coord,
-                    ball_coord=ball_class.court_coord,
+                    has_ball_coord_x=defender_class.court_coord[0],
+                    has_ball_coord_y=defender_class.court_coord[1],
+                    ball_coord_x=ball_class.court_coord[0],
+                    ball_coord_y=ball_class.court_coord[1],
                     player_action=player_action,
                     block_outcome=block_outcome,
                     rebounder_id=None,
@@ -562,8 +569,10 @@ def sim_action(
                         df_data=df_data,
                         start_play=start_play,
                         has_ball_player_id=rebounder_class.player_id,
-                        has_ball_coord=defender_class.court_coord,
-                        ball_coord=ball_class.court_coord,
+                        has_ball_coord_x=defender_class.court_coord[0],
+                        has_ball_coord_y=defender_class.court_coord[1],
+                        ball_coord_x=ball_class.court_coord[0],
+                        ball_coord_y=ball_class.court_coord[1],
                         player_action=player_action,
                         block_outcome=block_outcome,
                         rebounder_id=rebounder_class.player_id,
@@ -590,8 +599,10 @@ def sim_action(
                         df_data=df_data,
                         start_play=start_play,
                         has_ball_player_id=has_ball_class.player_id,
-                        has_ball_coord=defender_class.court_coord,
-                        ball_coord=ball_class.court_coord,
+                        has_ball_coord_x=defender_class.court_coord[0],
+                        has_ball_coord_y=defender_class.court_coord[1],
+                        ball_coord_x=ball_class.court_coord[0],
+                        ball_coord_y=ball_class.court_coord[1],
                         player_action=player_action,
                         block_outcome=block_outcome,
                         rebounder_id=None,
@@ -623,8 +634,10 @@ def sim_action(
                     df_data=df_data,
                     start_play=start_play,
                     has_ball_player_id=defender_class.player_id,
-                    has_ball_coord=defender_class.court_coord,
-                    ball_coord=ball_class.court_coord,
+                    has_ball_coord_x=defender_class.court_coord[0],
+                    has_ball_coord_y=defender_class.court_coord[1],
+                    ball_coord_x=ball_class.court_coord[0],
+                    ball_coord_y=ball_class.court_coord[1],
                     player_action=player_action,
                     turnover_steal=turnover_steal,
                     block_outcome=None,
@@ -643,8 +656,10 @@ def sim_action(
                     df_data=df_data,
                     start_play=start_play,
                     has_ball_player_id=defender_class.player_id,
-                    has_ball_coord=defender_class.court_coord,
-                    ball_coord=ball_class.court_coord,
+                    has_ball_coord_x=defender_class.court_coord[0],
+                    has_ball_coord_y=defender_class.court_coord[1],
+                    ball_coord_x=ball_class.court_coord[0],
+                    ball_coord_y=ball_class.court_coord[1],
                     player_action=player_action,
                     turnover_steal=turnover_steal,
                     block_outcome=None,
@@ -670,8 +685,10 @@ def update_data_df(
     df_data,
     start_play,
     has_ball_player_id,
-    has_ball_coord,
-    ball_coord,
+    has_ball_coord_x,
+    has_ball_coord_y,
+    ball_coord_x,
+    ball_coord_y,
     player_action=None,
     block_outcome=None,
     rebounder_id=None,
@@ -687,8 +704,10 @@ def update_data_df(
         rebounder_id,
         shot_outcome,
         turnover_steal,
-        has_ball_coord,
-        ball_coord
+        has_ball_coord_x,
+        has_ball_coord_y,
+        ball_coord_x,
+        ball_coord_y
     ]
 
     df_data.loc[len(df_data)] = data_list
@@ -711,8 +730,10 @@ def sim_plays(
         'rebounder_id',
         'shot_outcome',
         'turnover_steal',
-        'has_ball_coord',
-        'ball_coord'
+        'has_ball_coord_x',
+        'has_ball_coord_y',
+        'ball_coord_x',
+        'ball_coord_y'
     ]
 
     df_data = pd.DataFrame(columns=column_headers)

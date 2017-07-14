@@ -12,7 +12,7 @@ if __name__ == '__main__':
     player_id = 201939
     team_id = 1610612744
 
-    # get Chris Bosh locations when Miami Heat has ball
+    # get player locations when his team has ball
     df_player = df_raw_position_data.query('team_id==@team_id and dist_to_ball < 2').query('player_id==@player_id')
 
     x = df_player.x_loc.values

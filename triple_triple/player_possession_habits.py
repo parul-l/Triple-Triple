@@ -35,7 +35,7 @@ def get_possession_df(dataframe, has_ball_dist=2.0, len_poss=25):
         .query('closest_to_ball==True and dist_to_ball<=@has_ball_dist')\
         .reset_index()
 
-    # count total number of blocks
+    # count total number of blocks (ie. total possessions)
     cond = df_possession_raw.player_id != df_possession_raw.player_id.shift()
     df_possession_raw['block'] = (cond).astype(int).cumsum()
 

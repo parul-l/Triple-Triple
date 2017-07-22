@@ -170,16 +170,14 @@ def label_court_prob(ax, prob_array):
     return ax
 
 #####################
-## USING BOKEH ##
+# USING BOKEH #
 #####################
 # 3 point circle: (x - 88.75)**2 + (y - 25)**2 = 23.75**2
 # key circle: (x - 75)**2 + (y - 25)**2 = 6**2
 
-
-from bokeh.embed import components
-
 # 3 point circle: (x - 88.75)**2 + (y - 25)**2 = 23.75**2
 # key circle: (x - 75)**2 + (y - 25)**2 = 6**2
+
 
 def three_point_bottom_arc(x):
     return - np.sqrt((23.75)**2 - (x - 88.75)**2) + 25
@@ -207,7 +205,7 @@ def region_draw_court_bokeh(line_width=2):
         line_alpha=0,
         legend='Paint'
     )
-    
+
     # BACK COURT
     plot.quad(
         left=[0], right=[47], bottom=[0], top=[50],
@@ -252,7 +250,6 @@ def region_draw_court_bokeh(line_width=2):
     yt_bottom = np.tile(31, len(x_top))
     yt_top = np.apply_along_axis(three_point_top_arc, axis=0, arr=x_top)
 
-    
     plot.patch(
         x=np.concatenate((x_bottom, x_top), axis=0),
         y=np.concatenate((yt_bottom, yt_top), axis=0),
@@ -304,7 +301,7 @@ def region_draw_court_bokeh(line_width=2):
         line_alpha=0,
         legend='Perimeter'
     )
-    
+
     # PERIMETER ARCS - BOTTOM
     x_bottom = np.arange(65, 80, 0.01)
     x_top = x_bottom[::-1]
@@ -332,7 +329,7 @@ def region_draw_court_bokeh(line_width=2):
 
     plot.legend.orientation = 'horizontal'
     plot.legend.location = "bottom_center"
-    
+
     script, div = components(plot)
 
     return script, div

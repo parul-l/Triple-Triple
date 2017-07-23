@@ -1,4 +1,5 @@
 from triple_triple.court_regions import get_region
+import copy
 
 # TODO: Fix get_df_possession_defender to limit defender's distance
 
@@ -24,6 +25,14 @@ from triple_triple.court_regions import get_region
 
 # Also, Bosh period=2, game_clock=307 has layup on NBA stats
 # but position data indicates back court and perimeter
+
+
+def get_second_half_shooting_side(initial_shooting_side):
+    second_half_shooting_side = copy.deepcopy(initial_shooting_side)
+    teams = initial_shooting_side.keys()
+    second_half_shooting_side[teams[0]], second_half_shooting_side[teams[1]] = second_half_shooting_side[teams[1]], second_half_shooting_side[teams[0]]
+
+    return second_half_shooting_side
 
 
 def get_possession_df(dataframe, has_ball_dist=2.0, len_poss=25):
@@ -63,16 +72,17 @@ def get_possession_df(dataframe, has_ball_dist=2.0, len_poss=25):
 
 def get_court_region(dataframe_row, initial_shooting_side):
     period, team_id, x, y = dataframe_row[:4]
+    second_half_shooting_side = get_second_half_shooting_side(initial_shooting_side)
 
     if team_id != -1:
-        if period == 1 or period == 3:
+        if period == 1 or period == 2:
             shooting_side = initial_shooting_side[team_id]
             return get_region(x, y, shooting_side)
-        if period == 2 or period == 4:
+        if period == 3 or period == 4:
             # switch sides
-            teams = initial_shooting_side.keys()
-            initial_shooting_side[teams[0]], initial_shooting_side[teams[1]] = initial_shooting_side[teams[1]], initial_shooting_side[teams[0]]
-            shooting_side = initial_shooting_side[team_id]
+            # teams = initial_shooting_side.keys()
+            # initial_shooting_side[teams[0]], initial_shooting_side[teams[1]] = initial_shooting_side[teams[1]], initial_shooting_side[teams[0]]
+            shooting_side = second_half_shooting_side[team_id]
             return get_region(x, y, shooting_side)
 
 

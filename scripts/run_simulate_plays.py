@@ -265,6 +265,13 @@ if __name__ == '__main__':
     #     num_sim=144)
 
     # to re-do the simulation we reset the parameters
+    df_data = sp.sim_plays(
+        num_sim=864,
+        teams_list=[team0_class_dict, team1_class_dict],
+        game_class=game_class,
+        ball_class=ball_class
+    )
+    
     player_class_reset(team0_class_dict)
     player_class_reset(team1_class_dict)
     class_game.game_class_reset(game_class)

@@ -16,7 +16,7 @@ from triple_triple.startup_data import (
 )
 
 df_raw_position_data = get_df_raw_position_data()
-df_raw_position_region = get_df_raw_position_region()
+#df_raw_position_region = get_df_raw_position_region()
 game_info_dict = get_game_info_dict()
 game_player_dict = get_game_player_dict()
 df_play_by_play = get_df_play_by_play()
@@ -35,10 +35,10 @@ if __name__ == '__main__':
 
     df_possession = pph.add_regions_to_df(df_possession, initial_shooting_side)
 
-    # df_raw_position_region = pph.add_regions_to_df(df_raw_position_data, initial_shooting_side)
-    # 
-    # filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
-    # df_raw_position_region.to_csv(filepath, index=False)
+    df_raw_position_region = pph.add_regions_to_df(df_raw_position_data, initial_shooting_side)
+    
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
+    df_raw_position_region.to_csv(filepath, index=False)
 
 
     game_id_list = [21500568]

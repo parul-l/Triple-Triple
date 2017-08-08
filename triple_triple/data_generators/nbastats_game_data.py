@@ -75,7 +75,6 @@ def play_by_play_df(base_url_play, params_play):
 def box_score_df(base_url_box_score, params_box_score):
     box_score_data = gd.get_data(base_url_box_score, params_box_score)
     df_box_score = pd.DataFrame(
-        box_score_data['resultSets'][0]['rowSet'] +
         box_score_data['resultSets'][0]['rowSet'],
         columns=box_score_data['resultSets'][0]['headers']
     ).drop_duplicates()

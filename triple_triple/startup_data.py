@@ -45,10 +45,18 @@ def get_df_play_by_play():
     return pd.read_csv(filepath)
 
 
-def get_df_box_score():
-    parse_date = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score.csv')
-    return pd.read_csv(filepath, parse_dates=['MIN'], date_parser=parse_date)
+def get_df_box_score_player_tracking():
+    # parse_date = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score_player_tracking.csv')
+    return pd.read_csv(filepath)
+    # return pd.read_csv(filepath, parse_dates=['MIN'], date_parser=parse_date)
+
+
+def get_df_box_score_traditional():
+    # parse_date = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score_traditional.csv')
+    return pd.read_csv(filepath)
+    # return pd.read_csv(filepath, parse_dates=['MIN'], date_parser=parse_date)
 
 
 def get_df_player_bio_info():
@@ -69,19 +77,3 @@ def get_df_all_game_info():
 def get_player_possession_dataframes(json_file_name):
     with open(os.path.join(DATASETS_DIR, json_file_name), 'rb') as json_file:
         return pickle.load(json_file)
-#
-#
-# def get_df_positions():
-#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_positions.csv')
-#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-#
-#
-# def get_df_pos_dist():
-#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist.csv')
-#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-#
-#
-# def get_df_pos_dist_trunc():
-#     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_pos_dist_trunc.csv')
-#     return pd.read_csv(filepath, header=[0, 1]).sort_index().sort_index(axis=1)
-#

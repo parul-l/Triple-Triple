@@ -20,6 +20,7 @@ from triple_triple.startup_data import (
 )
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
 
+from triple_triple.simulator_analytics.sim_result.stats import get_result_stats
 
 df_raw_position_region = get_df_raw_position_region()
 df_possession_region = pph.get_possession_df(
@@ -246,7 +247,7 @@ if __name__ == '__main__':
     # print game outcome
     print 'score', game_class.score
     print 'num_plays', game_class.num_plays
-    print 'two_pt_shot_attempts', game_class.two_pt_shot_attempts
+    print 'two_pt_shots_attempts', game_class.two_pt_shot_attempts
     print 'two_pt_shots_made', game_class.two_pt_shots_made
     print 'three_pt_shot_attempts', game_class.three_pt_shot_attempts
     print 'three_pt_shots_made', game_class.three_pt_shots_made
@@ -257,21 +258,43 @@ if __name__ == '__main__':
     print 'turnovers', game_class.turnovers
     print 'passes', game_class.passes
 
-    # sim_coord_dict = sp.create_sim_coord_dict(
-    #     players_offense_dict=team0_class_dict,
-    #     players_defense_dict=team1_class_dict,
-    #     game_class=game_class,
-    #     shooting_side=shooting_side,
-    #     num_sim=144)
+    # simulate 100 games
+    df_results_team0, df_results_team1, df_all_games = sp.simulate_multiple_games(
+        num_sim_games=100,
+        num_sim_actions=864,
+        teams_list=[team0_class_dict, team1_class_dict],
+        ball_class=ball_class,
+        hometeam_id=1610612744,
+        awayteam_id=1610612748
+    )
 
+
+    df_box_score_player_tracking = get_df_box_score_player_tracking()
+    df_box_score_traditional = get_df_box_score_traditional()
+    
+    team0_actual, team1_actual, team0_sim_avg, team1_sim_avg, team0_sim_std, team1_sim_std = \
+        get_result_stats(
+            df_results_team0,
+            df_results_team1,
+            df_box_score_player_tracking,
+            df_box_score_traditional,
+            teams_list=[team0_class_dict, team1_class_dict],
+            hometeam_id=1610612744,
+            awayteam_id=1610612748
+        )
+    
+    
     # to re-do the simulation we reset the parameters
+    # Assuming each play is about 20 seconds and each
+    # play consists of 5 passes before an shot/turnover
+    # simulate 1 game
     df_data = sp.sim_plays(
         num_sim=864,
         teams_list=[team0_class_dict, team1_class_dict],
         game_class=game_class,
         ball_class=ball_class
     )
-    
+
     player_class_reset(team0_class_dict)
     player_class_reset(team1_class_dict)
     class_game.game_class_reset(game_class)

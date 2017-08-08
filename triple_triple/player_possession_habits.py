@@ -1,6 +1,8 @@
 from triple_triple.court_regions import get_region
 import copy
 
+# TODO: Add tests to shooting side and get_court_region
+
 # TODO: Fix get_df_possession_defender to limit defender's distance
 
 # TODO: Fix get_possession_df. Right now it is double counting possessions. Perhaps check ball height/moment? Here Wade has the ball as two separate possessions
@@ -22,9 +24,6 @@ import copy
 # 868149       4      114.15     Dwyane Wade
 # 868160       4      114.11     Dwyane Wade
 # 868171       4      114.07     Dwyane Wade
-
-# Also, Bosh period=2, game_clock=307 has layup on NBA stats
-# but position data indicates back court and perimeter
 
 
 def get_second_half_shooting_side(initial_shooting_side):

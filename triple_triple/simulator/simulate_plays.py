@@ -2,9 +2,15 @@ import copy
 import pandas as pd
 import numpy as np
 
-from triple_triple.class_player import create_player_class_instance
+from triple_triple.class_player import (
+    create_player_class_instance,
+    player_class_reset
+)
+
+import triple_triple.class_game as class_game
 
 from triple_triple.court_region_coord import generate_rand_regions
+
 from triple_triple.simulator.match_defenders_for_sim import (
     initiate_defense_player_positions,
     update_defense_player_positions
@@ -752,6 +758,84 @@ def sim_plays(
     return df_data
 
 
+def create_df_sim_game():
+    headers = [
+        'PTS',
+        'NUM_PLAYS',
+        'FGA',
+        'FGM',
+        'FG3A',
+        'FG3M',
+        'OREB',
+        'DREB',
+        'STL',
+        'BLK',
+        'TO',
+        'PASS'
+    ]
+
+    return pd.DataFrame(columns=headers)
+
+
+def add_one_game_data(game_class, df, idx):
+    results = [
+        game_class.score[idx],
+        game_class.num_plays[idx],
+        game_class.two_pt_shot_attempts[idx],
+        game_class.two_pt_shots_made[idx],
+        game_class.three_pt_shot_attempts[idx],
+        game_class.three_pt_shots_made[idx],
+        game_class.off_rebounds[idx],
+        game_class.def_rebounds[idx],
+        game_class.steals[idx],
+        game_class.blocks[idx],
+        game_class.turnovers[idx],
+        game_class.passes[idx]
+    ]
+
+    df.loc[len(df)] = results
+    return df
+
+
+def simulate_multiple_games(
+    num_sim_games,
+    num_sim_actions,
+    teams_list,
+    ball_class=ball_class,
+    hometeam_id=1610612744,
+    awayteam_id=1610612748
+):
+    # create dataframe to add results
+    df_results_team0 = create_df_sim_game()
+    df_results_team1 = create_df_sim_game()
+
+    game_class = class_game.Game(
+        hometeam_id=hometeam_id,
+        awayteam_id=awayteam_id
+    )
+
+    all_games = []
+    for i in range(num_sim_games):
+        # create game class
+        all_games.append(sim_plays(
+            num_sim=num_sim_actions,
+            teams_list=teams_list,
+            game_class=game_class,
+            ball_class=ball_class
+        ))
+        df_results_team0 = add_one_game_data(game_class, df_results_team0, 0)
+        df_results_team1 = add_one_game_data(game_class, df_results_team1, 1)
+
+        # I lose individual player data here
+        # It seems like there is an error if I don't
+        player_class_reset(teams_list[0])
+        player_class_reset(teams_list[1])
+        class_game.game_class_reset(game_class)
+
+    # merge all_games to one df
+    df_all_games = pd.concat(all_games)
+
+    return df_results_team0, df_results_team1, df_all_games
 
 # def add_sim_coord_to_dict(players_dict, sim_coord_dict):
 #     for player, player_class in players_dict.items():

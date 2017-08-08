@@ -37,8 +37,8 @@ if __name__ == '__main__':
 
     df_raw_position_region = pph.add_regions_to_df(df_raw_position_data, initial_shooting_side)
     
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
-    df_raw_position_region.to_csv(filepath, index=False)
+    # filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_rawposition_region.csv')
+    # df_raw_position_region.to_csv(filepath, index=False)
 
 
     game_id_list = [21500568]

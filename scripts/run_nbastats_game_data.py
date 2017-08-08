@@ -36,7 +36,10 @@ params_play = {
     'StartRange': '0',      # not sure what this is
 }
 
-base_url_box_score = 'http://stats.nba.com/stats/boxscoreplayertrackv2'
+base_url_box_score_player_tracking = 'http://stats.nba.com/stats/boxscoreplayertrackv2'
+
+base_url_box_score_traditional = 'http://stats.nba.com/stats/boxscoretraditionalv2'
+
 params_box_score = {
     'EndPeriod': '10',
     'EndRange': '55800',
@@ -48,6 +51,7 @@ params_box_score = {
     'StartRange': '0'
 }
 
+
 if __name__ == '__main__':
 
     df_play_by_play = ngd.play_by_play_df(
@@ -55,8 +59,13 @@ if __name__ == '__main__':
         params_play
     )
 
-    df_box_score = ngd.box_score_df(
-        base_url_box_score,
+    df_box_score_player_tracking = ngd.box_score_df(
+        base_url_box_score_player_tracking,
+        params_box_score
+    )
+
+    df_box_score_traditional = ngd.box_score_df(
+        base_url_box_score_traditional,
         params_box_score
     )
 
@@ -64,5 +73,8 @@ if __name__ == '__main__':
     filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_nbaplaybyplay.csv')
     df_play_by_play.to_csv(filepath)
 
-    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score.csv')
-    df_box_score.to_csv(filepath)
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score_player_tracking.csv')
+    df_box_score_player_tracking.to_csv(filepath)
+
+    filepath = os.path.join(DATASETS_DIR, 'MIA_GSW_box_score_traditional.csv')
+    df_box_score_traditional.to_csv(filepath)

@@ -36,6 +36,7 @@ def get_player_sim_df(df_data, player_id):
         'player_action',
         'start_play'
     ]
+
     df_action_coord = df_player_sim[rel_col2]\
         .groupby(rel_col2[:-1])\
         ['start_play']\
@@ -47,7 +48,6 @@ def get_player_sim_df(df_data, player_id):
             lambda row: add_coord_count_col_to_action_count(row, df_coord),
             axis=1
         )
-
 
     # add action/total_actions
     df_action_coord['action_to_total_action'] = \

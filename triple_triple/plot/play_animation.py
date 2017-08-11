@@ -19,9 +19,18 @@ def get_fixedtime_df(
 
 def team_coord(team_id, df_grouped_value):
     # coord and jersey_number
-    x_coord = df_grouped_value.query('team_id==@team_id').x_loc.values
-    y_coord = df_grouped_value.query('team_id==@team_id').y_loc.values
-    jersey = df_grouped_value.query('team_id==@team_id').player_jersey.values
+    x_coord = df_grouped_value\
+        .query('team_id==@team_id')\
+        .x_loc\
+        .values
+    y_coord = df_grouped_value\
+        .query('team_id==@team_id')\
+        .y_loc\
+        .values
+    jersey = df_grouped_value\
+        .query('team_id==@team_id')\
+        .player_jersey\
+        .values
 
     return x_coord, y_coord, jersey
 

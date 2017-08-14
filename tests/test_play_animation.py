@@ -109,14 +109,14 @@ class TestPlayAnimation(unittest.TestCase):
         self.assertEqual(ball_id.shape[0], 1)
         self.assertEqual(ball_id, -1)
 
-        np.assert_array_equal(np.logical_and(x_home >= 47, x_home <= 94), True)
-        np.assert_array_equal(np.logical_and(y_home >= 0, y_home <= 50), True)
+        np.testing.assert_array_equal(np.logical_and(x_home >= 47, x_home <= 94), True)
+        np.testing.assert_array_equal(np.logical_and(y_home >= 0, y_home <= 50), True)
 
-        np.assert_array_equal(np.logical_and(x_away >= 47, x_away <= 94), True)
-        np.assert_array_equal(np.logical_and(y_away >= 0, y_away <= 50), True)
+        np.testing.assert_array_equal(np.logical_and(x_away >= 47, x_away <= 94), True)
+        np.testing.assert_array_equal(np.logical_and(y_away >= 0, y_away <= 50), True)
 
-        np.assert_array_equal(np.logical_and(x_ball >= 47, x_ball <= 94), True)
-        np.assert_array_equal(np.logical_and(y_ball >= 0, y_ball <= 50), True)
+        np.testing.assert_array_equal(np.logical_and(x_ball >= 47, x_ball <= 94), True)
+        np.testing.assert_array_equal(np.logical_and(y_ball >= 0, y_ball <= 50), True)
 
 
 if __name__ == '__main__':

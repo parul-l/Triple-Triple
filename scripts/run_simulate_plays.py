@@ -20,7 +20,7 @@ from triple_triple.startup_data import (
 )
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
 
-from triple_triple.simulator_analytics.sim_result.stats import get_result_stats
+from triple_triple.simulator_analytics.sim_result_stats import get_result_stats
 
 df_raw_position_region = get_df_raw_position_region()
 df_possession_region = pph.get_possession_df(

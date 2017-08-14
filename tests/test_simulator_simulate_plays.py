@@ -9,7 +9,7 @@ from tests.mock_class_player import create_player_instances_dict
 class TestClassSimulatePlays(unittest.TestCase):
     """Tests for simulator.simulate_plays.py"""
 
-    def test_update_play_number_etiher_idx(self):
+    def test_update_play_number_either_idx(self):
         game_class = class_game.Game(
             hometeam_id=0000,
             awayteam_id=1111

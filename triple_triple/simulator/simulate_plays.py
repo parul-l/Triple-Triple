@@ -107,7 +107,6 @@ def initiate_player_has_possession(players_offense_dict):
 
     # choose player with possession
     player_list, prob = relative_player_possession_prob(players_offense_dict)
-    #import pdb; pdb.set_trace()
 
     has_poss = np.random.choice(
         a=np.arange(len(player_list)),

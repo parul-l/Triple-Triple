@@ -104,28 +104,24 @@ class TestClassSimulatePlays(unittest.TestCase):
                 sp.who_has_possession(players_offense_dict=players_offense_dict)
             )
 
-    @unittest.skip
     def test_initiate_player_has_possession(self):
         players_offense_dict = create_player_instances_dict('off')
-        relative_player_possession_prob_mock = mock.Mock()
-        relative_player_possession_prob_mock.return_value = [2, 1], [0.0, 1.0]
-        method_to_mock = ('triple_triple.prob_player_possessions'
-                          '.relative_player_possession_prob')
+        # method_to_mock = ('triple_triple.prob_player_possessions'
+        #                   '.relative_player_possession_prob')
 
-        with mock.patch(method_to_mock, relative_player_possession_prob_mock):
-            sp.initiate_player_has_possession(players_offense_dict)
-        # 
-        # self.assertTrue(players_offense_dict[1].has_possession)
+        # with mock.patch(method_to_mock, relative_player_possession_prob_mock):
+        #     sp.initiate_player_has_possession(players_offense_dict)
 
-        #
-        #
-        #
-        # mock.Mock(return_value=[[0, 1], [0.0, 1.0]])
-        # players_offense_dict = create_player_instances_dict('off')
-        # sp.initiate_player_has_possession(players_offense_dict)
+        sp.relative_player_possession_prob = \
+            mock.Mock(return_value=[[0, 1], [0.0, 1.0]])
+        sp.initiate_player_has_possession(players_offense_dict)
 
-        #
-
+        self.assertTrue(players_offense_dict[1].has_possession)
+        self.assertFalse(players_offense_dict[0].has_possession)
+        self.assertEqual(
+            first=sp.who_has_possession(players_offense_dict),
+            second=players_offense_dict[1]
+        )
 
 
 if __name__ == '__main__':

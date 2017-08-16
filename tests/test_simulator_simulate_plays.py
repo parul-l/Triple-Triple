@@ -240,53 +240,49 @@ class TestClassSimulatePlays(unittest.TestCase):
             second=players_offense_dict[0].court_coord
         )
 
-    @mock.patch('triple_triple.simulator.simulate_plays.'
-                'update_offense_player_positions')
-    @mock.patch('triple_triple.simulator.simulate_plays.'
-                'who_has_possession')
-    @mock.patch('triple_triple.prob_player_possessions.'
-                'get_reg_to_num')
-    @mock.patch('triple_triple.court_region_coord.'
-                'generate_rand_regions')
-    @mock.patch('triple_triple.simulator.simulate_plays.'
-                'update_ball_position')
-    def test_initiate_offense_player_positions_functions_called(
-        self,
-        mock_update_ball_position,
-        mock_generate_rand_regions,
-        mock_get_reg_to_num,
-        mock_who_has_possession,
-        mock_update_offense_player_positions,
-    ):
-        # create a players_defense_dict
-        # to make sure on_offense set to True
+    def test_initiate_offense_player_positions_functions_called(self):
         players_dict = create_player_instances_dict('off')
+        # choose random player to have possession of ball
+        players_dict[0].has_possession = True
+        has_ball_class = players_dict[0]
         shooting_side = 'right'
-        sp.initiate_offense_player_positions(
-            players_offense_dict=players_dict,
-            shooting_side=shooting_side
-        )
 
-        mock_update_offense_player_positions.assert_called_once_with(
-            players_offense_dict=players_dict,
-            shooting_side=shooting_side,
-            num_reg=6
-        )
+        with mock.patch.multiple(
+            'triple_triple.simulator.simulate_plays',
+            update_ball_position=mock.DEFAULT,
+            update_offense_player_positions=mock.DEFAULT
+        ) as mocks:
+            sp.initiate_offense_player_positions(
+                players_offense_dict=players_dict,
+                shooting_side=shooting_side
+            )
+            mocks['update_offense_player_positions'].assert_called_once_with(
+                players_offense_dict=players_dict,
+                shooting_side=shooting_side,
+                num_reg=6
+            )
+            mocks['update_ball_position'].assert_called_once_with(
+                shooting_side=shooting_side,
+                out_of_bounds=True
+            )
 
-        mock_who_has_possession.assert_called_once_with(
-            players_offense_dict=players_dict
-        )
+            self.assertEqual(
+                sp.who_has_possession(players_offense_dict=players_dict),
+                has_ball_class
+            )
 
-        mock_update_ball_position.assert_called_once_with(
-            shooting_side=shooting_side,
-            out_of_bounds=True
-        )
+            self.assertEqual(
+                first=sp.get_reg_to_num('out_of_bounds'),
+                second=has_ball_class.court_region
+            )
 
-
-        # 
-        # for player in players_dict.values():
-        #     self.assertTrue(player.on_offense)
-
+            self.assertEqual(
+                first=sp.generate_rand_regions(
+                    court_region_num=has_ball_class.court_region,
+                    shooting_side=shooting_side
+                ),
+                second=has_ball_class.court_coord
+            )
 
 
 if __name__ == '__main__':

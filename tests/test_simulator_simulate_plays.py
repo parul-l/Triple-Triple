@@ -3,7 +3,10 @@ import unittest
 import triple_triple.class_game as class_game
 import triple_triple.simulator.simulate_plays as sp
 
-from tests.mock_class_player import create_player_instances_dict
+from tests.mock_class_player import (
+    create_player_instances_dict,
+    create_ball_class
+)
 
 
 class TestClassSimulatePlays(unittest.TestCase):
@@ -122,6 +125,168 @@ class TestClassSimulatePlays(unittest.TestCase):
             first=sp.who_has_possession(players_offense_dict),
             second=players_offense_dict[1]
         )
+
+    def test_update_ball_position_out_of_bounds(self):
+        ball_class = create_ball_class()
+        reg_to_num = {
+            'paint': 0,
+            'mid-range': 1,
+            'key': 2,
+            'perimeter': 3,
+            'back_court': 4,
+            'out_of_bounds': 5
+        }
+        mock_get_reg_to_num = mock.Mock(return_value=reg_to_num)
+
+        method_to_mock = ('triple_triple.prob_player_possessions'
+                          '.get_reg_to_num')
+
+        with mock.patch(method_to_mock, mock_get_reg_to_num):
+            sp.update_ball_position(
+                shooting_side='right',
+                out_of_bounds=True,
+                ball_class=ball_class
+            )
+
+        self.assertEqual(
+            first=ball_class.court_region,
+            second=reg_to_num['out_of_bounds']
+        )
+        self.assertEqual(
+            first=ball_class.court_coord,
+            second=[96, 25]
+        )
+        with mock.patch(method_to_mock, mock_get_reg_to_num):
+            sp.update_ball_position(
+                shooting_side='left',
+                out_of_bounds=True,
+                ball_class=ball_class
+            )
+
+        self.assertEqual(
+            first=ball_class.court_region,
+            second=reg_to_num['out_of_bounds']
+        )
+        self.assertEqual(
+            first=ball_class.court_coord,
+            second=[-2, 25]
+        )
+
+    def test_update_ball_position_no_has_ball_class(self):
+        ball_class = create_ball_class()
+        reg_to_num = {
+            'paint': 0,
+            'mid-range': 1,
+            'key': 2,
+            'perimeter': 3,
+            'back_court': 4,
+            'out_of_bounds': 5
+        }
+        mock_get_reg_to_num = mock.Mock(return_value=reg_to_num)
+
+        method_to_mock = ('triple_triple.prob_player_possessions'
+                          '.get_reg_to_num')
+
+        with mock.patch(method_to_mock, mock_get_reg_to_num):
+            sp.update_ball_position(
+                shooting_side='right',
+                ball_class=ball_class
+            )
+
+        self.assertEqual(
+            first=ball_class.court_region,
+            second=reg_to_num['paint']
+        )
+        self.assertEqual(
+            first=ball_class.court_coord,
+            second=[88.75, 25]
+        )
+
+        with mock.patch(method_to_mock, mock_get_reg_to_num):
+            sp.update_ball_position(
+                shooting_side='left',
+                ball_class=ball_class
+            )
+
+            self.assertEqual(
+                first=ball_class.court_region,
+                second=reg_to_num['paint']
+            )
+            self.assertEqual(
+                first=ball_class.court_coord,
+                second=[5.25, 25]
+            )
+
+    def test_update_ball_position_has_ball_class(self):
+        players_offense_dict = create_player_instances_dict('off')
+        ball_class = create_ball_class()
+
+        players_offense_dict[0].has_possession = True
+        players_offense_dict[0].court_region = 'test_region'
+        players_offense_dict[0].court_coord = [23.0, 48]
+
+        sp.update_ball_position(
+            shooting_side='right/left',
+            has_ball_class=players_offense_dict[0],
+            ball_class=ball_class
+        )
+
+        self.assertEqual(
+            first=ball_class.court_region,
+            second=players_offense_dict[0].court_region
+        )
+        self.assertEqual(
+            first=ball_class.court_coord,
+            second=players_offense_dict[0].court_coord
+        )
+
+    @mock.patch('triple_triple.simulator.simulate_plays.'
+                'update_offense_player_positions')
+    @mock.patch('triple_triple.simulator.simulate_plays.'
+                'who_has_possession')
+    @mock.patch('triple_triple.prob_player_possessions.'
+                'get_reg_to_num')
+    @mock.patch('triple_triple.court_region_coord.'
+                'generate_rand_regions')
+    @mock.patch('triple_triple.simulator.simulate_plays.'
+                'update_ball_position')
+    def test_initiate_offense_player_positions_functions_called(
+        self,
+        mock_update_ball_position,
+        mock_generate_rand_regions,
+        mock_get_reg_to_num,
+        mock_who_has_possession,
+        mock_update_offense_player_positions,
+    ):
+        # create a players_defense_dict
+        # to make sure on_offense set to True
+        players_dict = create_player_instances_dict('off')
+        shooting_side = 'right'
+        sp.initiate_offense_player_positions(
+            players_offense_dict=players_dict,
+            shooting_side=shooting_side
+        )
+
+        mock_update_offense_player_positions.assert_called_once_with(
+            players_offense_dict=players_dict,
+            shooting_side=shooting_side,
+            num_reg=6
+        )
+
+        mock_who_has_possession.assert_called_once_with(
+            players_offense_dict=players_dict
+        )
+
+        mock_update_ball_position.assert_called_once_with(
+            shooting_side=shooting_side,
+            out_of_bounds=True
+        )
+
+
+        # 
+        # for player in players_dict.values():
+        #     self.assertTrue(player.on_offense)
+
 
 
 if __name__ == '__main__':

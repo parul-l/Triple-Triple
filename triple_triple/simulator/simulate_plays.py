@@ -164,7 +164,9 @@ def initiate_offense_player_positions(
     )
 
     # update player with ball to 'out of bounds'
-    has_ball_class = who_has_possession(players_offense_dict=players_offense_dict)
+    has_ball_class = who_has_possession(
+        players_offense_dict=players_offense_dict
+    )
 
     has_ball_class.court_region = get_reg_to_num('out_of_bounds')
     has_ball_class.court_coord = generate_rand_regions(

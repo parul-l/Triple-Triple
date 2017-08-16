@@ -49,8 +49,8 @@ class MockPlayer(object):
 
 def create_player_instances_dict(off_or_def):
     player_class_dict = {}
-    positions = ['X', 'Y']
-    for player in [0, 1]:
+    positions = ['X', 'Y', 'Z']
+    for player in [0, 1, 2]:
         if off_or_def == 'off':
             player_class_dict[player] = MockPlayer(
                 name='off' + str(player),
@@ -74,3 +74,7 @@ def create_player_instances_dict(off_or_def):
             player_class_dict[player].defending_who = 'off' + str(player)
 
     return player_class_dict
+
+
+def create_ball_class():
+    return MockPlayer(name='ball', player_id=-1, position=-1)

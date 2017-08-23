@@ -64,14 +64,14 @@ def plot_dropdown_player_action_prob(player_list):
         itertools.chain.from_iterable(
             [get_player_action_prob_data(player) for
              player in
-             player_list[1:]]
+             player_list[:-1]]
         )
     )
 
-    # # Add the first player in to player_list
+    # # Add the last player in to player_list
     # # This will be the default plot shown when plot is called
     data.extend(
-        get_player_action_prob_data(player_list[0], visible=True)
+        get_player_action_prob_data(player_list[-1], visible=True)
     )
 
     updatemenus = [

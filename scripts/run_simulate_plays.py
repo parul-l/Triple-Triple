@@ -16,7 +16,9 @@ from triple_triple.data_generators.player_bio_nbastats_data import (
 from triple_triple.startup_data import (
     get_df_raw_position_region,
     get_game_player_dict,
-    get_df_play_by_play
+    get_df_play_by_play,
+    get_df_box_score_player_tracking,
+    get_df_box_score_traditional
 )
 from triple_triple.data_generators.player_game_stats_data import parse_df_play_by_play
 
@@ -268,10 +270,9 @@ if __name__ == '__main__':
         awayteam_id=1610612748
     )
 
-
     df_box_score_player_tracking = get_df_box_score_player_tracking()
     df_box_score_traditional = get_df_box_score_traditional()
-    
+
     team0_actual, team1_actual, team0_sim_avg, team1_sim_avg, team0_sim_std, team1_sim_std = \
         get_result_stats(
             df_results_team0,

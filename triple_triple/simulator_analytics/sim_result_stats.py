@@ -73,7 +73,7 @@ def get_result_stats(
 
 def get_root_mean_sq(df_results, team_actual):
     cols = list(df_results)
-    cols.remove('num_plays')
+    cols.remove('NUM_PLAYS')
 
     error_array = np.zeros(len(cols))
     num_sim = len(df_results)

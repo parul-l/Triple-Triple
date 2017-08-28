@@ -283,8 +283,6 @@ if __name__ == '__main__':
             hometeam_id=1610612744,
             awayteam_id=1610612748
         )
-    
-    
     # to re-do the simulation we reset the parameters
     # Assuming each play is about 20 seconds and each
     # play consists of 5 passes before an shot/turnover

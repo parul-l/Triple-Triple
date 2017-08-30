@@ -94,7 +94,7 @@ def get_prob_count_matrix(count_matrix):
     return count_matrix / count_matrix.sum(axis=1)[:, None]
 
 
-def update_region_prob_matrix(
+def update_region_freq_matrix(
     player_class,
     game_id,
     game_player_dict,
@@ -152,8 +152,13 @@ def update_region_prob_matrix(
 
         region_matrix[start_reg, end_reg] += 1
 
-    # update player_class
-    player_class.region_prob_matrix = get_prob_count_matrix(region_matrix)
+    # update player_class freq count
+    player_class.region_freq_matrix = region_matrix
+
+
+def update_region_prob_matrix(player_class):
+    # prob matrix
+    player_class.region_prob_matrix = get_prob_count_matrix(player_class.region_freq_matrix)
 
 
 def update_possession_prob(
@@ -186,7 +191,7 @@ def relative_player_possession_prob(players_offense_dict):
     return player_list, raw_prob / raw_prob.sum()
 
 
-def get_action_prob_matrix(player_class, df_possession):
+def get_action_freq_matrix(player_class, df_possession):
     query_params = 'player_id==@player_class.player_id and possession_end'
 
     imp_columns = ['player_name', 'action', 'region', 'possession_start', 'possession_end']
@@ -200,15 +205,21 @@ def get_action_prob_matrix(player_class, df_possession):
         poss_num = get_action_to_num(df_player.action.iloc[i])
         possession_matrix[get_reg_to_num(end_reg), poss_num] += 1
 
-    player_class.action_prob_matrix = get_prob_count_matrix(possession_matrix)
+    # update player_class freq count
+    player_class.action_freq_matrix = possession_matrix
 
 
-def get_shooting_prob(player_class, df_game_stats):
+def get_action_prob_matrix(player_class):
+    # action prob
+    player_class.action_prob_matrix = get_prob_count_matrix(player_class.action_freq_matrix)
+
+
+def get_shooting_freq(player_class, df_game_stats):
     query_params = 'player_id==@player_class.player_id and \
                     (action=="shot" or action=="missed_shot")'
     df_player = df_game_stats.query(query_params)
 
-    shot_prob = np.zeros(2)
+    shot_freq = []
 
     # get 2pt and 3pt prob
     for i in range(2, 4):
@@ -216,34 +227,53 @@ def get_shooting_prob(player_class, df_game_stats):
         total_attempts = len(df_specific_shot)
         total_made = len(df_specific_shot.query('action=="shot"'))
 
-        if total_attempts != 0:
-            shot_prob[i - 2] = total_made / float(total_attempts)
+        shot_freq.append((total_made, float(total_attempts)))
+        # shot_prob[i - 2] = total_made / float(total_attempts)
 
+    player_class.shooting_freq = shot_freq
+
+
+def get_shooting_prob(player_class):
+    shot_freq = player_class.shooting_freq
+    # if total_attempts != 0:
+    #     shot_prob[0] = player_class.shooting_freq
+    shot_prob = [x[0] / x[1] if x[1] != 0 else 0 for x in shot_freq]
     player_class.shooting_prob = shot_prob
 
 
-def get_action_count_array(player_class, df_possession, action):
+def get_action_freq_array(player_class, df_possession, action):
     df_player = df_possession.query('player_id==@player_class.player_id')
 
     action_count = Counter(df_player.query('action==@action').region.values)
 
-    action_count_array = np.zeros(6)
+    action_freq_array = np.zeros(6)
     for region, count in action_count.items():
-        action_count_array[get_reg_to_num(region)] = count
+        action_freq_array[get_reg_to_num(region)] = count
 
-    return action_count_array
+    return action_freq_array
 
 
-def get_regional_shooting_prob(player_class, df_possession):
-    made_shot_array = get_action_count_array(
+def get_regional_shooting_freq(player_class, df_possession):
+    made_shot_array = get_action_freq_array(
         player_class=player_class,
         df_possession=df_possession,
         action="shot")
-    missed_shot_array = get_action_count_array(
+    missed_shot_array = get_action_freq_array(
         player_class=player_class,
         df_possession=df_possession,
         action="missed_shot")
 
+    player_class.region_shooting_freq = {
+        'made_shot': made_shot_array,
+        'missed_shot': missed_shot_array
+    }
+
+
+def get_regional_shooting_prob(player_class):
+    made_shot_array = \
+        player_class.region_shooting_freq['made_shot']
+    missed_shot_array = \
+        player_class.region_shooting_freq['missed_shot']
     total_shots = made_shot_array + missed_shot_array
 
     # find prob and replace nan with zero

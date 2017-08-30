@@ -11,16 +11,36 @@ class Player(object):
             weight: An integer representing player's weight in
                 pounds
 
+
+            region_freq_matrix: A 6 x 6 matrix where
+                row = start region, column = end region
+                (row, column) = frequency count of going from start region to end region
+
             region_prob_matrix: A 6 x 6 matrix where
                 row = start region, column = end region
                 (row, column) = probability of going from start region to end region
 
+            action_freq_matrix: A 6 x 3 matrix where
+                row = region, column = action [0, 1, 2]
+                0 - pass, 1 - shoot, 2 - turnover
+                (row, column) = frequency count of action per region
+
             action_prob_matrix: A 6 x 3 matrix where
                 row = region, column = action [0, 1, 2]
                 0 - pass, 1 - shoot, 2 - turnover
+                (row, column) = probability of action per region
+
+            shooting_freq: A 1 x 2 matrix where each element is a tuple:
+                0- (freq of making 2 point, total 2 point attempts)
+                1- (freq of making 3 point, total 3 point attempts)
 
             shooting_prob: A 1 x 2 matrix where
                 0- prob of making 2 point, 1- prob of making 3pt
+
+            region_shooting_freq: A dictionary with keys 'made_shot' and
+                'missed_shot' and values a 1 x 6 array where each entry
+                is the number of shots made in the
+                corresponding entry's index
 
             region_shooting_prob: A 1 x 6 array where each entry
                 is the prob of making a shot in the region
@@ -140,8 +160,12 @@ class Player(object):
         self.weight = weight
         self.region_prob_matrix = None
         self.action_prob_matrix = None
+        self.region_freq_matrix = None
+        self.action_freq_matrix = None
+        self.shooting_freq = None
         self.shooting_prob = None
         self.region_shooting_prob = None
+        self.region_shooting_freq = None
         self.possession_prob = 0
         self.two_pt_shot_attempts = 0
         self.two_pt_shots_made = 0

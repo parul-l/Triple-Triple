@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     for player_class in combined_players_dict.values():
         # update region probability
-        ppp.update_region_prob_matrix(
+        ppp.update_region_freq_matrix(
             player_class=player_class,
             game_id=game_id_list[0],
             game_player_dict=game_player_dict,
@@ -97,7 +97,9 @@ if __name__ == '__main__':
             team_on_defense=False,
             half_court=True
         )
-
+        ppp.update_region_prob_matrix(
+            player_class=player_class
+        )
         # update df_possessions using NBA df_game_stats info
         df_possession = pph.characterize_player_possessions(
             game_id=game_id_list[0],
@@ -114,23 +116,29 @@ if __name__ == '__main__':
         )
 
         # update action probabilities
-        ppp.get_action_prob_matrix(
+        ppp.get_action_freq_matrix(
             player_class=player_class,
             df_possession=df_possession
         )
-
+        ppp.get_action_prob_matrix(
+            player_class=player_class
+        )
         # update shooting_prob
-        ppp.get_shooting_prob(
+        ppp.get_shooting_freq(
             player_class=player_class,
             df_game_stats=df_game_stats
         )
-
+        ppp.get_shooting_prob(
+            player_class=player_class
+        )
         # update region_shooting_prob
-        ppp.get_regional_shooting_prob(
+        ppp.get_regional_shooting_freq(
             player_class=player_class,
             df_possession=df_possession
         )
-
+        ppp.get_regional_shooting_prob(
+            player_class=player_class
+        )
         # update season steals/blocks per game
         pdh.update_traditional_nba_stats(
             player_class=player_class,

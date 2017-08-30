@@ -1,4 +1,5 @@
 import mock
+import numpy as np
 import unittest
 import triple_triple.class_game as class_game
 import triple_triple.simulator.simulate_plays as sp
@@ -92,9 +93,7 @@ class TestClassSimulatePlays(unittest.TestCase):
         players_offense_dict = create_player_instances_dict('off')
 
         with self.assertRaises(ValueError):
-            self.assertRaises(
-                sp.who_has_possession(players_offense_dict=players_offense_dict)
-            )
+            sp.who_has_possession(players_offense_dict=players_offense_dict)
 
     def test_who_has_possession_more_than_one(self):
         players_offense_dict = create_player_instances_dict('off')
@@ -103,9 +102,7 @@ class TestClassSimulatePlays(unittest.TestCase):
         players_offense_dict[1].has_possession = True
 
         with self.assertRaises(ValueError):
-            self.assertRaises(
-                sp.who_has_possession(players_offense_dict=players_offense_dict)
-            )
+            sp.who_has_possession(players_offense_dict=players_offense_dict)
 
     def test_initiate_player_has_possession(self):
         players_offense_dict = create_player_instances_dict('off')
@@ -242,9 +239,10 @@ class TestClassSimulatePlays(unittest.TestCase):
 
     def test_initiate_offense_player_positions_functions_called(self):
         players_dict = create_player_instances_dict('off')
-        # choose random player to have possession of ball
-        players_dict[0].has_possession = True
-        has_ball_class = players_dict[0]
+        # choose random player with ball
+        player_ball = np.random.randint(3)
+        players_dict[player_ball].has_possession = True
+        has_ball_class = players_dict[player_ball]
         shooting_side = 'right'
 
         with mock.patch.multiple(
@@ -283,6 +281,23 @@ class TestClassSimulatePlays(unittest.TestCase):
                 ),
                 second=has_ball_class.court_coord
             )
+    # 
+    # def test_initiate_offense_player_positions_convert_to_offense(self):
+    #     players_dict = create_player_instances_dict('def')
+    # 
+    #     with mock.patch.multiple(
+    #         'triple_triple.simulator.simulate_plays',
+    #         who_has_possession=mock.DEFAULT,
+    #         update_ball_position=mock.DEFAULT,
+    #         update_offense_player_positions=mock.DEFAULT
+    #     ) as mocks:
+    #         sp.initiate_offense_player_positions(
+    #             players_offense_dict=players_dict,
+    #             shooting_side=shooting_side
+    #         )
+    # 
+    #         for player in players_dict.values():
+    #                 self.assertTrue(player.on_offense)
 
 
 if __name__ == '__main__':

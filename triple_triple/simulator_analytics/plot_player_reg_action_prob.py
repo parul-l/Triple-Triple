@@ -5,6 +5,19 @@ from plotly import offline
 from triple_triple.simulator_analytics.action_prob_data import get_prob_df
 
 
+# NOTE: To embed plot in html (example in reveal.js),
+# 1. import plotly js:
+# <script type="text/javascript" src="https://cdn.plot.ly/plotly-1.29.3.min.js"></script>
+# 2. paste relevant components in desired location
+# (ie remove script tag and save content as .js):
+# <div id="4e4793ec-dcea-4e7b-beaf-a13bdacc5fd0"
+# style="height: 450px; width: 650px;" class="plotly-graph-div">
+# </div>
+# <script type="text/javascript"
+# src="reveal.js/js/all_player_action_prob_script.js">
+# </script>
+
+
 def get_player_action_prob_data(player_name, visible=False):
     df = get_prob_df(player_name)
     trace1 = go.Bar(
@@ -92,12 +105,15 @@ def plot_dropdown_player_action_prob(player_list):
         showlegend=True,
         updatemenus=updatemenus,
         barmode='stack',
-        xaxis=dict(tickangle=-45)
+        xaxis=dict(tickangle=-45),
+        autosize=False,
+        width=650,
+        height=450,
     )
 
     fig = dict(data=data, layout=layout)
     py.plot(fig, filename='player-action-prob')
-    return offline.offline.plot(fig)
+    return offline.plot(fig, include_plotlyjs=False, output_type='div')
 
 
 if __name__ == '__main__':

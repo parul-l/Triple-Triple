@@ -1,9 +1,8 @@
-import copy
 import triple_triple.class_game as class_game
-import triple_triple.player_defending_habits as pdh
 import triple_triple.player_possession_habits as pph
-import triple_triple.prob_player_possessions as ppp
 import triple_triple.simulator.simulate_plays as sp
+
+import triple_triple.simulator.create_teams as ct
 
 from triple_triple.class_player import (
     create_player_class_instance,
@@ -50,16 +49,25 @@ if __name__ == '__main__':
     team1_id_list = [2547, 2548, 2736, 2617, 2405]
     game_id_list = [21500568]
 
+    team0_class_dict, team1_class_dict = ct.get_complete_teams(
+        team0_id_list,
+        team1_id_list,
+        game_id_list
+    )
+
     df_player_bio = get_player_bio_df(
         player_id_list=(team0_id_list + team1_id_list)
     )
 
     hometeam_id = 1610612744
     awayteam_id = 1610612748
-    # game class
-    game_class = class_game.Game(hometeam_id=hometeam_id, awayteam_id=awayteam_id)
 
-    # this is weird since this will only have one element
+    # game class
+    game_class = class_game.Game(
+        hometeam_id=hometeam_id,
+        awayteam_id=awayteam_id
+    )
+
     ball_class_dict = create_player_class_instance(
         player_list=[-1],
         game_player_dict=game_player_dict,
@@ -68,161 +76,45 @@ if __name__ == '__main__':
 
     ball_class = ball_class_dict[-1]
 
-    team0_class_dict = create_player_class_instance(
-        player_list=team0_id_list,
-        game_player_dict=game_player_dict,
-        df_player_bio=df_player_bio
-    )
-    team1_class_dict = create_player_class_instance(
-        player_list=team1_id_list,
-        game_player_dict=game_player_dict,
-        df_player_bio=df_player_bio
-    )
-    team0_id = team0_class_dict[team0_id_list[0]].team_id
-    team1_id = team1_class_dict[team1_id_list[0]].team_id
+    # simulate 100 games
+    # to re-do the simulation we reset the parameters
+    # Assuming each play is about 20 seconds and each
+    # play consists of 5 passes before an shot/turnover
 
-    # combine dictionaries to update both dictionaries together
-    combined_players_dict = copy.copy(team0_class_dict)
-    combined_players_dict.update(team1_class_dict)
-
-    for player_class in combined_players_dict.values():
-        # update region probability
-        ppp.update_region_freq_matrix(
-            player_class=player_class,
-            game_id=game_id_list[0],
-            game_player_dict=game_player_dict,
-            df_raw_position_region=df_raw_position_region,
-            player_possession=False,
-            team_on_offense=True,
-            team_on_defense=False,
-            half_court=True
-        )
-        ppp.update_region_prob_matrix(
-            player_class=player_class
-        )
-        # update df_possessions using NBA df_game_stats info
-        df_possession = pph.characterize_player_possessions(
-            game_id=game_id_list[0],
-            player_class=player_class,
-            df_possession=df_possession_region,
-            df_game_stats=df_game_stats
-        )
-
-        # update possession probability
-        ppp.update_possession_prob(
-            player_class=player_class,
-            df_possession=df_possession,
-            game_id=None
-        )
-
-        # update action probabilities
-        ppp.get_action_freq_matrix(
-            player_class=player_class,
-            df_possession=df_possession
-        )
-        ppp.get_action_prob_matrix(
-            player_class=player_class
-        )
-        # update shooting_prob
-        ppp.get_shooting_freq(
-            player_class=player_class,
-            df_game_stats=df_game_stats
-        )
-        ppp.get_shooting_prob(
-            player_class=player_class
-        )
-        # update region_shooting_prob
-        ppp.get_regional_shooting_freq(
-            player_class=player_class,
-            df_possession=df_possession
-        )
-        ppp.get_regional_shooting_prob(
-            player_class=player_class
-        )
-        # update season steals/blocks per game
-        pdh.update_traditional_nba_stats(
-            player_class=player_class,
-            season='2015-16',
-            season_type='Regular Season'
-        )
-
-    df_possession_defender_team0 = pdh.get_df_possession_defender(
-        offense_players_dict=team1_class_dict,
-        df_possession_region=df_possession_region,
-        df_raw_position_region=df_raw_position_region,
-        defender_team_id=team0_id
-    )
-    df_possession_defender_team1 = pdh.get_df_possession_defender(
-        offense_players_dict=team0_class_dict,
-        df_possession_region=df_possession_region,
-        df_raw_position_region=df_raw_position_region,
-        defender_team_id=team1_id
+    df_results_team0, df_results_team1, df_all_games = sp.simulate_multiple_games(
+        num_sim_games=10,
+        num_sim_actions=864,
+        teams_list=[team0_class_dict, team1_class_dict],
+        ball_class=ball_class,
+        hometeam_id=hometeam_id,
+        awayteam_id=awayteam_id
     )
 
-    # Update team0
-    for player_class in team0_class_dict.values():
-        # update game_idx
-        player_class.game_idx = 0
-        # update possession outcome when defending
-        pdh.poss_result_on_defense(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team0,
-            game_id=None
+    df_box_score_player_tracking = get_df_box_score_player_tracking()
+    df_box_score_traditional = get_df_box_score_traditional()
+
+    team0_actual, team1_actual, team0_sim_avg, team1_sim_avg, team0_sim_std, team1_sim_std = \
+        get_result_stats(
+            df_results_team0,
+            df_results_team1,
+            df_box_score_player_tracking,
+            df_box_score_traditional,
+            teams_list=[team0_class_dict, team1_class_dict],
+            hometeam_id=hometeam_id,
+            awayteam_id=awayteam_id
         )
 
-        pdh.poss_result_on_defense_reg(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team0,
-            game_id=None
-        )
-
-        pdh.get_stats_per_possession(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team0,
-            game_id=None
-        )
-
-        pdh.get_def_off_region_matrix(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team0,
-            game_id=None,
-        )
-    # Update team1
-    for player_class in team1_class_dict.values():
-        # update game_idx
-        player_class.game_idx = 1
-
-        # update possession outcome when defending
-        pdh.poss_result_on_defense(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
-            game_id=None
-        )
-
-        pdh.get_stats_per_possession(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
-            game_id=None
-        )
-
-        pdh.poss_result_on_defense_reg(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
-            game_id=None
-        )
-
-        pdh.get_def_off_region_matrix(
-            defender_class=player_class,
-            df_possession_defender=df_possession_defender_team1,
-            game_id=None
-        )
-
+    # simulate 1 game
     df_data = sp.sim_plays(
         num_sim=864,
         teams_list=[team0_class_dict, team1_class_dict],
         game_class=game_class,
         ball_class=ball_class
     )
+
+    player_class_reset(team0_class_dict)
+    player_class_reset(team1_class_dict)
+    class_game.game_class_reset(game_class)
 
     # print player's outcome
     for player_class in team0_class_dict.values():
@@ -267,41 +159,3 @@ if __name__ == '__main__':
     print 'blocks', game_class.blocks
     print 'turnovers', game_class.turnovers
     print 'passes', game_class.passes
-
-    # simulate 100 games
-    df_results_team0, df_results_team1, df_all_games = sp.simulate_multiple_games(
-        num_sim_games=100,
-        num_sim_actions=864,
-        teams_list=[team0_class_dict, team1_class_dict],
-        ball_class=ball_class,
-        hometeam_id=1610612744,
-        awayteam_id=1610612748
-    )
-
-    df_box_score_player_tracking = get_df_box_score_player_tracking()
-    df_box_score_traditional = get_df_box_score_traditional()
-
-    team0_actual, team1_actual, team0_sim_avg, team1_sim_avg, team0_sim_std, team1_sim_std = \
-        get_result_stats(
-            df_results_team0,
-            df_results_team1,
-            df_box_score_player_tracking,
-            df_box_score_traditional,
-            teams_list=[team0_class_dict, team1_class_dict],
-            hometeam_id=1610612744,
-            awayteam_id=1610612748
-        )
-    # to re-do the simulation we reset the parameters
-    # Assuming each play is about 20 seconds and each
-    # play consists of 5 passes before an shot/turnover
-    # simulate 1 game
-    df_data = sp.sim_plays(
-        num_sim=864,
-        teams_list=[team0_class_dict, team1_class_dict],
-        game_class=game_class,
-        ball_class=ball_class
-    )
-
-    player_class_reset(team0_class_dict)
-    player_class_reset(team1_class_dict)
-    class_game.game_class_reset(game_class)

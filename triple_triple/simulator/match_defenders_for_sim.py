@@ -1,6 +1,7 @@
 import copy
 import numpy as np
 
+# TODO: Allow for uneven team numbers. If len(team0) != len(team1) (defending no one or double teams)
 
 def make_dict_deep_copy(teams_list):
     return copy.deepcopy(teams_list[0]), copy.deepcopy(teams_list[1])

@@ -31,12 +31,8 @@ df_play_by_play = get_df_play_by_play()
 df_game_stats = parse_df_play_by_play(df_play_by_play)
 
 
-def team_duplicates(team_id_list):
-    return Counter(team_id_list)
-
-
 def create_unique_team_class(team_id_list):
-    unique_team_id_dict = team_duplicates(team_id_list=team_id_list)
+    unique_team_id_dict = Counter(team_id_list)
     df_player_bio = get_player_bio_df(
         player_id_list=unique_team_id_dict.keys()
     )

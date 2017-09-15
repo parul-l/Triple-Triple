@@ -143,11 +143,7 @@ def update_offense_info(
         )
 
         # update season steals/blocks per game
-        pdh.update_traditional_nba_stats(
-            player_class=player_class,
-            # season=season,
-            #season_type=season_type
-        )
+        pdh.update_traditional_nba_stats(player_class=player_class)
 
     # update duplicates between teams
     update_duplicates_btw_teams(

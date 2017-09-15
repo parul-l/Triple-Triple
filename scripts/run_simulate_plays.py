@@ -47,6 +47,9 @@ reg_to_num = {
 if __name__ == '__main__':
     team0_id_list = [203110, 202691, 201939, 101106, 201575]
     team1_id_list = [2547, 2548, 2736, 2617, 2405]
+    
+    team0_id_list = [201939, 201939]
+    team1_id_list = [201939, 201939]
     game_id_list = [21500568]
 
     team0_class_dict, team1_class_dict = ct.get_complete_teams(

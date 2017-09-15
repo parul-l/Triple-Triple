@@ -7,9 +7,7 @@ import triple_triple.prob_player_possessions as ppp
 
 from triple_triple.class_player import create_player_class_instance
 
-from triple_triple.data_generators.player_bio_nbastats_data import (
-    get_player_bio_df
-)
+from triple_triple.data_generators.player_bio_nbastats_data import get_player_bio_df
 
 from triple_triple.startup_data import (
     get_df_raw_position_region,
@@ -31,7 +29,7 @@ df_play_by_play = get_df_play_by_play()
 df_game_stats = parse_df_play_by_play(df_play_by_play)
 
 
-def create_unique_team_class(team_id_list):
+def create_unique_team_class(team_id_list, game_player_dict=game_player_dict):
     unique_team_id_dict = Counter(team_id_list)
     df_player_bio = get_player_bio_df(
         player_id_list=unique_team_id_dict.keys()
@@ -46,13 +44,23 @@ def create_unique_team_class(team_id_list):
     return team_class_dict
 
 
+def get_players_on_both_teams(
+    team0_class_dict,
+    team1_class_dict
+):
+    return list(
+        set(team0_class_dict.keys()) &
+        set(team1_class_dict.keys())
+    )
+
+
 def update_duplicates_btw_teams(
     team0_class_dict,
     team1_class_dict
 ):
-    players_both_teams = list(
-        set(team0_class_dict.keys()) &
-        set(team1_class_dict.keys())
+    players_both_teams = get_players_on_both_teams(
+        team0_class_dict=team0_class_dict,
+        team1_class_dict=team1_class_dict
     )
 
     copy_team1 = copy.deepcopy(team1_class_dict)
@@ -77,7 +85,7 @@ def update_offense_info(
 
     for player_class in combined_players_dict.values():
         # update region probability
-    
+
         ppp.update_region_freq_matrix(
             player_class=player_class,
             game_id=game_id_list[0],

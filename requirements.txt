@@ -13,12 +13,14 @@ certifi==2017.4.17
 click==6.7
 CommonMark==0.5.4
 configparser==3.5.0
+<<<<<<< HEAD
+=======
 cycler==0.10.0
 decorator==4.0.10
 docutils==0.13.1
 entrypoints==0.2.2
 enum34==1.1.6
-Flask==0.12.3
+Flask==0.12.2
 funcsigs==1.0.2
 functools32==3.2.3.post2
 futures==3.1.1
@@ -76,12 +78,3 @@ traitlets==4.3.1
 wcwidth==0.1.7
 webencodings==0.5.1
 Werkzeug==0.12.2
-cycler==0.10.0
-matplotlib==1.5.3
-numpy==1.11.2
-pandas==0.19.1
-pyparsing==2.1.10
-python-dateutil==2.6.0
-pytz==2016.7
-requests==2.20.0
-six==1.10.0

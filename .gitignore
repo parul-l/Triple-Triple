@@ -66,3 +66,6 @@ target/
 
 # OS X files
 .DS_Store
+
+# virtual environment
+venv2/

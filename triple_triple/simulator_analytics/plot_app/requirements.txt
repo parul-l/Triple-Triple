@@ -76,12 +76,3 @@ traitlets==4.3.1
 wcwidth==0.1.7
 webencodings==0.5.1
 Werkzeug==0.12.2
-cycler==0.10.0
-matplotlib==1.5.3
-numpy==1.11.2
-pandas==0.19.1
-pyparsing==2.1.10
-python-dateutil==2.6.0
-pytz==2016.7
-requests==2.12.1
-six==1.10.0

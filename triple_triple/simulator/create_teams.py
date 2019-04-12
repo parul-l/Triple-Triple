@@ -201,7 +201,7 @@ def repeat_player_info(player_id, count, team_class_dict):
     # count - 1 since original included in count
     for i in range(count - 1):
         copied_dict = copy.deepcopy(team_class_dict)
-        # add 2*i number of zeros to front of duplicated player_id
+        # add 2*i number of zeros to back of duplicated player_id
         # id = 123 becomes 12300, or 1230000, or 12300000, etc.
         new_key = int(str(player_id) + 2 * (i + 1) * '0')
         team_class_dict[new_key] = copied_dict[player_id]
@@ -213,7 +213,7 @@ def repeat_player_info(player_id, count, team_class_dict):
 
 def update_all_repeated_players(team_id_list, team_class_dict):
     player_id_count = Counter(team_id_list)
-    duplicated_players = {k:v for k, v in player_id_count.items() if v > 1}
+    duplicated_players = {k: v for k, v in player_id_count.items() if v > 1}
     for player_id, count in duplicated_players.items():
         team_class_dict = repeat_player_info(
             player_id=player_id,

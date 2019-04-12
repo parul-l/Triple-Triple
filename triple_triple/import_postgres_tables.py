@@ -8,7 +8,7 @@ POSTGRES_CONNECTION_PARAMS = {
 }
 
 
-def get_dataframes(
+def get_dataframe(
             query,
             game_id,
             connection_params=POSTGRES_CONNECTION_PARAMS
@@ -38,7 +38,7 @@ def get_game_specific_tables(game_id):
     """
 
     return {
-        'df_games': get_dataframes(games_query, game_id),
-        'df_play_by_play': get_dataframes(play_by_play_query, game_id),
-        'df_game_positions': get_dataframes(game_positions_query, game_id),
+        'df_games': get_dataframe(games_query, game_id),
+        'df_play_by_play': get_dataframe(play_by_play_query, game_id),
+        'df_game_positions': get_dataframe(game_positions_query, game_id),
     }

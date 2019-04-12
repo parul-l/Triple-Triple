@@ -1,8 +1,8 @@
 import os
 
+MODULE_HOME = os.path.dirname(__file__)
 
-DATASETS_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
+DATASETS_DIR = os.path.join(MODULE_HOME, 'data')
+IMG_DIR = os.path.join(MODULE_HOME, 'img')
+MOCK_DATASETS_DIR = os.path.join(MODULE_HOME, 'tests', 'fixtures')
 
-IMG_DIR = os.path.join('/Users/pl/repos/Triple-Triple', 'img')
-
-MOCK_DATASETS_DIR = os.path.join('/Users/pl/repos/Triple-Triple', 'tests/fixtures')

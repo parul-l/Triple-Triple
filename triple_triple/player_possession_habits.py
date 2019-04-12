@@ -1,7 +1,6 @@
 from triple_triple.court_regions import get_region
 import copy
 
-# TODO: Add tests to shooting side and get_court_region
 
 # TODO: Fix get_df_possession_defender to limit defender's distance
 
@@ -29,7 +28,8 @@ import copy
 def get_second_half_shooting_side(initial_shooting_side):
     second_half_shooting_side = copy.deepcopy(initial_shooting_side)
     teams = initial_shooting_side.keys()
-    second_half_shooting_side[teams[0]], second_half_shooting_side[teams[1]] = second_half_shooting_side[teams[1]], second_half_shooting_side[teams[0]]
+    second_half_shooting_side[teams[0]], second_half_shooting_side[teams[1]] = \
+        second_half_shooting_side[teams[1]], second_half_shooting_side[teams[0]]
 
     return second_half_shooting_side
 

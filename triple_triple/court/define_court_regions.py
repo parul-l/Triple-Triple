@@ -155,6 +155,7 @@ def get_polygon_mid_range(shooting_side: str):
 def get_mid_range(shooting_side: str):
     """Describes the entirety of the midrange region, including 
     both rectangular and non-rectangular components
+
     Parameters
     ----------
     shooting_side: `str`

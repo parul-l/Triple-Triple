@@ -1,4 +1,4 @@
-from triple_triple.court.court_regions import (
+from triple_triple.court.define_court_regions import (
     CourtRegions,
     get_backcourt,
     get_key,

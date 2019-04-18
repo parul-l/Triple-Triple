@@ -62,6 +62,7 @@ def get_polygon_out_of_bounds():
         return (x <= 0 or x >= 94 or y <= 0 or y >= 50)
     return polygon_out_of_bounds
 
+
 perimeter = {
     'left': {
         'xbounds': [[0, 14], [0, 14]],
@@ -136,11 +137,11 @@ out_of_bounds = {
 
 # if __name__ == '__main__':
 #     shooting_side = 'right'
-#     PERIMETER = CourtRegions(
-#         xbounds=perimeter[shooting_side]['xbounds'],
-#         ybounds=perimeter[shooting_side]['ybounds'],
-#         polygon_region=perimeter[shooting_side]['polygon']
-#     )
+    # PERIMETER = CourtRegions(
+    #     xbounds=perimeter[shooting_side]['xbounds'],
+    #     ybounds=perimeter[shooting_side]['ybounds'],
+    #     polygon_region=perimeter[shooting_side]['polygon']
+    # )
 #     MID_RANGE = CourtRegions(
 #         xbounds=mid_range[shooting_side]['xbounds'],
 #         ybounds=mid_range[shooting_side]['ybounds'],

@@ -35,7 +35,11 @@ def check_pts_make_triangle(
         return True
 
 
-def centroid_triangle(p1, p2, p3):
+def centroid_triangle(
+        p1: list,
+        p2: list,
+        p3: list
+):
     if check_pts_make_triangle(p1, p2, p3):
         x_coord = (p1[0] + p2[0] + p3[0]) / 3.0
         y_coord = (p1[1] + p2[1] + p3[1]) / 3.0
@@ -47,7 +51,7 @@ def centroid_triangle(p1, p2, p3):
 
 
 
-def generate_back_court(shooting_side):
+def generate_back_court(shooting_side: str):
     # Use midpoint of the region as the simulated coordinate
     if shooting_side == 'left':
         return [70.5, 25]
@@ -57,12 +61,15 @@ def generate_back_court(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_mid_range(shooting_side):
+def generate_mid_range(
+        shooting_side: str,
+        num_components: int=3
+):
     # break down the region in to 3 components
     # randomly choose one of the components
     # generate coordinates in that component
     # approximate with rectangles and triangles
-    component = np.random.choice(np.arange(3))
+    component = np.random.choice(np.arange(num_components))
     if shooting_side == 'left':
         if component == 0:
             return [9.5, 11]
@@ -82,7 +89,7 @@ def generate_mid_range(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_key(shooting_side):
+def generate_key(shooting_side: str):
     # approximate with rectangle
 
     if shooting_side == 'left':
@@ -93,7 +100,7 @@ def generate_key(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_paint(shooting_side):
+def generate_paint(shooting_side: str):
     if shooting_side == 'left':
         return [9.5, 25]
     elif shooting_side == 'right':
@@ -102,7 +109,7 @@ def generate_paint(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_out_of_bounds(shooting_side):
+def generate_out_of_bounds(shooting_side: str):
     # use behind the rim
     if shooting_side == 'left':
         return [-2, 25]
@@ -112,12 +119,15 @@ def generate_out_of_bounds(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_perimeter(shooting_side):
+def generate_perimeter(
+        shooting_side: str,
+        num_components: int=4
+):
     # break down the region in to 4 components
     # randomly choose one of the components
     # generate coordinates in that component
     # approximate with rectangles and triangles
-    component = np.random.choice(np.arange(4))
+    component = np.random.choice(np.arange(num_components))
     if shooting_side == 'left':
         if component == 0:
             return [7, 1.5]
@@ -162,7 +172,7 @@ def generate_perimeter(shooting_side):
         raise ValueError("Input 'left' or 'right' to specify shooting_side")
 
 
-def generate_rand_regions(court_region, shooting_side):
+def generate_rand_regions(court_region: str, shooting_side: str):
     """
     This function provides a random coordinate in
     the specified region.

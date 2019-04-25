@@ -1,4 +1,4 @@
-/* eventually this will require playerid list as input */
+/* eventually this will require playerid list and has_ball_distanceas input */
 
 WITH relevant_gameid AS (
     SELECT DISTINCT gameid
@@ -53,7 +53,7 @@ WITH relevant_gameid AS (
                                         AS distance_from_ball
     FROM position_ball
 )
-, closest_to_ball AS (
+, rank_ball_dist AS (
     SELECT 
         ball_dist.season
       , ball_dist.gameid
@@ -63,19 +63,107 @@ WITH relevant_gameid AS (
       , ball_dist.playerid
       , ball_dist.distance_from_ball
       , ROW_NUMBER() OVER (
-          PARTITION BY gameid, eventid, moment_num 
-          ORDER BY distance_from_ball)  AS closest_to_ball_rank
+          PARTITION BY season, gameid, eventid, moment_num 
+          ORDER BY distance_from_ball)  AS closest_to_ball_rank   
+--   , CASE WHEN 
+--       ROW_NUMBER() OVER (
+--       PARTITION BY season, gameid, eventid, moment_num ORDER BY distance_from_ball) = 1 
+--       AND distance_from_ball <= 2
+--     THEN 1 ELSE 0 END                   AS is_closest_to_ball_within_threshold
     FROM ball_dist
     WHERE playerid != -1 -- remove the ball since some moments don't have it and it affects the row number
 )
-SELECT 
-      ball_dist.*
-    , closest_to_ball.closest_to_ball_rank
-FROM ball_dist
-  LEFT JOIN closest_to_ball
-    ON ball_dist.season = closest_to_ball.season
-    AND ball_dist.gameid = closest_to_ball.gameid
-    AND ball_dist.eventid = closest_to_ball.eventid
-    AND ball_dist.moment_num = closest_to_ball.moment_num
-    AND ball_dist.teamid = closest_to_ball.teamid
-    AND ball_dist.playerid = closest_to_ball.playerid
+, closest_count AS (
+    SELECT
+        season
+      , gameid
+      , eventid
+      , moment_num
+      , teamid
+      , playerid
+    FROM rank_ball_dist
+    WHERE closest_to_ball_rank = 1 AND distance_from_ball <= 2
+)
+, shifted_closest_player AS (
+	SELECT
+		season
+	  , gameid
+	  , eventid
+	  , moment_num
+	  , playerid
+	  , CASE WHEN 
+		  LAG(playerid, 1, playerid) OVER (ORDER BY season, gameid, eventid, moment_num) = playerid 
+		THEN 0 ELSE 1 END               AS is_different_player_is_closest           
+	FROM closest_count
+)
+, possession_blocks AS (
+	SELECT 
+		season
+	  , gameid
+	  , eventid
+	  , moment_num
+	  , playerid
+	  , SUM(is_different_player_is_closest) OVER (ORDER BY season, gameid, eventid, moment_num) AS enumerated_blocks
+	FROM shifted_closest_player
+)
+, length_possession_block AS (
+	SELECT
+	  playerid
+	  , enumerated_blocks
+	  , COUNT(*)	AS possession_length
+	FROM possession_blocks
+	GROUP BY playerid, enumerated_blocks	
+)
+	SELECT
+        ball_dist.season
+      , ball_dist.gameid
+      , ball_dist.eventid
+      , ball_dist.moment_num
+      , ball_dist.timestamp_dts
+      , ball_dist.timestamp_utc
+      , ball_dist.period
+      , ball_dist.periodclock
+      , ball_dist.shotclock
+      , ball_dist.teamid
+      , ball_dist.playerid
+      , ball_dist.x_coordinate
+      , ball_dist.y_coordinate
+      , ball_dist.z_coordinate
+      , ball_dist.distance_from_ball
+      , rank_ball_dist.closest_to_ball_rank
+      , possession_blocks.enumerated_blocks
+	  , length_possession_block.possession_length
+	FROM ball_dist
+	  LEFT JOIN rank_ball_dist
+        ON  ball_dist.season = rank_ball_dist.season
+        AND ball_dist.gameid = rank_ball_dist.gameid
+        AND ball_dist.eventid = rank_ball_dist.eventid
+        AND ball_dist.moment_num = rank_ball_dist.moment_num
+      LEFT JOIN possession_blocks
+        ON  possession_blocks.season = rank_ball_dist.season
+        AND possession_blocks.gameid = rank_ball_dist.gameid
+        AND possession_blocks.eventid = rank_ball_dist.eventid
+        AND possession_blocks.moment_num = rank_ball_dist.moment_num
+      LEFT JOIN length_possession_block
+        ON  possession_blocks.playerid = length_possession_block.playerid
+        AND possession_blocks.enumerated_blocks = length_possession_block.enumerated_blocks
+    ORDER BY season, gameid, eventid, moment_num
+	LIMIT 50;
+
+/* https://stackoverflow.com/questions/29327566/grouping-and-counting-rows-by-value-until-it-changes */
+
+-- , possession_count AS (
+--     SELECT 
+--         season
+--       , gameid
+--       , eventid
+--       , moment_num
+--       , teamid
+--       , playerid
+--       , SUM(is_closest_to_ball_within_threshold) OVER (
+--       		PARTITION BY season, gameid, playerid 
+--       		ORDER BY eventid, moment_num 
+--       		ROWS BETWEEN 25 PRECEDING AND 0 PRECEDING) AS consecutive_possessions
+--     FROM rank_ball_dist
+--     ORDER BY season, gameid, eventid, moment_num
+-- )

@@ -81,6 +81,7 @@ WITH relevant_gameid AS (
       , moment_num
       , teamid
       , playerid
+      , closest_to_ball_rank
     FROM rank_ball_dist
     WHERE closest_to_ball_rank = 1 AND distance_from_ball <= 2
 )
@@ -113,8 +114,8 @@ WITH relevant_gameid AS (
 	  , COUNT(*)	AS possession_length
 	FROM possession_blocks
 	GROUP BY playerid, enumerated_blocks	
-)
-	SELECT
+)     
+	SELECT      
         ball_dist.season
       , ball_dist.gameid
       , ball_dist.eventid
@@ -130,40 +131,30 @@ WITH relevant_gameid AS (
       , ball_dist.y_coordinate
       , ball_dist.z_coordinate
       , ball_dist.distance_from_ball
-      , rank_ball_dist.closest_to_ball_rank
       , possession_blocks.enumerated_blocks
 	  , length_possession_block.possession_length
 	FROM ball_dist
-	  LEFT JOIN rank_ball_dist
+	  LEFT JOIN rank_ball_dist 
         ON  ball_dist.season = rank_ball_dist.season
         AND ball_dist.gameid = rank_ball_dist.gameid
         AND ball_dist.eventid = rank_ball_dist.eventid
         AND ball_dist.moment_num = rank_ball_dist.moment_num
+        AND ball_dist.playerid = rank_ball_dist.playerid
+       INNER JOIN closest_count -- so that we only get players with possession (closest_to_ball_rank = 1)
+        ON  closest_count.season = rank_ball_dist.season
+        AND closest_count.gameid = rank_ball_dist.gameid
+        AND closest_count.eventid = rank_ball_dist.eventid
+        AND closest_count.moment_num = rank_ball_dist.moment_num
+        AND closest_count.playerid = rank_ball_dist.playerid
+        AND closest_count.closest_to_ball_rank = rank_ball_dist.closest_to_ball_rank
       LEFT JOIN possession_blocks
         ON  possession_blocks.season = rank_ball_dist.season
         AND possession_blocks.gameid = rank_ball_dist.gameid
         AND possession_blocks.eventid = rank_ball_dist.eventid
         AND possession_blocks.moment_num = rank_ball_dist.moment_num
+        AND possession_blocks.playerid = rank_ball_dist.playerid
       LEFT JOIN length_possession_block
         ON  possession_blocks.playerid = length_possession_block.playerid
         AND possession_blocks.enumerated_blocks = length_possession_block.enumerated_blocks
-    ORDER BY season, gameid, eventid, moment_num
+        ORDER BY season, gameid, eventid, moment_num
 	LIMIT 50;
-
-/* https://stackoverflow.com/questions/29327566/grouping-and-counting-rows-by-value-until-it-changes */
-
--- , possession_count AS (
---     SELECT 
---         season
---       , gameid
---       , eventid
---       , moment_num
---       , teamid
---       , playerid
---       , SUM(is_closest_to_ball_within_threshold) OVER (
---       		PARTITION BY season, gameid, playerid 
---       		ORDER BY eventid, moment_num 
---       		ROWS BETWEEN 25 PRECEDING AND 0 PRECEDING) AS consecutive_possessions
---     FROM rank_ball_dist
---     ORDER BY season, gameid, eventid, moment_num
--- )

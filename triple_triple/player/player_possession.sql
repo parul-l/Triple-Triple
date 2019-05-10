@@ -1,9 +1,21 @@
-/* eventually this will require playerid list and has_ball_distanceas input */
+/* eventually this will require the following variables:
+- playerid list 
+- has_ball_distances input 
+- length of consecutive closest_to_ball frames to qualify for possession 
+*/
+
+/* this query scans through everything (to find the games for specific players) 
+and costs a lot of $$ 
+For now, to test hte logic, in the cte relevant_gameid, 
+WHERE clause is for specific game, not players
+*/
+
 
 WITH relevant_gameid AS (
     SELECT DISTINCT gameid
     FROM nba.playerinfo
-    WHERE playerid IN (202714, 201952)
+    -- WHERE playerid IN (202714, 201952)
+    WHERE gameid = '0021500128'
 )
 , ball_info AS (
     SELECT 
@@ -46,11 +58,9 @@ WITH relevant_gameid AS (
       , x_coordinate
       , y_coordinate
       , z_coordinate
-      , SQRT(
-          POWER(x_coordinate - x_coordinate_ball, 2) +
-          POWER(y_coordinate - y_coordinate_ball, 2)
-        )
-                                        AS distance_from_ball
+      , POWER(x_coordinate - x_coordinate_ball, 2) +
+        POWER(y_coordinate - y_coordinate_ball, 2)
+                                        AS distance_from_ball_sq
     FROM position_ball
 )
 , rank_ball_dist AS (
@@ -61,19 +71,14 @@ WITH relevant_gameid AS (
       , ball_dist.moment_num
       , ball_dist.teamid
       , ball_dist.playerid
-      , ball_dist.distance_from_ball
+      , ball_dist.distance_from_ball_sq
       , ROW_NUMBER() OVER (
           PARTITION BY season, gameid, eventid, moment_num 
-          ORDER BY distance_from_ball)  AS closest_to_ball_rank   
---   , CASE WHEN 
---       ROW_NUMBER() OVER (
---       PARTITION BY season, gameid, eventid, moment_num ORDER BY distance_from_ball) = 1 
---       AND distance_from_ball <= 2
---     THEN 1 ELSE 0 END                   AS is_closest_to_ball_within_threshold
+          ORDER BY distance_from_ball_sq)  AS closest_to_ball_rank   
     FROM ball_dist
-    WHERE playerid != -1 -- remove the ball since some moments don't have it and it affects the row number
+    WHERE playerid != -1 -- remove the ball since some moments don't have it
 )
-, closest_count AS (
+, closest_to_ball AS (
     SELECT
         season
       , gameid
@@ -83,7 +88,7 @@ WITH relevant_gameid AS (
       , playerid
       , closest_to_ball_rank
     FROM rank_ball_dist
-    WHERE closest_to_ball_rank = 1 AND distance_from_ball <= 2
+    WHERE closest_to_ball_rank = 1 AND distance_from_ball_sq <= 4 -- distance squared. input as variable
 )
 , shifted_closest_player AS (
 	SELECT
@@ -95,8 +100,9 @@ WITH relevant_gameid AS (
 	  , CASE WHEN 
 		  LAG(playerid, 1, playerid) OVER (ORDER BY season, gameid, eventid, moment_num) = playerid 
 		THEN 0 ELSE 1 END               AS is_different_player_is_closest           
-	FROM closest_count
+	FROM closest_to_ball
 )
+/* this enumerates the blocks */
 , possession_blocks AS (
 	SELECT 
 		season
@@ -114,7 +120,7 @@ WITH relevant_gameid AS (
 	  , COUNT(*)	AS possession_length
 	FROM possession_blocks
 	GROUP BY playerid, enumerated_blocks	
-)     
+)
 	SELECT      
         ball_dist.season
       , ball_dist.gameid
@@ -130,9 +136,10 @@ WITH relevant_gameid AS (
       , ball_dist.x_coordinate
       , ball_dist.y_coordinate
       , ball_dist.z_coordinate
-      , ball_dist.distance_from_ball
-      , possession_blocks.enumerated_blocks
+      , ball_dist.distance_from_ball_sq
 	  , length_possession_block.possession_length
+      , CASE WHEN length_possession_block.possession_length >= 25 THEN 1 ELSE 0
+        END                             AS has_ball          
 	FROM ball_dist
 	  LEFT JOIN rank_ball_dist 
         ON  ball_dist.season = rank_ball_dist.season
@@ -140,13 +147,13 @@ WITH relevant_gameid AS (
         AND ball_dist.eventid = rank_ball_dist.eventid
         AND ball_dist.moment_num = rank_ball_dist.moment_num
         AND ball_dist.playerid = rank_ball_dist.playerid
-       INNER JOIN closest_count -- so that we only get players with possession (closest_to_ball_rank = 1)
-        ON  closest_count.season = rank_ball_dist.season
-        AND closest_count.gameid = rank_ball_dist.gameid
-        AND closest_count.eventid = rank_ball_dist.eventid
-        AND closest_count.moment_num = rank_ball_dist.moment_num
-        AND closest_count.playerid = rank_ball_dist.playerid
-        AND closest_count.closest_to_ball_rank = rank_ball_dist.closest_to_ball_rank
+       INNER JOIN closest_to_ball -- so that we only get players with possession (closest_to_ball_rank = 1)
+        ON  closest_to_ball.season = rank_ball_dist.season
+        AND closest_to_ball.gameid = rank_ball_dist.gameid
+        AND closest_to_ball.eventid = rank_ball_dist.eventid
+        AND closest_to_ball.moment_num = rank_ball_dist.moment_num
+        AND closest_to_ball.playerid = rank_ball_dist.playerid
+        AND closest_to_ball.closest_to_ball_rank = rank_ball_dist.closest_to_ball_rank
       LEFT JOIN possession_blocks
         ON  possession_blocks.season = rank_ball_dist.season
         AND possession_blocks.gameid = rank_ball_dist.gameid
@@ -157,4 +164,4 @@ WITH relevant_gameid AS (
         ON  possession_blocks.playerid = length_possession_block.playerid
         AND possession_blocks.enumerated_blocks = length_possession_block.enumerated_blocks
         ORDER BY season, gameid, eventid, moment_num
-	LIMIT 50;
+	LIMIT 500;

@@ -138,16 +138,16 @@ WITH relevant_gameid AS (
       , ball_dist.z_coordinate
       , ball_dist.distance_from_ball_sq
 	  , length_possession_block.possession_length
-      , CASE WHEN length_possession_block.possession_length >= 25 THEN 1 ELSE 0
-        END                             AS has_ball          
+    --   , CASE WHEN length_possession_block.possession_length >= 25 THEN 1 ELSE 0 -- make 25 a variable
+    --     END                             AS has_ball          
 	FROM ball_dist
-	  LEFT JOIN rank_ball_dist 
+	  LEFT JOIN rank_ball_dist -- only get players, not ball
         ON  ball_dist.season = rank_ball_dist.season
         AND ball_dist.gameid = rank_ball_dist.gameid
         AND ball_dist.eventid = rank_ball_dist.eventid
         AND ball_dist.moment_num = rank_ball_dist.moment_num
         AND ball_dist.playerid = rank_ball_dist.playerid
-       INNER JOIN closest_to_ball -- so that we only get players with possession (closest_to_ball_rank = 1)
+       INNER JOIN closest_to_ball -- so that we only get players where closest_to_ball_rank = 1
         ON  closest_to_ball.season = rank_ball_dist.season
         AND closest_to_ball.gameid = rank_ball_dist.gameid
         AND closest_to_ball.eventid = rank_ball_dist.eventid
@@ -164,4 +164,4 @@ WITH relevant_gameid AS (
         ON  possession_blocks.playerid = length_possession_block.playerid
         AND possession_blocks.enumerated_blocks = length_possession_block.enumerated_blocks
         ORDER BY season, gameid, eventid, moment_num
-	LIMIT 500;
+--	LIMIT 500;

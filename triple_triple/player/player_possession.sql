@@ -6,7 +6,7 @@
 
 /* this query scans through everything (to find the games for specific players) 
 and costs a lot of $$ 
-For now, to test hte logic, in the cte relevant_gameid, 
+For now, to test the logic, in the cte relevant_gameid, 
 WHERE clause is for specific game, not players
 */
 

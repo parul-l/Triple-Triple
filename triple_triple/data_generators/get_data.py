@@ -1,9 +1,13 @@
 import logging
+import os
+import re
+import shutil
 import tempfile
 import time
-import os
 
 import boto3
+import pandas as pd
+
 
 from triple_triple.config import ATHENA_OUTPUT
 
@@ -24,11 +28,12 @@ def list_for_sql(some_list: list):
         Example: Converts [1, 2, 3] to '(1, 2, 3)'
                  Converts [1] to '(1)'
     """
+    return re.sub(',\)', ')', str(tuple(some_list)))
 
-    if len(some_list) == 1:
-        return '({})'.format(some_list[0])
-    else:
-        return str(tuple(some_list))
+    # if len(some_list) == 1:
+    #     return '({})'.format(some_list[0])
+    # else:
+    #     return str(tuple(some_list))
 
 
 def execute_athena_query(
@@ -62,13 +67,31 @@ def execute_athena_query(
     This has two keys:
         `QueryExecutionId` and `ResponseMetadata`.
     """
-    return boto3_client.start_query_execution(
+    execute_response = boto3_client.start_query_execution(
         QueryString=query,
         QueryExecutionContext={'Database': database},
         ResultConfiguration={
             'OutputLocation': os.path.join('s3://', ATHENA_OUTPUT, output_filename)
         }
     )
+    execution_id = execute_response['QueryExecutionId']
+    response = boto3_client.get_query_execution(QueryExecutionId=execution_id)
+    response_status = response['QueryExecution']['Status']['State']
+
+    if response_status in ['SUCCEEDED', 'RUNNING']:
+        logger.info('Status is {}'.format(response_status))
+        return execute_response
+
+    elif response_status == 'FAILED':
+        msg = response['QueryExecution']['StateChangeReason']
+        logger.error(msg)
+        
+        return msg
+
+    else:
+        logger.error('Something is up. Response is neither SUCCEEDED nor RUNNING nor FAILED.')
+        return response_status
+        
 
 
 def get_query_s3filepath(

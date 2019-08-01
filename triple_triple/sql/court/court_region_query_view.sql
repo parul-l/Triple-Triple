@@ -1,4 +1,4 @@
-CREATE VIEW {} AS 
+CREATE VIEW nba.vw_courtregion AS 
     SELECT 
           gameposition.season
         , gameposition.gameid

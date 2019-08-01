@@ -1,9 +1,9 @@
 /*
 This query combines player possession with player actions to determine 
 the position of each action. Assumptions to determine possession 
-are made in creating the vw_poss_tmp view.
+are made in creating the vw_possession view.
 
-For each action, we find the eventid, moment_num is the possesion view that
+For each action, we find the eventid, moment_num in the possesion view that
 has the closest period_clock to the action's period_tim.
 
 We have not addressed:
@@ -13,7 +13,7 @@ We have not addressed:
 CREATE VIEW nba.vw_action_region AS
     WITH poss_action AS (
         SELECT
-            player_actions.season
+              player_actions.season
             , player_actions.gameid
             , player_actions.eventnum
             , player_actions.period
@@ -26,28 +26,28 @@ CREATE VIEW nba.vw_action_region AS
             , player_actions.playerid
             , player_actions.playername
             , player_actions.is_home
-            , vw_poss_tmp.eventid
-            , vw_poss_tmp.moment_num
-            , vw_poss_tmp.periodclock
-            , vw_poss_tmp.court_region
-            , vw_poss_tmp.possession_length
-            , vw_poss_tmp.enumerated_blocks
-            , ABS(player_actions.period_time - vw_poss_tmp.periodclock) AS diff_possclock_actionclock
+            , vw_possession.eventid
+            , vw_possession.moment_num
+            , vw_possession.periodclock
+            , vw_possession.court_region
+            , vw_possession.possession_length
+            , vw_possession.enumerated_blocks
+            , ABS(player_actions.period_time - vw_possession.periodclock) AS diff_possclock_actionclock
         FROM nba.player_actions
-        LEFT JOIN nba.vw_poss_tmp
-        ON   player_actions.season = vw_poss_tmp.season
-        AND  player_actions.gameid = vw_poss_tmp.gameid
-        AND  player_actions.playerid = vw_poss_tmp.playerid
-        AND  player_actions.period = vw_poss_tmp.period
+        LEFT JOIN nba.vw_possession
+        ON   player_actions.season = vw_possession.season
+        AND  player_actions.gameid = vw_possession.gameid
+        AND  player_actions.playerid = vw_possession.playerid
+        AND  player_actions.period = vw_possession.period
         WHERE player_actions.gameid IN {0}
         AND   player_actions.playerid IN {1}
         AND   player_actions.eventmsgtype NOT IN (3, 6, 8) -- 3 = freethrow, 6 = foul, 8 = substitution 
-        AND   vw_poss_tmp.gameid IN {0}
-        AND   vw_poss_tmp.playerid IN {1}
+        AND   vw_possession.gameid IN {0}
+        AND   vw_possession.playerid IN {1}
     )
     , dist_order AS (
         SELECT 
-        season
+          season
         , gameid
         , playerid
         , eventnum
@@ -57,7 +57,10 @@ CREATE VIEW nba.vw_action_region AS
         FROM poss_action
     )
     SELECT
-        poss_action.eventnum 
+          poss_action.season
+        , poss_action.gameid
+        , gameinfo.gamedate
+        , poss_action.eventnum 
         , poss_action.eventid
         , poss_action.moment_num
         , poss_action.period
@@ -73,9 +76,10 @@ CREATE VIEW nba.vw_action_region AS
         , poss_action.diff_possclock_actionclock
         , poss_action.possession_length
         , poss_action.enumerated_blocks
-        , poss_action.season
-        , poss_action.gameid
     FROM poss_action
+    LEFT JOIN nba.gameinfo
+        ON  poss_action.season = gameinfo.season
+        AND poss_action.gameid = gameinfo.gameid
     INNER JOIN dist_order
         ON  poss_action.season = dist_order.season
         AND poss_action.gameid = dist_order.gameid
@@ -85,3 +89,5 @@ CREATE VIEW nba.vw_action_region AS
         AND poss_action.moment_num = dist_order.moment_num
         WHERE dist_order.distrank = 1
 	
+
+    

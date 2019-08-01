@@ -2,7 +2,12 @@ import pandas as pd
 
 
 from triple_triple.connection import get_connection
-from triple_triple.data_generators.get_data import athena_to_pandas, list_for_sql
+from triple_triple.data_generators.get_data import (
+    athena_to_pandas,
+    execute_athena_query,
+    get_query_response,
+    list_for_sql
+)
 
 
 def get_gameid_given_dates(date_range: list = ['1970-01-01', '2019-06-25']):
@@ -37,6 +42,46 @@ def get_gameid_given_dates(date_range: list = ['1970-01-01', '2019-06-25']):
     df.loc[:, 'gameid'] =  df.gameid.apply(lambda x: str(x).zfill(10))
 
     return list(df.gameid.values)
+
+
+def get_date_given_gameid(gameid: str, max_time: int = 5):
+    """
+        This function takes a date range and returns a tuple all gameids
+        that fall in this range 
+    
+        Parameters
+        ----------
+            gameids: `str`
+                A gameids.
+            max_time: `int`
+        
+        Returns
+        -------
+            A `str` of the game date of the given gameid
+    """
+
+    query = """
+        SELECT 
+          gamedate
+        FROM nba.gameinfo
+        WHERE gameid = '{}'
+    """.format(gameid)
+
+    execute_response = execute_athena_query(
+        query=query,
+        database='nba',
+        output_filename='gamedate_{}'.format(gameid),
+    )
+    execution_id = execute_response['QueryExecutionId']
+    query_results = get_query_response(
+        execution_id=execution_id,
+        max_time=max_time
+    )
+    try:
+        return query_results['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']
+    except:
+        logger.info('Date not computed')
+        return None
 
 
 def get_gameid_given_player(

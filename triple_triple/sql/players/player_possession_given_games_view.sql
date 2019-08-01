@@ -1,7 +1,7 @@
-CREATE VIEW nba.vw_poss_tmp AS
+CREATE VIEW nba.vw_possession AS
     WITH closest AS (
         SELECT
-            season
+          season
         , gameid
         , eventid
         , moment_num

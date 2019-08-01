@@ -91,7 +91,6 @@ def execute_athena_query(
     else:
         logger.error('Something is up. Response is neither SUCCEEDED nor RUNNING nor FAILED.')
         return response_status
-        
 
 
 def get_query_s3filepath(
@@ -203,3 +202,149 @@ def athena_to_pandas(
 
     return df
 
+
+def check_table_exists(
+        database_name: str,
+        table_name: str,
+        max_time: int = 0
+):
+    response = glue.get_tables(DatabaseName=database_name, Expression=table_name)
+
+    time_to_appear = 0
+    time_increment = 1
+
+    while not response['TableList'] and time_to_appear <= max_time:    
+        time.sleep(time_increment)
+        time_to_appear += time_increment
+
+        response = glue.get_tables(DatabaseName=database_name, Expression=table_name)
+
+    if response['TableList']:
+        logger.info('It took {} seconds for the table to appear'.format(time_to_appear))
+        return 1
+    else:
+        logger.info('Table did not appear in the max time of {} seconds'.format(max_time))
+        return 0
+
+
+def get_query_response(
+        execution_id: str,
+        max_time: int = 5,
+        boto3_client=athena
+):
+    
+    response = boto3_client.get_query_execution(QueryExecutionId=execution_id)
+    status = response['QueryExecution']['Status']['State']
+
+    time_to_appear = 0
+    time_increment = 1
+
+    while (status == 'RUNNING' and time_to_appear <= max_time):
+        time.sleep(time_increment)
+        time_to_appear += time_increment
+
+        response = boto3_client.get_query_execution(QueryExecutionId=execution_id)
+        status = response['QueryExecution']['Status']['State']
+
+    if time_to_appear > max_time + 1:
+        logger.info('Execution did not finish in the max time of {} seconds'.format(max_time))
+        return []
+    else:
+        # return query results
+        return boto3_client.get_query_results(QueryExecutionId=execution_id)
+
+
+def check_view_exists(
+        database: str,
+        view_name: str,
+        max_time: int = 0,
+        boto3_client = athena
+):
+    execute_response = execute_athena_query(
+        query="SHOW VIEWS IN {} LIKE '{}'".format(database, view_name),
+        database=database,
+        output_filename='show_{}'.format(view_name),
+    )
+    execution_id = execute_response['QueryExecutionId']
+
+    query_results = get_query_response(execution_id=execution_id, max_time=max_time)
+
+    if query_results['ResultSet']['Rows']:
+        return 1
+    else:
+        return 0
+
+
+def get_bucket_content(bucket_name: str, prefix: str, delimiter: str = '/'):
+    """
+    This function returns the elements ('subfolders) in the given `bucket_name`
+    with keys beginning with the given `prefix`.
+
+    Parameters
+    ----------
+    bucket_name: `str`
+        The s3 bucket name containing the data
+    
+    prefix: `str`
+        The full key prefix, ending in '/'.
+        Example: 'gameposition/season=2015-2016/'
+    
+    delimeter: `str`
+        For 'subfolders', use '/'.
+        For all 'files', use ''.
+
+    Returns
+    ------
+    A list of dictionaries. Each dictionary has key 'Prefix'
+    and value equal to the `prefix` + subfolder.
+    Example: 'gameposition/season=2015-2016/gameid=0021500663/'
+
+    """
+    response = s3.list_objects(
+        Bucket=bucket_name,
+        Prefix=prefix,
+        Delimiter=delimiter
+    )
+
+    if delimiter == '/':
+        # returns 'subfolders'
+        return response.get('CommonPrefixes')
+    elif delimiter == '':
+        # returns all 'files'
+        return [file['Key'] for file in response['Contents']]
+
+
+def copy_bucket_contents(
+        copy_source_keys: list,  # list of all files to move
+        destination_bucket: str,
+        destination_folder: str,
+        s3client
+):
+    for file in copy_source_keys:
+        copy_params = {'Bucket': destination_bucket, 'Key': file}
+        # removes source_folder
+        destination_suffix = '/'.join(file.split('/')[1:])
+        destination_key = '{}/{}'.format(destination_folder,
+                                         destination_suffix)
+
+        logger.info('Copying {} in to {}'.format(file, destination_folder))
+        # copy object in to destination
+        s3client.copy_object(
+            Bucket=destination_bucket,
+            CopySource=copy_params,
+            Key=destination_key
+        )
+
+
+def remove_bucket_contents(
+        bucket: str,
+        key: str,
+        s3client
+):
+
+    logger.info('Removing {}'.format(key))
+    # delete object from source
+    s3client.delete_object(
+        Bucket=bucket,
+        Key=key
+    )

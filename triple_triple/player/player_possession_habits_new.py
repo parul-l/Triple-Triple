@@ -53,6 +53,7 @@ class PlayerActionFrequencyPerGame(object):
                   season
                 , gameid
                 , event_action
+                , region_code
                 , court_region
                 , COUNT(*)		AS action_region_frequency
                 , playerid
@@ -61,7 +62,7 @@ class PlayerActionFrequencyPerGame(object):
             WHERE gameid = '{}'
               AND playerid IN {}
               AND diff_possclock_actionclock < {}
-            GROUP BY season, gameid, gamedate, playerid, event_action, court_region
+            GROUP BY season, gameid, gamedate, playerid, event_action, region_code, court_region
         """.format(
             self.gameid,
             list_for_sql(self.playerids),
@@ -177,17 +178,31 @@ class PlayerActionFrequencyPerGame(object):
 
 def get_player_action_frequency(
         playerids: list,
-        date_range: list = ['1970-01-01', '2099-06-25'],
+        gameids: list = [],
+        date_range: list = [], # format ['1970-01-01', '2099-06-25'],
         distance_to_ball: int = 4,  # square distance 
         possession_block: int = 7.5, # min consecutive blocks to consider a possession (0.8th of a second)
         diff_possclock_action_clock: int = 5,
         max_time: int = 60 # max time for vw_action_region to be made
 ):
+    """
+        This function requires either (i) a date range or (ii) list of gameids,
+        to obtain player frequency data from either (i) or (ii) or the 
+        intersection of both
+    """
+    if not date_range and not gameids:
+        logger.error('Need to specify date_range OR gameids OR both.')
 
-    gameids = get_gameid_given_player(players=playerids, date_range=date_range)
+    if date_range:
+        gameid_dates = get_gameid_given_player(
+            players=playerids, date_range=date_range)
+        if gameids:
+            gameids = list(set(gameid_dates) & set(gameids))
+        else:
+            gameids = gameid_dates
 
     # create the action_region view
-    create_action_region_view(
+    execute_response = create_action_region_view(
         playerids=playerids,
         gameids=gameids,
         date_range=date_range,
@@ -198,8 +213,9 @@ def get_player_action_frequency(
     vw_exists = check_view_exists(
         database='nba',
         view_name='vw_action_region',
-        max_time=60
+        max_time=180
     )
+    print(vw_exists)
     
     if vw_exists:
         for gameid in gameids:
@@ -236,4 +252,3 @@ def get_player_action_frequency(
         output_filename='drop_action_region_vw',
     )    
 
-    return etl

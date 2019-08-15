@@ -29,6 +29,7 @@ CREATE VIEW nba.vw_action_region AS
             , vw_possession.eventid
             , vw_possession.moment_num
             , vw_possession.periodclock
+            , vw_possession.region_code
             , vw_possession.court_region
             , vw_possession.possession_length
             , vw_possession.enumerated_blocks
@@ -72,6 +73,7 @@ CREATE VIEW nba.vw_action_region AS
         , poss_action.playerid
         , poss_action.playername
         , poss_action.is_home
+        , poss_action.region_code
         , poss_action.court_region
         , poss_action.diff_possclock_actionclock
         , poss_action.possession_length

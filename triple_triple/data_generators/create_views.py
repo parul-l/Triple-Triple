@@ -58,6 +58,8 @@ def create_court_region_view(gameids: list, playerids: list):
             database='nba',
             output_filename='create_courtregion_vw',
         )
+        return response_court
+
     except Exception as err:
         logger.error(err)
 
@@ -81,7 +83,10 @@ def create_possession_view(
     """
 
     # get gameids from playerlist
-    player_gameids = get_gameid_given_player(players=playerids, date_range=date_range)
+    player_gameids = get_gameid_given_player(
+        players=playerids,
+        date_range=date_range
+    )
 
     if gameids:
         gameids = list(set(player_gameids) & set(gameids))
@@ -89,9 +94,13 @@ def create_possession_view(
         gameids = player_gameids
         
     # create court_region view
-    create_court_region_view(gameids=gameids, playerids=playerids)
+    response_court = create_court_region_view(gameids=gameids, playerids=playerids)
 
-    if check_view_exists(database='nba', view_name='vw_courtregion', max_time=10):
+    if check_view_exists(
+        database='nba',
+        view_name='vw_courtregion',
+        max_time=180
+    ):
         # get possession query
         possession_sql_path = os.path.join(
             SQL_DIR, 
@@ -121,6 +130,8 @@ def create_possession_view(
             database='nba',
             output_filename='create_poss_tmp_vw',
         )
+
+        return response_poss
     
 
 def create_action_region_view(
@@ -131,7 +142,7 @@ def create_action_region_view(
         possession_block: int = 7.5 # min consecutive blocks to consider a possession (0.8th of a second)
 ):
 
-    create_possession_view(
+    response_poss = create_possession_view(
         playerids=playerids,
         gameids=gameids,
         date_range=date_range,
@@ -139,8 +150,12 @@ def create_action_region_view(
         possession_block=possession_block 
     )
 
-    # allow 5 seconds for view to be created
-    if check_view_exists(database='nba', view_name='vw_possession', max_time=10):
+    # allow 10 seconds for view to be created
+    if check_view_exists(
+        database='nba',
+        view_name='vw_possession',
+        max_time=180
+    ):
         # action region query
         action_region_sql_path = os.path.join(
             SQL_DIR,
@@ -167,3 +182,14 @@ def create_action_region_view(
             database='nba',
             output_filename='create_actionregion_vw',
         )
+
+        vw_action_exists = check_view_exists(
+            database='nba',
+            view_name='vw_action_region',
+            max_time=180
+        )
+
+        return response_action_region
+
+    return response_poss
+

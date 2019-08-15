@@ -76,6 +76,7 @@ CREATE VIEW nba.vw_possession AS
                 length_possession_block.possession_length >= {2} 
             THEN 1 ELSE 0 END               AS has_ball
         , vw_courtregion.court_region
+        , court_region_codes.region_code
         FROM closest
         LEFT JOIN possession_blocks USING (season, gameid, eventid, moment_num, playerid)
         LEFT JOIN length_possession_block 
@@ -87,5 +88,7 @@ CREATE VIEW nba.vw_possession AS
             AND vw_courtregion.eventid = closest.eventid
             AND vw_courtregion.moment_num = closest.moment_num
             AND vw_courtregion.playerid = closest.playerid
+        LEFT JOIN nba.court_region_codes
+            ON court_region_codes.court_region = vw_courtregion.court_region
         WHERE length_possession_block.possession_length >= {2} -- this implies player has possession
         ORDER BY season, gameid, eventid, moment_num, length_possession_block.enumerated_blocks

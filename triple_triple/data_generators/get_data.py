@@ -19,6 +19,7 @@ s3 = boto3.client('s3', region_name='us-east-1')
 
 # initiate logger
 logger = logging.getLogger()
+logging.getLogger().addHandler(logging.StreamHandler())
 logger.setLevel('INFO')
 
 
@@ -247,11 +248,36 @@ def get_query_response(
         status = response['QueryExecution']['Status']['State']
 
     if time_to_appear > max_time + 1:
+        print(status)
+        print(time_to_appear)
         logger.info('Execution did not finish in the max time of {} seconds'.format(max_time))
         return []
     else:
+        print(status)
+        print(time_to_appear)
         # return query results
         return boto3_client.get_query_results(QueryExecutionId=execution_id)
+
+
+def get_query_results(
+        query: str,
+        output_filename: str,
+        max_time: int, # maximum time to just if query executed
+        database: str = 'nba'
+):
+
+    execute_response = execute_athena_query(
+        query=query,
+        database=database,
+        output_filename=output_filename,
+    )
+    execution_id = execute_response['QueryExecutionId']
+
+    # query results
+    return get_query_response(
+        execution_id=execution_id,
+        max_time=max_time
+    )
 
 
 def check_view_exists(
@@ -260,14 +286,13 @@ def check_view_exists(
         max_time: int = 0,
         boto3_client = athena
 ):
-    execute_response = execute_athena_query(
-        query="SHOW VIEWS IN {} LIKE '{}'".format(database, view_name),
-        database=database,
-        output_filename='show_{}'.format(view_name),
-    )
-    execution_id = execute_response['QueryExecutionId']
 
-    query_results = get_query_response(execution_id=execution_id, max_time=max_time)
+    query_results = get_query_results(
+        query="SHOW VIEWS IN {} LIKE '{}'".format(database, view_name),
+        output_filename='show_{}'.format(view_name),
+        max_time=max_time,
+        database=database
+    )
 
     if query_results['ResultSet']['Rows']:
         return 1
@@ -289,7 +314,7 @@ def get_bucket_content(bucket_name: str, prefix: str, delimiter: str = '/'):
         The full key prefix, ending in '/'.
         Example: 'gameposition/season=2015-2016/'
     
-    delimeter: `str`
+    delimiter: `str`
         For 'subfolders', use '/'.
         For all 'files', use ''.
 

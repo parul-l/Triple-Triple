@@ -55,7 +55,7 @@ CREATE VIEW nba.vw_possession AS
         GROUP BY playerid, enumerated_blocks	
     )
         SELECT      
-            closest.season
+          closest.season
         , closest.gameid
         , closest.eventid
         , closest.moment_num
@@ -90,5 +90,5 @@ CREATE VIEW nba.vw_possession AS
             AND vw_courtregion.playerid = closest.playerid
         LEFT JOIN nba.court_region_codes
             ON court_region_codes.court_region = vw_courtregion.court_region
-        WHERE length_possession_block.possession_length >= {2} -- this implies player has possession
+        --WHERE length_possession_block.possession_length >= {2} -- this implies player has possession
         ORDER BY season, gameid, eventid, moment_num, length_possession_block.enumerated_blocks

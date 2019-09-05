@@ -195,7 +195,8 @@ def get_player_action_frequency(
 
     if date_range:
         gameid_dates = get_gameid_given_player(
-            players=playerids, date_range=date_range)
+            players=playerids, date_range=date_range
+        )
         if gameids:
             gameids = list(set(gameid_dates) & set(gameids))
         else:
@@ -215,7 +216,6 @@ def get_player_action_frequency(
         view_name='vw_action_region',
         max_time=180
     )
-    print(vw_exists)
     
     if vw_exists:
         for gameid in gameids:
@@ -229,26 +229,4 @@ def get_player_action_frequency(
     else:
         logger.info('vw_action_region does not exist')
         print('vw_action_region does not exist')
-
-    # drop views (they are no longer needed)
-    logger.info('Dropping possession-region view for given players')
-    response_poss = execute_athena_query(
-        query='DROP VIEW nba.vw_possession;',
-        database='nba',
-        output_filename='drop_poss_tmp_vw',
-    )
-
-    logger.info('Dropping court-region view for given players')
-    response_drop_court = execute_athena_query(
-        query='DROP VIEW nba.vw_courtregion;',
-        database='nba',
-        output_filename='drop_courtregion_vw',
-    )
-
-    logger.info('Dropping action-region view for given players')
-    response_action_region = execute_athena_query(
-        query='DROP VIEW nba.vw_action_region;',
-        database='nba',
-        output_filename='drop_action_region_vw',
-    )    
 

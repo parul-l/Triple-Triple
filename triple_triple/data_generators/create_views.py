@@ -16,7 +16,11 @@ logger = logging.getLogger()
 logger.setLevel('INFO')
 
 
-def create_court_region_view(gameids: list, playerids: list):
+def create_court_region_view(
+        gameids: list,
+        playerids: list,
+        max_time: int = 120
+):
     """
         Takes a list of playerids and gameids and creates a view
         to show the player's court region for every (x, y) coordinate pair
@@ -62,14 +66,28 @@ def create_court_region_view(gameids: list, playerids: list):
 
     except Exception as err:
         logger.error(err)
+    
+    # check view exists
+    vw_exists = check_view_exists(
+        database='nba',
+        view_name='vw_courtregion',
+        max_time=max_time
+    )
+    if vw_exists:
+        logger.info('Court view loaded within {} seconds'.format(max_time))
+    else:
+        logger.error('Court view did not load within {} seconds'.format(max_time))
+    
+    return vw_exists
 
 
 def create_possession_view(
         playerids: list,
         gameids: list = [],
         date_range: list = ['1970-01-01', '2099-06-25'],
-        distance_to_ball: int = 4, # square distance
-        possession_block: int = 7.5, # min consecutive blocks to consider a possession (0.8th of a second)
+        distance_to_ball: int = 4,   # square distance
+        possession_block: int = 7.5, # min consecutive blocks to consider a possession (0.8th of a second),
+        max_time: int = 120
 ):
     """
         Takes a list of players and date range, and gets the possession
@@ -96,10 +114,11 @@ def create_possession_view(
     # create court_region view
     response_court = create_court_region_view(gameids=gameids, playerids=playerids)
 
+
     if check_view_exists(
         database='nba',
         view_name='vw_courtregion',
-        max_time=180
+        max_time=10
     ):
         # get possession query
         possession_sql_path = os.path.join(
@@ -131,15 +150,31 @@ def create_possession_view(
             output_filename='create_poss_tmp_vw',
         )
 
-        return response_poss
+        # check view exists
+        vw_exists = check_view_exists(
+            database='nba',
+            view_name='vw_possession',
+            max_time=max_time
+        )
+        if vw_exists:
+            logger.info('Possession view loaded within {} seconds'.format(max_time))
+        else:
+            logger.error('Possession view did not load within {} seconds'.format(max_time))
+
+        return vw_exists
+
+    else:
+        logger.error('Court view does not exist. Possession view can not load.')
+
     
 
 def create_action_region_view(
         playerids: list,
         gameids: list = [],
         date_range: list = ['1970-01-01', '2099-06-25'],
-        distance_to_ball: int = 4,  # square distance
-        possession_block: int = 7.5 # min consecutive blocks to consider a possession (0.8th of a second)
+        distance_to_ball: int = 4,   # square distance
+        possession_block: int = 7.5, # min consecutive blocks to consider a possession (0.8th of a second)
+        max_time: int = 120
 ):
 
     response_poss = create_possession_view(
@@ -154,7 +189,7 @@ def create_action_region_view(
     if check_view_exists(
         database='nba',
         view_name='vw_possession',
-        max_time=180
+        max_time=10
     ):
         # action region query
         action_region_sql_path = os.path.join(
@@ -169,7 +204,7 @@ def create_action_region_view(
             )
 
         # drop view if it exists
-        logger.info('Dropping action-region view for given players')
+        logger.info('Dropping previous action-region view for given players')
         response_poss = execute_athena_query(
             query='DROP VIEW IF EXISTS nba.vw_action_region;',
             database='nba',
@@ -183,13 +218,22 @@ def create_action_region_view(
             output_filename='create_actionregion_vw',
         )
 
-        vw_action_exists = check_view_exists(
+        # check view exists
+        vw_exists = check_view_exists(
             database='nba',
             view_name='vw_action_region',
-            max_time=180
+            max_time=max_time
         )
+        if vw_exists:
+            logger.info('View loaded within {} seconds'.format(max_time))
+        else:
+            logger.error('View did not load within {} seconds'.format(max_time))
 
-        return response_action_region
+        return vw_exists
 
-    return response_poss
+    else:
+        logger.error(
+            'Possession view does not exist. Action view can not load.')
+
+
 

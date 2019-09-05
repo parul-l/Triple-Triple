@@ -31,11 +31,6 @@ def list_for_sql(some_list: list):
     """
     return re.sub(',\)', ')', str(tuple(some_list)))
 
-    # if len(some_list) == 1:
-    #     return '({})'.format(some_list[0])
-    # else:
-    #     return str(tuple(some_list))
-
 
 def execute_athena_query(
         query: str,
@@ -248,14 +243,11 @@ def get_query_response(
         status = response['QueryExecution']['Status']['State']
 
     if time_to_appear > max_time + 1:
-        print(status)
-        print(time_to_appear)
         logger.info('Execution did not finish in the max time of {} seconds'.format(max_time))
         return []
     else:
-        print(status)
-        print(time_to_appear)
         # return query results
+        logger.info('Execution completed in {} seconds'.format(time_to_appear))
         return boto3_client.get_query_results(QueryExecutionId=execution_id)
 
 
@@ -284,7 +276,7 @@ def check_view_exists(
         database: str,
         view_name: str,
         max_time: int = 0,
-        boto3_client = athena
+        boto3_client: boto3.client = athena
 ):
 
     query_results = get_query_results(
@@ -294,9 +286,32 @@ def check_view_exists(
         database=database
     )
 
+    # if query_results['ResultSet']['Rows']:
+    #     return 1
+    # else:
+    #     return 0
+
+    time_to_appear = 0
+    time_increment = 1
+
+    while not query_results['ResultSet']['Rows'] and time_to_appear <= max_time:
+        time.sleep(time_increment)
+        time_to_appear += time_increment
+
+    query_results = get_query_results(
+        query="SHOW VIEWS IN {} LIKE '{}'".format(database, view_name),
+        output_filename='show_{}'.format(view_name),
+        max_time=max_time,
+        database=database
+    )
+
     if query_results['ResultSet']['Rows']:
+        logger.info(
+            'It took {} seconds for the view to appear'.format(time_to_appear))
         return 1
     else:
+        logger.info(
+            'View did not appear in the max time of {} seconds'.format(max_time))
         return 0
 
 

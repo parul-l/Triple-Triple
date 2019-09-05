@@ -26,3 +26,12 @@ if __name__ == '__main__':
         date_range=date_range,
         diff_possclock_action_clock=5
     )
+
+    gameids = ['0021500020']
+    date_range = ['2015-10-29', '2015-10-29']
+    playerids = [1717] # Dirk Nowitzki
+    get_player_action_frequency(
+        playerids=playerids,
+        date_range=date_range,
+        diff_possclock_action_clock=5
+    )

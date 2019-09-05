@@ -80,4 +80,4 @@ CREATE VIEW nba.vw_courtregion AS
       INNER JOIN nba.team_shooting_side USING (teamid, period)
     WHERE nba.gameposition.gameid IN {}
       AND nba.team_shooting_side.gameid IN {}
-      AND nba.gameposition.playerid IN {}
+      -- AND nba.gameposition.playerid IN {}

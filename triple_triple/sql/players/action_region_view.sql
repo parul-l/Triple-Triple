@@ -40,7 +40,8 @@ CREATE VIEW nba.vw_action_region AS
         AND  player_actions.gameid = vw_possession.gameid
         AND  player_actions.playerid = vw_possession.playerid
         AND  player_actions.period = vw_possession.period
-        WHERE player_actions.gameid IN {0}
+        WHERE vw_possession.has_ball = 1
+        AND   player_actions.gameid IN {0}
         AND   player_actions.playerid IN {1}
         AND   player_actions.eventmsgtype NOT IN (3, 6, 8) -- 3 = freethrow, 6 = foul, 8 = substitution 
         AND   vw_possession.gameid IN {0}

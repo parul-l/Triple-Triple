@@ -24,7 +24,7 @@ CREATE VIEW nba.vw_possession AS
     )
     , shifted_closest_player AS (
         SELECT
-            season
+          season
         , gameid
         , eventid
         , moment_num

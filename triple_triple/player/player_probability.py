@@ -20,6 +20,11 @@ logger.setLevel('INFO')
 logging.getLogger().addHandler(logging.StreamHandler())
 
 
+def add_data_for_gameids(
+
+):
+
+
 def player_action_frequency_query(
     date_range: list,  # [start_date, end_date]
     playerid: int, 
@@ -123,5 +128,97 @@ def get_player_probability(player_action_frequency: pd.DataFrame):
     return df_pivot.div(df_pivot.sum(axis=1), axis=0)
 
 
-df_player_prob = player_action_frequency_per_game(
-    playerid=playerids[0], date_range=date_range, gameids=gameids)
+def player_position_probability(
+        playerid: int,
+        date_range: list = [],  # [start_date, end_date]
+        gameids: list = [],
+        max_time: int = 10
+):
+    if not date_range and not gameids:
+        logger.error('Need to specify date_range OR gameids OR both.')
+
+    if date_range:
+        gameid_dates = get_gameid_given_dates(date_range)
+        if gameids:
+            gameids = list(set(gameid_dates) & set(gameids))
+        else:
+            gameids = gameid_dates
+
+    query = """
+        SELECT
+            region_code
+            , vw_courtregion.court_region
+            , COUNT(vw_courtregion.court_region)            AS region_frequency
+            , COUNT(vw_courtregion.court_region) * 1.0 / (SELECT COUNT(*) FROM nba.vw_courtregion WHERE playerid = {0}) 
+                                                            AS region_probability
+        FROM nba.vw_courtregion
+          LEFT JOIN nba.court_region_codes
+          ON vw_courtregion.court_region = court_region_codes.court_region
+        WHERE playerid = {0}
+        GROUP BY region_code, vw_courtregion.court_region
+    """.format(playerid)
+
+
+    results = get_query_results(
+        query=query,
+        output_filename='player_position_prob',
+        max_time=max_time
+    )
+    data = [
+        [subrow['VarCharValue'] for subrow in row['Data']]
+        for row in results['ResultSet']['Rows']
+    ]
+    return pd.DataFrame(data=data[1:], columns=data[0])
+
+
+def player_possession_probability(
+        playerid: int,
+        date_range: list = [],  # [start_date, end_date]
+        gameids: list = [],
+        max_time: int = 10
+):
+    if not date_range and not gameids:
+        logger.error('Need to specify date_range OR gameids OR both.')
+
+    if date_range:
+        gameid_dates = get_gameid_given_dates(date_range)
+        if gameids:
+            gameids = list(set(gameid_dates) & set(gameids))
+        else:
+            gameids = gameid_dates
+
+    query = """
+        WITH player_poss AS (
+            SELECT
+                  gameid
+                , COUNT(DISTINCT enumerated_blocks)		AS num_possession
+            FROM nba.vw_possession
+            WHERE 
+                has_ball = 1 AND 
+                vw_possession.playerid = {} AND
+                vw_possession.gameids IN {}
+            GROUP BY vw_possession.gameid
+        )
+        , all_poss AS (
+            SELECT
+                gameid
+                , COUNT(DISTINCT enumerated_blocks) AS total_possessions
+            FROM nba.vw_possession 
+            WHERE has_ball = 1
+            GROUP BY gameid 
+        )
+        SELECT
+              player_poss.gameid
+            , num_possession
+            , total_possessions
+            , num_possession / total_possessions * 1.0      AS prob_possession
+        FROM player_poss
+        LEFT JOIN all_poss
+        ON player_poss.gameid = all_poss.gameid
+    """.format(playerid)
+
+    results = get_query_results(
+        query=query,
+        output_filename='player_possession_prob',
+        max_time=max_time
+    )

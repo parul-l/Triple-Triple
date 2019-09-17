@@ -7,7 +7,8 @@ import numpy as np
 from triple_triple.game.game_info import get_gameid_given_dates
 from triple_triple.data_generators.get_data import (
     athena_to_pandas,
-    get_query_results
+    get_query_results,
+    list_for_sql
 )
 from triple_triple.player.player_possession_habits_new import (
     get_player_action_frequency
@@ -20,15 +21,27 @@ logger.setLevel('INFO')
 logging.getLogger().addHandler(logging.StreamHandler())
 
 
-def add_data_for_gameids(
+def gameids_daterange_overlap(
+        date_range: list = [],  # [start_date, end_date]
+        gameids: list = [],
+        max_time: int = 10):
 
-):
+    if not date_range and not gameids:
+        logger.error('Need to specify date_range OR gameids OR both.')
+
+    if date_range:
+        gameid_dates = get_gameid_given_dates(date_range)
+        if gameids:
+            gameids = list(set(gameid_dates) & set(gameids))
+        else:
+            gameids = gameid_dates
+
+    return gameids
 
 
 def player_action_frequency_query(
     date_range: list,  # [start_date, end_date]
-    playerid: int, 
-):
+    playerid: int):
 
     return """
         SELECT 
@@ -49,23 +62,28 @@ def player_action_frequency_per_game(
         playerid: int,
         date_range: list = [], # [start_date, end_date]
         gameids: list = [],
-        max_time: int = 10
-):
+        max_time: int = 10):
     """
         This function determines the action frequency per region for a given player.    
         The function requires either (i) a date range or (ii) list of gameids,
         to obtain player frequency data from either (i) or (ii) or the 
         intersection of both
     """
-    if not date_range and not gameids:
-        logger.error('Need to specify date_range OR gameids OR both.')
+    # if not date_range and not gameids:
+    #     logger.error('Need to specify date_range OR gameids OR both.')
 
-    if date_range:
-        gameid_dates = get_gameid_given_dates(date_range)
-        if gameids:
-            gameids = list(set(gameid_dates) & set(gameids))
-        else:
-            gameids = gameid_dates
+    # if date_range:
+    #     gameid_dates = get_gameid_given_dates(date_range)
+    #     if gameids:
+    #         gameids = list(set(gameid_dates) & set(gameids))
+    #     else:
+    #         gameids = gameid_dates
+    gameids = gameids_daterange_overlap(
+        date_range=date_range,
+        gameids=gameids,
+        max_time=max_time
+    )
+
     
     # find all games whose player frequency is not yet computed
     query = """
@@ -107,7 +125,7 @@ def player_action_frequency_per_game(
     )
 
 
-def get_player_probability(player_action_frequency: pd.DataFrame):
+def player_action_probability(player_action_frequency: pd.DataFrame):
     df_pivot = pd.pivot_table(
         player_action_frequency,
         index=['region_code', 'court_region'],
@@ -132,93 +150,133 @@ def player_position_probability(
         playerid: int,
         date_range: list = [],  # [start_date, end_date]
         gameids: list = [],
-        max_time: int = 10
-):
-    if not date_range and not gameids:
-        logger.error('Need to specify date_range OR gameids OR both.')
+        max_time: int = 10):
+    # if not date_range and not gameids:
+    #     logger.error('Need to specify date_range OR gameids OR both.')
 
-    if date_range:
-        gameid_dates = get_gameid_given_dates(date_range)
-        if gameids:
-            gameids = list(set(gameid_dates) & set(gameids))
-        else:
-            gameids = gameid_dates
-
-    query = """
-        SELECT
-            region_code
-            , vw_courtregion.court_region
-            , COUNT(vw_courtregion.court_region)            AS region_frequency
-            , COUNT(vw_courtregion.court_region) * 1.0 / (SELECT COUNT(*) FROM nba.vw_courtregion WHERE playerid = {0}) 
-                                                            AS region_probability
-        FROM nba.vw_courtregion
-          LEFT JOIN nba.court_region_codes
-          ON vw_courtregion.court_region = court_region_codes.court_region
-        WHERE playerid = {0}
-        GROUP BY region_code, vw_courtregion.court_region
-    """.format(playerid)
-
-
-    results = get_query_results(
-        query=query,
-        output_filename='player_position_prob',
+    # if date_range:
+    #     gameid_dates = get_gameid_given_dates(date_range)
+    #     if gameids:
+    #         gameids = list(set(gameid_dates) & set(gameids))
+    #     else:
+    #         gameids = gameid_dates
+    gameids = gameids_daterange_overlap(
+        date_range=date_range,
+        gameids=gameids,
         max_time=max_time
     )
-    data = [
-        [subrow['VarCharValue'] for subrow in row['Data']]
-        for row in results['ResultSet']['Rows']
-    ]
-    return pd.DataFrame(data=data[1:], columns=data[0])
+
+    # re-create vw_courtregion
+    vw_exists = create_court_region_view(
+        gameids=gameids
+        playerids=playerid
+    )
+
+    if vw_exists:
+        query = """
+            SELECT
+                region_code
+                , vw_courtregion.court_region
+                , COUNT(vw_courtregion.court_region)            AS region_frequency
+                , COUNT(vw_courtregion.court_region) * 1.0 / (SELECT COUNT(*) FROM nba.vw_courtregion WHERE playerid = {0}) 
+                                                                AS region_probability
+            FROM nba.vw_courtregion
+            LEFT JOIN nba.court_region_codes
+            ON vw_courtregion.court_region = court_region_codes.court_region
+            WHERE playerid = {0}
+            GROUP BY region_code, vw_courtregion.court_region
+        """.format(playerid)
+
+
+        results = get_query_results(
+            query=query,
+            output_filename='player_position_prob',
+            max_time=max_time
+        )
+        data = [
+            [subrow['VarCharValue'] for subrow in row['Data']]
+            for row in results['ResultSet']['Rows']
+        ]
+        return pd.DataFrame(data=data[1:], columns=data[0])
+    
+    else:
+        logger.info('vw_courtregion does not exist.')
+        return pd.DataFrame(data=[])
 
 
 def player_possession_probability(
         playerid: int,
         date_range: list = [],  # [start_date, end_date]
         gameids: list = [],
-        max_time: int = 10
-):
-    if not date_range and not gameids:
-        logger.error('Need to specify date_range OR gameids OR both.')
+        max_time: int = 120):
+    # if not date_range and not gameids:
+    #     logger.error('Need to specify date_range OR gameids OR both.')
 
-    if date_range:
-        gameid_dates = get_gameid_given_dates(date_range)
-        if gameids:
-            gameids = list(set(gameid_dates) & set(gameids))
-        else:
-            gameids = gameid_dates
-
-    query = """
-        WITH player_poss AS (
-            SELECT
-                  gameid
-                , COUNT(DISTINCT enumerated_blocks)		AS num_possession
-            FROM nba.vw_possession
-            WHERE 
-                has_ball = 1 AND 
-                vw_possession.playerid = {} AND
-                vw_possession.gameids IN {}
-            GROUP BY vw_possession.gameid
-        )
-        , all_poss AS (
-            SELECT
-                gameid
-                , COUNT(DISTINCT enumerated_blocks) AS total_possessions
-            FROM nba.vw_possession 
-            WHERE has_ball = 1
-            GROUP BY gameid 
-        )
-        SELECT
-              player_poss.gameid
-            , num_possession
-            , total_possessions
-            , num_possession / total_possessions * 1.0      AS prob_possession
-        FROM player_poss
-        LEFT JOIN all_poss
-        ON player_poss.gameid = all_poss.gameid
-    """.format(playerid)
-
-    results = get_query_results(
-        query=query,
-        output_filename='player_possession_prob',
+    # if date_range:
+    #     gameid_dates = get_gameid_given_dates(date_range)
+    #     if gameids:
+    #         gameids = list(set(gameid_dates) & set(gameids))
+    #     else:
+    #         gameids = gameid_dates
+    gameids = gameids_daterange_overlap(
+        date_range=date_range,
+        gameids=gameids,
         max_time=max_time
     )
+
+    vw_exists = create_possession_view(
+        playerids=playerids,
+        gameids=gameids,
+        date_range=date_range,
+        distance_to_ball=distance_to_ball,
+        possession_block=possession_block
+    )
+
+    if vw_exists:
+        query = """
+            WITH player_poss AS (
+                SELECT
+                    gameid
+                    , COUNT(DISTINCT enumerated_blocks)		AS num_possession
+                FROM nba.vw_possession
+                WHERE 
+                    has_ball = 1 AND 
+                    vw_possession.playerid = {} AND
+                    vw_possession.gameid IN {}
+                GROUP BY vw_possession.gameid
+            )
+            , all_poss AS (
+                SELECT
+                    gameid
+                    , COUNT(DISTINCT enumerated_blocks) AS total_possessions
+                FROM nba.vw_possession 
+                WHERE has_ball = 1
+                GROUP BY gameid 
+            )
+            SELECT
+                player_poss.gameid
+                , num_possession
+                , total_possessions
+                , num_possession / total_possessions * 1.0      AS prob_possession
+            FROM player_poss
+            LEFT JOIN all_poss
+            ON player_poss.gameid = all_poss.gameid
+        """.format(playerid, list_for_sql(gameids))
+
+        results = get_query_results(
+            query=query,
+            output_filename='player_possession_prob',
+            max_time=max_time
+        )
+
+        data = [
+            [subrow['VarCharValue'] for subrow in row['Data']]
+            for row in results['ResultSet']['Rows']
+        ]
+        return pd.DataFrame(data=data[1:], columns=data[0])
+
+    else:
+        logger.info('vw_courtregion does not exist.')
+        return pd.DataFrame(data=[])
+
+

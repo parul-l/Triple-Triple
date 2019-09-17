@@ -1,6 +1,6 @@
 from triple_triple.player.player_probability import (
     player_action_frequency_per_game,
-    get_player_probability
+    player_action_probability
 )
 
 
@@ -16,4 +16,9 @@ if __main__ == '__name__':
         gameids=gameids
     )
 
-    df_player_prob = get_player_probability(player_action_frequency=df_player_freq)
+    df_player_action_prob = player_action_probability(player_action_frequency=df_player_freq)
+    df_player_position_prob = player_position_probability(
+        playerid=playerid,
+        date_range=date_range,
+        gameids=gameids
+    )

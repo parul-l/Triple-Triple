@@ -109,8 +109,8 @@ def approx_region_block_court(ax=ax):
 
     plot_random_generated_points()
 
-    filepath = os.path.join(IMG_DIR, 'full_court_approx_region_block.png')
-    fig.savefig(filepath)
+    # filepath = os.path.join(IMG_DIR, 'full_court_approx_region_block.png')
+    # fig.savefig(filepath)
 
     # plt.show()
     return ax
